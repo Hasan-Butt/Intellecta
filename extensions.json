@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "vscjava.vscode-java-pack",
+    "vmware.vscode-boot-dev-pack",
+    "bradlc.tailwindcss-intellisense",
+    "dsznajder.es7-react-js-snippets",
+    "esbenp.prettier-vscode",
+    "ms-mssql.mssql"
+  ]
+}
