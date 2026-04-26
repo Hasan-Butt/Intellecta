@@ -1,0 +1,165 @@
+import React, { useState } from "react";
+import { 
+  Search, Plus, BookmarkCheck, X, FileEdit, CheckSquare 
+} from "lucide-react";
+
+import NoteCard from "../../components/ui/NoteCard";
+import NewNote from "./NewNote";
+import { Button } from "../../components/ui/button"; 
+import { Input } from "../../components/ui/input";
+
+// HARDCODED DATA 
+const INTERNAL_MOCK_NOTES = [
+  {
+    id: 1,
+    category: "ADVANCED PHYSICS",
+    categoryColor: "text-purple-600 bg-purple-50",
+    title: "Quantum Mechanics: Schrödinger's Equation",
+    description: "Deriving the wave function for a particle in a box. Understanding the probability distribution and normalization conditions...",
+    source: "Advanced Physics Study Session",
+    date: "Oct 12, 2023",
+    isPinned: false,
+    isSpecial: false,
+    dotColor: "bg-purple-400"
+  },
+  {
+    id: 2,
+    category: "MACROECONOMICS",
+    categoryColor: "text-blue-600 bg-blue-50",
+    title: "Monetary Policy & Inflation Targets",
+    description: "Examining the impact of interest rate shifts on consumer spending and long-term investment cycles in emerging markets...",
+    source: "Macroeconomics Study Session",
+    date: "Oct 14, 2023",
+    isPinned: true,
+    isSpecial: false,
+    dotColor: "bg-blue-400"
+  },
+  {
+    id: 3,
+    category: "COMP SCI",
+    categoryColor: "text-indigo-600 bg-indigo-50",
+    title: "Big O Notation & Algorithm Complexity",
+    description: "Comparing O(n log n) and O(n^2) algorithms in practical scenarios. Focus on quicksort vs bubble sort implementations...",
+    source: "Computer Science Study Session",
+    date: "Yesterday",
+    isPinned: false,
+    isSpecial: true,
+    dotColor: "bg-indigo-400"
+  },
+  {
+    id: 4,
+    category: "WORLD HISTORY",
+    categoryColor: "text-orange-600 bg-orange-50",
+    title: "The Silk Road: Cultural Exchange",
+    description: "Mapping the trade routes between Xi'an and Antioch. Spread of technology, religion, and philosophy during the Tang Dynasty...",
+    source: "World History Study Session",
+    date: "Oct 15, 2023",
+    isPinned: false,
+    isSpecial: false,
+    dotColor: "bg-green-400"
+  },
+  {
+    id: 5,
+    category: "LITERATURE",
+    categoryColor: "text-rose-600 bg-rose-50",
+    title: "Post-Modernist Themes in Ulysses",
+    description: "Stream of consciousness and the subversion of classical epic structures. Key analysis of the 'Penelope' chapter...",
+    source: "Literature Study Session",
+    date: "2h ago",
+    isPinned: false,
+    isSpecial: false,
+    dotColor: "bg-rose-400"
+  }
+];
+
+const NotesPage = () => {
+  const [notes] = useState(INTERNAL_MOCK_NOTES);
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // STATE TO CONTROL MODAL AND ITS TYPE
+  const [isNewNoteOpen, setIsNewNoteOpen] = useState(false);
+  const [isSanctuaryMode, setIsSanctuaryMode] = useState(false);
+
+  const filteredNotes = notes.filter(note => 
+    note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    note.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Helper to open modal based on type
+  const openModal = (sanctuary = false) => {
+    setIsSanctuaryMode(sanctuary);
+    setIsNewNoteOpen(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F8F9FB] md:ml-64 p-8 pb-32">
+      <div className="max-w-6xl mx-auto mt-20">
+        
+        {/* Header */}
+        <div className="flex justify-between items-start mb-8 gap-4">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-bold text-zinc-900 tracking-tight">All Notes</h1>
+            <p className="text-zinc-500 text-lg">Organize your thoughts and fuel your intellect.</p>
+          </div>
+          
+          {/* ORIGINAL FUNCTIONALITY: Standard New Note */}
+          <Button 
+            onClick={() => openModal(false)}
+            className="bg-[#7C3AED] text-white px-6 py-6 rounded-xl shadow-lg transition-all hover:scale-105"
+          >
+            <Plus className="mr-2 h-5 w-5" /> New Note
+          </Button>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-10">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
+          <Input
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 py-7 bg-white border-none rounded-2xl shadow-sm text-lg"
+          />
+        </div>
+
+        {/* Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {filteredNotes.map((note) => (
+            <NoteCard key={note.id} note={note} />
+          ))}
+
+          {/* NEW SANCTUARY ENTRY: This specifically triggers the template */}
+          <button 
+            onClick={() => openModal(true)}
+            className="border-2 border-dashed border-zinc-200 rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-zinc-400 min-h-[320px] bg-zinc-50/30 hover:bg-zinc-50 transition-all group"
+          >
+            <div className="bg-white p-4 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
+              <FileEdit className="h-6 w-6 text-zinc-400" />
+            </div>
+            <p className="text-xs font-bold tracking-widest uppercase">New Sanctuary Entry</p>
+            <p className="text-[10px] mt-2 opacity-60 max-w-[180px] text-center">Top-down mastery template for complex subjects</p>
+          </button>
+        </div>
+
+        {/* Floating Bar */}
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#6D28D9] text-white py-4 px-8 rounded-[2.2rem] shadow-2xl flex items-center gap-6 z-50">
+          <span className="text-sm">3 notes selected</span>
+          <div className="h-4 w-[1px] bg-white/20" />
+          <button className="flex items-center gap-2 text-sm"><BookmarkCheck size={16}/> Add Tag</button>
+          <button className="flex items-center gap-2 text-sm"><CheckSquare size={16}/> Review Queue</button>
+          <X size={20} className="ml-4 cursor-pointer" />
+        </div>
+
+      </div>
+
+      {/* RENDER NEWNOTE MODAL */}
+      <NewNote 
+        isOpen={isNewNoteOpen} 
+        onClose={() => setIsNewNoteOpen(false)} 
+        isSanctuaryMode={isSanctuaryMode}
+      />
+    </div>
+  );
+};
+
+export default NotesPage;
