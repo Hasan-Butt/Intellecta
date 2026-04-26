@@ -8,11 +8,11 @@ const Navbar = () => {
 
   return (
     <header className="w-full bg-[#F9FAFB] border-b border-gray-200 font-inter sticky top-0 z-50">
-      <div className="max-w-[1920px] mx-auto px-8 h-20 flex items-center justify-between">
+      <div className="max-w-[1920px] mx-auto px-4 h-14 flex items-center ">
         
         {/* Left Section: Logo & Branding */}
-        <div className="flex items-center gap-4 cursor-pointer group">
-          <div className="relative w-14 h-14 flex items-center justify-center">
+        <div className="flex items-center gap-2 cursor-pointer group">
+          <div className="relative w-14 h-16 flex items-center justify-center">
             {/* Standard img tag prevents the 'createElement' error */}
             <img 
               src={intellectaLogo} 
@@ -25,15 +25,15 @@ const Navbar = () => {
             <span className="text-2xl font-black text-[#111827] tracking-tighter">
               Intellecta
             </span>
-            <span className="text-[11px] font-bold text-[#6B7280] uppercase tracking-[0.2em] mt-1">
+            <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-[0.2em] mt-1">
               Focus. Learn. Achieve.
             </span>
           </div>
         </div>
 
         {/* Center Section: Search Bar */}
-        <div className="flex-1 max-w-xl px-12">
-          <div className={`relative transition-all duration-300 flex items-center h-12 px-5 rounded-full bg-[#EEF2FF] border border-transparent ${
+        <div className="flex-1 max-w-lg px-8">
+          <div className={`relative transition-all duration-300 flex items-center h-11 px-5 rounded-full bg-[#EEF2FF] border border-transparent ${
             isSearchFocused ? 'ring-4 ring-indigo-50 bg-white border-indigo-200' : ''
           }`}>
             <Search 
@@ -53,7 +53,7 @@ const Navbar = () => {
         </div>
 
         {/* Right Section: Actions & Profile */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2 ml-auto">
           <button className="p-2.5 rounded-full hover:bg-indigo-50 transition-all text-[#6366F1] relative group border border-transparent hover:border-indigo-100">
             <Flame size={24} className="group-hover:fill-current transition-all" />
             <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
@@ -66,7 +66,7 @@ const Navbar = () => {
             <Bell size={24} />
           </button>
 
-          <div className="h-10 w-[1px] bg-gray-200 mx-1" />
+          <div className="h-12 w-[1px] bg-gray-200 mx-1" />
           
           <button className="flex items-center gap-1 p-0.5 rounded-full ring-2 ring-transparent hover:ring-indigo-100 transition-all">
             <div className="w-10 h-10 rounded-full bg-zinc-800 border-2 border-white shadow-sm overflow-hidden">
