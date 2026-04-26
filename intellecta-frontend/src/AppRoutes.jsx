@@ -9,6 +9,10 @@ import AnalyticsPage from "./pages/Dashboard/Analytics.jsx";
 import ConfigurationPage from "./pages/Dashboard/Configuration.jsx";
 import SupportPage from "./pages/Dashboard/Support.jsx";
 import StudentDashboardPage from "./pages/StudentDashboard/Dashboard";
+import QuizList from "./pages/Quiz/QuizList";
+import AttemptQuiz from "./pages/Quiz/AttemptQuiz";
+import Result from "./pages/Quiz/Result";
+
 
 export default function AppRoutes() {
   return (
@@ -23,6 +27,9 @@ export default function AppRoutes() {
       <Route path="/analytics" element={<AnalyticsPage />} />
       <Route path="/configuration" element={<ConfigurationPage />} />
       <Route path="/support" element={<SupportPage />} />
+      <Route path="/QuizList" element={<QuizList />} />
+      <Route path="/AttemptQuiz" element={<AttemptQuiz />} />
+      <Route path="/Result" element={<Result />} />
     </Routes>
   );
 }
