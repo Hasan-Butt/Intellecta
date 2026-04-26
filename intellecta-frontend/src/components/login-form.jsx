@@ -7,8 +7,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-
-
 export function LoginForm({ className, ...props }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,22 +14,22 @@ export function LoginForm({ className, ...props }) {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const res = await axios.post("http://localhost:8080/api/auth/login", {
-      email: email,
-      password: password,
-    });
+    try {
+      const res = await axios.post("http://localhost:8080/api/auth/login", {
+        email: email,
+        password: password,
+      });
 
-    if (res.data === "LOGIN SUCCESS") {
-        navigate("/dashboard"); 
+      if (res.data === "LOGIN SUCCESS") {
+        navigate("/studentDashboard");
       }
     } catch (err) {
       alert("Login Failed: " + (err.response?.data || "Server Error"));
       console.error(err);
     }
-};
+  };
 
   return (
     <div className={cn("flex min-h-screen w-full", className)} {...props}>
