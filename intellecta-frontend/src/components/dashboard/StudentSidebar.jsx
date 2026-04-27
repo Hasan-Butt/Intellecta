@@ -25,7 +25,7 @@ const Sidebar = () => {
   };
 
   const menuItems = [
-    { name: 'Home', icon: Home, path: '/dashboard' },
+    { name: 'Home', icon: Home, path: '/studentDashboard' },
     { name: 'Study Schedule', icon: Calendar, path: '/schedule' },
     { name: 'Focus Sessions', icon: Zap, path: '/focus' },
     { name: 'All Notes', icon: FileText, path: '/notes' },
