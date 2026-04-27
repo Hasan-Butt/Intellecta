@@ -27,7 +27,7 @@ export default function AppRoutes() {
       <Route path="/analytics" element={<AnalyticsPage />} />
       <Route path="/configuration" element={<ConfigurationPage />} />
       <Route path="/support" element={<SupportPage />} />
-      <Route path="/QuizList" element={<QuizList />} />
+      <Route path="/quiz" element={<QuizList />} />
       <Route path="/AttemptQuiz" element={<AttemptQuiz />} />
       <Route path="/Result" element={<Result />} />
     </Routes>
