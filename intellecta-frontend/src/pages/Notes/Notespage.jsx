@@ -1,15 +1,94 @@
-import React, { useState, useEffect } from "react";
-import { Search, Plus, BookmarkCheck, X, FileEdit, CheckSquare, LayoutGrid, List, Filter, ChevronDown } from "lucide-react";
+import React, { useState } from "react";
+import {
+  Search,
+  Plus,
+  BookmarkCheck,
+  X,
+  FileEdit,
+  CheckSquare,
+} from "lucide-react";
+
 import NoteCard from "../../components/ui/NoteCard";
 import NewNote from "./NewNote";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
-import { getAllNotes, searchNotes, flagForReview, updateNote, getReviewQueue } from "../../services/notesService";
-import { cn } from "../../lib/utils";
+import Navbar from "../../components/dashboard/Navbar";
+import Sidebar from "../../components/dashboard/StudentSidebar";
+
+// HARDCODED DATA
+const INTERNAL_MOCK_NOTES = [
+  {
+    id: 1,
+    category: "ADVANCED PHYSICS",
+    categoryColor: "text-purple-600 bg-purple-50",
+    title: "Quantum Mechanics: Schrödinger's Equation",
+    description:
+      "Deriving the wave function for a particle in a box. Understanding the probability distribution and normalization conditions...",
+    source: "Advanced Physics Study Session",
+    date: "Oct 12, 2023",
+    isPinned: false,
+    isSpecial: false,
+    dotColor: "bg-purple-400",
+  },
+  {
+    id: 2,
+    category: "MACROECONOMICS",
+    categoryColor: "text-blue-600 bg-blue-50",
+    title: "Monetary Policy & Inflation Targets",
+    description:
+      "Examining the impact of interest rate shifts on consumer spending and long-term investment cycles in emerging markets...",
+    source: "Macroeconomics Study Session",
+    date: "Oct 14, 2023",
+    isPinned: true,
+    isSpecial: false,
+    dotColor: "bg-blue-400",
+  },
+  {
+    id: 3,
+    category: "COMP SCI",
+    categoryColor: "text-indigo-600 bg-indigo-50",
+    title: "Big O Notation & Algorithm Complexity",
+    description:
+      "Comparing O(n log n) and O(n^2) algorithms in practical scenarios. Focus on quicksort vs bubble sort implementations...",
+    source: "Computer Science Study Session",
+    date: "Yesterday",
+    isPinned: false,
+    isSpecial: true,
+    dotColor: "bg-indigo-400",
+  },
+  {
+    id: 4,
+    category: "WORLD HISTORY",
+    categoryColor: "text-orange-600 bg-orange-50",
+    title: "The Silk Road: Cultural Exchange",
+    description:
+      "Mapping the trade routes between Xi'an and Antioch. Spread of technology, religion, and philosophy during the Tang Dynasty...",
+    source: "World History Study Session",
+    date: "Oct 15, 2023",
+    isPinned: false,
+    isSpecial: false,
+    dotColor: "bg-green-400",
+  },
+  {
+    id: 5,
+    category: "LITERATURE",
+    categoryColor: "text-rose-600 bg-rose-50",
+    title: "Post-Modernist Themes in Ulysses",
+    description:
+      "Stream of consciousness and the subversion of classical epic structures. Key analysis of the 'Penelope' chapter...",
+    source: "Literature Study Session",
+    date: "2h ago",
+    isPinned: false,
+    isSpecial: false,
+    dotColor: "bg-rose-400",
+  },
+];
 
 const NotesPage = () => {
   const [notes, setNotes] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // STATE TO CONTROL MODAL AND ITS TYPE
   const [isNewNoteOpen, setIsNewNoteOpen] = useState(false);
   const [isSanctuaryMode, setIsSanctuaryMode] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -17,43 +96,11 @@ const NotesPage = () => {
   const [tagInput, setTagInput] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
 
-  // NEW STATE
-  const [activeTab, setActiveTab] = useState("all"); // "all" | "review" | "pinned"
-  const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
-  const [activeTagFilters, setActiveTagFilters] = useState([]); // active tag chips
-  const [showTagFilterDropdown, setShowTagFilterDropdown] = useState(false);
-
-  useEffect(() => {
-    fetchNotes();
-  }, []);
-
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      fetchNotes();
-    } else {
-      handleSearch();
-    }
-  }, [searchQuery]);
-
-  const fetchNotes = async () => {
-    try {
-      const res = await getAllNotes();
-      setNotes(res.data);
-    } catch (err) {
-      console.error("Failed to fetch notes:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSearch = async () => {
-    try {
-      const res = await searchNotes(searchQuery);
-      setNotes(res.data);
-    } catch (err) {
-      console.error("Search failed:", err);
-    }
-  };
+  const filteredNotes = notes.filter(
+    (note) =>
+      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      note.category.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   const openModal = (sanctuary = false) => {
     setIsSanctuaryMode(sanctuary);
@@ -145,134 +192,70 @@ const NotesPage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8F9FB] md:ml-64 p-8 pb-32">
-      <div className="max-w-6xl mx-auto mt-20">
+    <div className="flex-1 flex flex-col min-w-0">
+      {/* 2. Navbar */}
+      <Navbar />
 
-        {/* Header */}
-        <div className="flex justify-between items-start mb-8 gap-4">
-          <div className="space-y-1">
-            <h1 className="text-4xl font-bold text-zinc-900 tracking-tight">All Notes</h1>
-            <p className="text-zinc-500 text-lg">Organize your thoughts and fuel your intellect.</p>
-          </div>
-          <Button
-            onClick={() => openModal(false)}
-            className="bg-[#7C3AED] text-white px-6 py-6 rounded-xl shadow-lg transition-all hover:scale-105"
-          >
-            <Plus className="mr-2 h-5 w-5" /> New Note
-          </Button>
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-6">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
-          <Input
-            placeholder="Search by keyword, title, or tag..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 py-7 bg-white border-none rounded-2xl shadow-sm text-lg"
-          />
-        </div>
-
-        {/* Tab Bar */}
-        <div className="flex items-center justify-between mb-8">
-          {/* Left: Tabs */}
-          <div className="flex items-center gap-1 bg-white rounded-2xl p-1.5 shadow-sm">
-            {[
-              { key: "all", label: "All Notes" },
-              { key: "review", label: "Review Queue" },
-              { key: "pinned", label: "Pinned" },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-semibold transition-all",
-                  activeTab === tab.key
-                    ? "bg-[#7C3AED] text-white shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-700"
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Right: View toggle + Tag filter */}
-          <div className="flex items-center gap-3">
-            {/* Grid / List toggle */}
-            <div className="flex items-center bg-white rounded-xl p-1 shadow-sm">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={cn("p-2 rounded-lg transition-all", viewMode === "grid" ? "bg-zinc-100 text-zinc-800" : "text-zinc-400 hover:text-zinc-600")}
-              >
-                <LayoutGrid size={16} />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={cn("p-2 rounded-lg transition-all", viewMode === "list" ? "bg-zinc-100 text-zinc-800" : "text-zinc-400 hover:text-zinc-600")}
-              >
-                <List size={16} />
-              </button>
-            </div>
-
-            {/* Tag filter */}
-            <div className="relative">
-              <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm">
-                <Filter size={14} className="text-zinc-400" />
-
-                {/* Active tag chips */}
-                {activeTagFilters.map(tag => (
-                  <span
-                    key={tag}
-                    className="bg-[#7C3AED] text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
-                  >
-                    {tag}
-                    <X
-                      size={10}
-                      className="cursor-pointer"
-                      onClick={() => removeTagFilter(tag)}
-                    />
-                  </span>
-                ))}
-
-                <button
-                  onClick={() => setShowTagFilterDropdown(!showTagFilterDropdown)}
-                  className="text-zinc-400 hover:text-zinc-600"
-                >
-                  <ChevronDown size={14} className={cn("transition-transform", showTagFilterDropdown && "rotate-180")} />
-                </button>
+      <div className="bg-[#f9f9ff] min-h-screen flex w-full">
+        {/* 1. Sidebar */}
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto">
+          <div className="px-12 py-10">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-8 gap-4">
+              <div className="space-y-1">
+                <h1 className="text-4xl font-bold text-zinc-900 tracking-tight">
+                  All Notes
+                </h1>
+                <p className="text-zinc-500 text-lg">
+                  Organize your thoughts and fuel your intellect.
+                </p>
               </div>
 
-              {/* Tag dropdown */}
-              {showTagFilterDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-zinc-100 z-[110] py-2">
-                  {allTags.length === 0 ? (
-                    <p className="text-xs text-zinc-400 px-4 py-2">No tags yet</p>
-                  ) : (
-                    allTags.map(tag => (
-                      <button
-                        key={tag}
-                        onClick={() => {
-                          toggleTagFilter(tag);
-                          setShowTagFilterDropdown(false);
-                        }}
-                        className={cn(
-                          "w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors",
-                          activeTagFilters.includes(tag)
-                            ? "text-[#7C3AED] bg-purple-50"
-                            : "text-zinc-600 hover:bg-purple-50 hover:text-purple-700"
-                        )}
-                      >
-                        #{tag}
-                        {activeTagFilters.includes(tag) && <X size={12} />}
-                      </button>
-                    ))
-                  )}
+              {/* ORIGINAL FUNCTIONALITY: Standard New Note */}
+              <Button
+                onClick={() => openModal(false)}
+                className="bg-[#7C3AED] text-white px-6 py-6 rounded-xl shadow-lg transition-all hover:scale-105"
+              >
+                <Plus className="mr-2 h-5 w-5" /> New Note
+              </Button>
+            </div>
+
+            {/* Search */}
+            <div className="relative mb-10">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 py-7 bg-white border-none rounded-2xl shadow-sm text-lg"
+              />
+            </div>
+
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {filteredNotes.map((note) => (
+                <NoteCard key={note.id} note={note} />
+              ))}
+
+              {/* NEW SANCTUARY ENTRY: This specifically triggers the template */}
+              <button
+                onClick={() => openModal(true)}
+                className="border-2 border-dashed border-zinc-200 rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-zinc-400 min-h-[320px] bg-zinc-50/30 hover:bg-zinc-50 transition-all group"
+              >
+                <div className="bg-white p-4 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
+                  <FileEdit className="h-6 w-6 text-zinc-400" />
                 </div>
-              )}
+                <p className="text-xs font-bold tracking-widest uppercase">
+                  New Sanctuary Entry
+                </p>
+                <p className="text-[10px] mt-2 opacity-60 max-w-[180px] text-center">
+                  Top-down mastery template for complex subjects
+                </p>
+              </button>
             </div>
           </div>
-        </div>
+        </main>
 
         {/* Grid / List */}
         {loading ? (
@@ -320,59 +303,20 @@ const NotesPage = () => {
         )}
 
         {/* Floating Bar */}
-        {selectedIds.length > 0 && (
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#6D28D9] text-white py-4 px-8 rounded-[2.2rem] shadow-2xl flex items-center gap-6 z-50">
-            <span className="text-sm font-semibold">
-              {selectedIds.length} {selectedIds.length === 1 ? "note" : "notes"} selected
-            </span>
-            <div className="h-4 w-[1px] bg-white/20" />
-
-            {showTagInput ? (
-              <div className="flex items-center gap-2">
-                <input
-                  autoFocus
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
-                  placeholder="tag name..."
-                  className="bg-white/20 text-white placeholder:text-white/50 text-xs px-3 py-1.5 rounded-xl outline-none w-28"
-                />
-                <button
-                  onClick={handleAddTag}
-                  className="text-xs bg-white text-[#6D28D9] font-bold px-3 py-1.5 rounded-xl"
-                >
-                  Add
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowTagInput(true)}
-                className="flex items-center gap-2 text-sm hover:text-white/80 transition-colors"
-              >
-                <BookmarkCheck size={16} /> Add Tag
-              </button>
-            )}
-
-            <div className="h-4 w-[1px] bg-white/20" />
-
-            <button
-              onClick={handleReviewQueue}
-              className="flex items-center gap-2 text-sm hover:text-white/80 transition-colors"
-            >
-              <CheckSquare size={16} /> Review Queue
-            </button>
-
-            <X
-              size={20}
-              className="ml-4 cursor-pointer hover:text-white/80 transition-colors"
-              onClick={clearSelection}
-            />
-          </div>
-        )}
-
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#6D28D9] text-white py-4 px-8 rounded-[2.2rem] shadow-2xl flex items-center gap-6 z-50">
+          <span className="text-sm">3 notes selected</span>
+          <div className="h-4 w-[1px] bg-white/20" />
+          <button className="flex items-center gap-2 text-sm">
+            <BookmarkCheck size={16} /> Add Tag
+          </button>
+          <button className="flex items-center gap-2 text-sm">
+            <CheckSquare size={16} /> Review Queue
+          </button>
+          <X size={20} className="ml-4 cursor-pointer" />
+        </div>
       </div>
 
+      {/* RENDER NEWNOTE MODAL */}
       <NewNote
         isOpen={isNewNoteOpen}
         onClose={() => setIsNewNoteOpen(false)}
