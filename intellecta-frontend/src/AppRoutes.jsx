@@ -12,6 +12,8 @@ import StudentDashboardPage from "./pages/StudentDashboard/Dashboard";
 import QuizList from "./pages/Quiz/QuizList";
 import AttemptQuiz from "./pages/Quiz/AttemptQuiz";
 import Result from "./pages/Quiz/Result";
+import Leaderboard from "./pages/Leaderboard/leaderboard";
+import PeerComparison from "./pages/Leaderboard/peerComparison";
 
 
 export default function AppRoutes() {
@@ -30,6 +32,8 @@ export default function AppRoutes() {
       <Route path="/quiz" element={<QuizList />} />
       <Route path="/AttemptQuiz" element={<AttemptQuiz />} />
       <Route path="/Result" element={<Result />} />
+      <Route path="/leaderboard" element={<Leaderboard />} />
+      <Route path="/peers" element={<PeerComparison />} />
     </Routes>
   );
 }
