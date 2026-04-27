@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { 
-  Maximize2, Share2, Trash2, ChevronDown, Tag, 
+  Maximize2, Trash2, ChevronDown, Tag, 
   Bold, Italic, List, Link, Image as ImageIcon, Check, X 
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
+import { createNote } from "../../services/notesService"; // ← CHANGE 1: add this import
 
-const NewNote = ({ isOpen, onClose, isSanctuaryMode = false }) => {
+// ← CHANGE 2: add onSaved to the props
+const NewNote = ({ isOpen, onClose, isSanctuaryMode = false, onSaved }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isMaximized, setIsMaximized] = useState(false);
@@ -16,7 +18,6 @@ const NewNote = ({ isOpen, onClose, isSanctuaryMode = false }) => {
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [tagInput, setTagInput] = useState("");
 
-  // --- THE ONLY ADDITION: RESET LOGIC ON OPEN ---
   useEffect(() => {
     if (isOpen) {
       if (isSanctuaryMode) {
@@ -41,7 +42,6 @@ Primary Tool: [Insert Formula or Logic Chain here]
         );
         setTags(["Mastery"]);
       } else {
-        // This ensures the "New Note" button always shows empty fields
         setTitle("");
         setContent("");
         setTags([]);
@@ -70,6 +70,36 @@ Primary Tool: [Insert Formula or Logic Chain here]
 
   const removeTag = (tagToRemove) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  // ← CHANGE 3: replace the old onClose button with this function
+  const handleSave = async () => {
+    if (!title.trim()) return;
+
+    const categoryMap = {
+      "Advanced Physics": "ADVANCED_PHYSICS",
+      "Macroeconomics": "MACROECONOMICS",
+      "Comp Sci": "COMP_SCI",
+      "World History": "WORLD_HISTORY",
+      "Literature": "LITERATURE",
+    };
+
+    try {
+      await createNote({
+        title,
+        content,
+        category: categoryMap[category] || null,
+        tags,
+        isPinned: false,
+        isSpecial: isSanctuaryMode,
+        flaggedForReview: false,
+        source: category !== "Select Category" ? `${category} Study Session` : "Personal Note",
+      });
+      onSaved(); // closes modal + refreshes NotesPage
+    } catch (err) {
+      console.error("Failed to save note:", err);
+      alert("Could not save note. Is the backend running?");
+    }
   };
 
   if (!isOpen) return null;
@@ -106,7 +136,7 @@ Primary Tool: [Insert Formula or Logic Chain here]
             >
               <Maximize2 size={20} />
             </button>
-            <button className="hover:text-zinc-600"><Share2 size={20} /></button>
+           
             <button onClick={onClose} className="hover:text-red-500"><Trash2 size={20} /></button>
           </div>
         </div>
@@ -115,7 +145,6 @@ Primary Tool: [Insert Formula or Logic Chain here]
           "px-12 pb-8 space-y-6 overflow-y-auto scrollbar-hide transition-all",
           isMaximized ? "flex-grow" : "max-h-[75vh]"
         )}>
-          {/* Title Input */}
           <input 
             type="text"
             placeholder="Note Title..."
@@ -226,8 +255,9 @@ Primary Tool: [Insert Formula or Logic Chain here]
           "px-10 pb-10 pt-4 transition-all",
           isMaximized ? "mt-auto" : ""
         )}>
+          {/* ← CHANGE 3 continued: onClick changed from onClose to handleSave */}
           <Button 
-            onClick={onClose}
+            onClick={handleSave}
             className="w-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white py-8 rounded-[1.8rem] text-xl font-bold shadow-xl transition-all"
           >
             Save Changes

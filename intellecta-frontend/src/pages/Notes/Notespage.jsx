@@ -85,12 +85,16 @@ const INTERNAL_MOCK_NOTES = [
 ];
 
 const NotesPage = () => {
-  const [notes] = useState(INTERNAL_MOCK_NOTES);
+  const [notes, setNotes] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   // STATE TO CONTROL MODAL AND ITS TYPE
   const [isNewNoteOpen, setIsNewNoteOpen] = useState(false);
   const [isSanctuaryMode, setIsSanctuaryMode] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [tagInput, setTagInput] = useState("");
+  const [showTagInput, setShowTagInput] = useState(false);
 
   const filteredNotes = notes.filter(
     (note) =>
@@ -98,11 +102,94 @@ const NotesPage = () => {
       note.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // Helper to open modal based on type
   const openModal = (sanctuary = false) => {
     setIsSanctuaryMode(sanctuary);
     setIsNewNoteOpen(true);
   };
+
+  const handleNoteSaved = () => {
+    setIsNewNoteOpen(false);
+    fetchNotes();
+  };
+
+  const handleSelect = (noteId) => {
+    setSelectedIds(prev =>
+      prev.includes(noteId)
+        ? prev.filter(id => id !== noteId)
+        : [...prev, noteId]
+    );
+  };
+
+  const clearSelection = () => {
+    setSelectedIds([]);
+    setShowTagInput(false);
+    setTagInput("");
+  };
+
+  const handleReviewQueue = async () => {
+    try {
+      await Promise.all(selectedIds.map(id => flagForReview(id)));
+      clearSelection();
+      fetchNotes();
+    } catch (err) {
+      console.error("Failed to flag for review:", err);
+    }
+  };
+
+  const handleAddTag = async () => {
+    if (!tagInput.trim()) return;
+    try {
+      await Promise.all(
+        selectedIds.map(id => {
+          const note = notes.find(n => n.id === id);
+          const existingTags = note.tags || [];
+          if (existingTags.includes(tagInput.trim())) return Promise.resolve();
+          return updateNote(id, {
+            title: note.title,
+            content: note.content,
+            category: note.category,
+            source: note.source,
+            isPinned: note.pinned,
+            isSpecial: note.special,
+            flaggedForReview: note.flaggedForReview,
+            tags: [...existingTags, tagInput.trim()],
+          });
+        })
+      );
+      clearSelection();
+      fetchNotes();
+    } catch (err) {
+      console.error("Failed to add tag:", err);
+    }
+  };
+
+  // Collect all unique tags from all notes for the filter dropdown
+  const allTags = [...new Set(notes.flatMap(n => n.tags || []))];
+
+  const toggleTagFilter = (tag) => {
+    setActiveTagFilters(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const removeTagFilter = (tag) => {
+    setActiveTagFilters(prev => prev.filter(t => t !== tag));
+  };
+
+  // Apply tab + tag filters to notes
+  const displayedNotes = notes.filter(note => {
+    // Tab filter
+    if (activeTab === "review" && !note.flaggedForReview) return false;
+    if (activeTab === "pinned" && !note.pinned) return false;
+
+    // Tag filter
+    if (activeTagFilters.length > 0) {
+      const noteTags = note.tags || [];
+      if (!activeTagFilters.every(tag => noteTags.includes(tag))) return false;
+    }
+
+    return true;
+  });
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -170,6 +257,51 @@ const NotesPage = () => {
           </div>
         </main>
 
+        {/* Grid / List */}
+        {loading ? (
+          <p className="text-zinc-400 text-center mt-20">Loading notes...</p>
+        ) : (
+          <div className={cn(
+            viewMode === "grid"
+              ? "grid grid-cols-1 md:grid-cols-2 gap-6"
+              : "flex flex-col gap-4"
+          )}>
+            {displayedNotes.map((note) => (
+              <NoteCard
+                key={note.id}
+                note={note}
+                onRefresh={fetchNotes}
+                isSelected={selectedIds.includes(note.id)}
+                onSelect={handleSelect}
+              />
+            ))}
+
+            {/* Only show sanctuary button on All Notes tab */}
+            {activeTab === "all" && (
+              <button
+                onClick={() => openModal(true)}
+                className="border-2 border-dashed border-zinc-200 rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-zinc-400 min-h-[320px] bg-zinc-50/30 hover:bg-zinc-50 transition-all group"
+              >
+                <div className="bg-white p-4 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
+                  <FileEdit className="h-6 w-6 text-zinc-400" />
+                </div>
+                <p className="text-xs font-bold tracking-widest uppercase">New Sanctuary Entry</p>
+                <p className="text-[10px] mt-2 opacity-60 max-w-[180px] text-center">
+                  Top-down mastery template for complex subjects
+                </p>
+              </button>
+            )}
+
+            {/* Empty states */}
+            {displayedNotes.length === 0 && activeTab === "review" && (
+              <p className="text-zinc-400 text-center mt-20 col-span-2">No notes in review queue yet. Select notes and click Review Queue to add them.</p>
+            )}
+            {displayedNotes.length === 0 && activeTab === "pinned" && (
+              <p className="text-zinc-400 text-center mt-20 col-span-2">No pinned notes yet. Click the bookmark icon on any note to pin it.</p>
+            )}
+          </div>
+        )}
+
         {/* Floating Bar */}
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#6D28D9] text-white py-4 px-8 rounded-[2.2rem] shadow-2xl flex items-center gap-6 z-50">
           <span className="text-sm">3 notes selected</span>
@@ -189,6 +321,7 @@ const NotesPage = () => {
         isOpen={isNewNoteOpen}
         onClose={() => setIsNewNoteOpen(false)}
         isSanctuaryMode={isSanctuaryMode}
+        onSaved={handleNoteSaved}
       />
     </div>
   );

@@ -1,7 +1,6 @@
 import "./styles/global.css";
 import { BrowserRouter as Router } from "react-router-dom";
 import AppRoutes from "./AppRoutes";
-
 /**
  * App.jsx acts as the global wrapper. 
  * Keep this file thin so it's easy to manage global settings.
