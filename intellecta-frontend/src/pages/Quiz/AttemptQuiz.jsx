@@ -8,7 +8,6 @@ const FullAssessmentInterface = ({
   topic = "Cognitive Architectures & Synaptic Plasticity",
   marks = "+4.0 Marks" 
 }) => {
-  // --- STATE & LOGIC ---
   const [timeLeft, setTimeLeft] = useState(initialSeconds);
   const [selectedOption, setSelectedOption] = useState('B');
   const [markedForReview, setMarkedForReview] = useState(false);
@@ -40,159 +39,166 @@ const FullAssessmentInterface = ({
   }));
 
   return (
-    <div className="min-h-screen bg-[#FDFDFF] pb-12 font-['Inter',_sans-serif]">
-      {/* 1. TOP HEADER (Progress & Timer - image_2cb9d8.png) */}
-      <div className="w-full max-w-6xl mx-auto p-4 flex flex-col gap-4">
-        <section className="bg-[#F8F9FA] rounded-2xl shadow-sm border border-gray-200/60 p-4 md:px-8 md:py-6 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="flex flex-1 items-center gap-6 w-full">
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <span className="text-sm font-bold tracking-tight text-slate-500 uppercase">PROGRESS:</span>
-              <span className="text-lg font-bold text-[#2563EB]">{currentStep} / {totalSteps}</span>
+    <div className="min-h-screen bg-[#FDFDFF] pb-20 font-sans text-slate-900 antialiased">
+      <div className="w-full max-w-[1400px] mx-auto p-6 md:p-10 flex flex-col gap-10">
+        
+        {/* 1. TOP HEADER */}
+        <section className="bg-white rounded-[32px] shadow-sm border border-slate-200/60 p-6 md:px-12 md:py-10 flex flex-col md:flex-row items-center justify-between gap-10">
+          <div className="flex flex-1 items-center gap-12 w-full">
+            <div className="flex flex-col gap-1 whitespace-nowrap">
+              <span className="text-[10px] font-bold tracking-[0.25em] text-slate-400 uppercase">Current Progress</span>
+              <span className="text-3xl font-extrabold text-[#2563EB] tabular-nums">
+                {currentStep} <span className="text-slate-300 font-light">/</span> {totalSteps}
+              </span>
             </div>
-            <div className="relative h-3 w-full bg-slate-200/70 rounded-full overflow-hidden">
+            <div className="relative h-3 w-full bg-slate-100 rounded-full overflow-hidden">
               <div 
-                className="absolute top-0 left-0 h-full bg-[#2563EB] rounded-full transition-all duration-700"
+                className="absolute top-0 left-0 h-full bg-[#2563EB] rounded-full transition-all duration-1000 ease-in-out"
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>
           </div>
 
-          <div className="hidden md:block w-px h-12 bg-slate-200 mx-2" />
+          <div className="hidden md:block w-px h-16 bg-slate-100 mx-4" />
 
-          <div className="flex items-center gap-4 bg-[#FEE2E2]/40 border border-[#FEE2E2] rounded-2xl px-6 py-3 min-w-[180px]">
-            <Timer className="w-7 h-7 text-[#7F1D1D]" strokeWidth={2} />
+          <div className="flex items-center gap-6 bg-red-50/50 border border-red-100 rounded-[28px] px-8 py-5 min-w-[260px]">
+            <Timer className="w-9 h-9 text-red-600" strokeWidth={1.5} />
             <div className="flex flex-col">
-              <span className="text-[11px] font-bold text-[#7F1D1D]/80 uppercase tracking-wide leading-tight">TIME REMAINING</span>
-              <span className="text-2xl font-bold text-[#7F1D1D] tabular-nums tracking-tight">{formatTime(timeLeft)}</span>
+              <span className="text-[10px] font-bold text-red-500 uppercase tracking-[0.2em] mb-1">Remaining</span>
+              <span className="text-3xl font-bold text-red-700 tabular-nums tracking-tight">{formatTime(timeLeft)}</span>
             </div>
           </div>
         </section>
 
-        {/* 2. SUB-HEADER (Question Info & Auto-Submit - image_2cb21f.png) */}
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4 items-stretch">
-          <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-slate-800 flex items-baseline gap-2">
-                  Question {currentStep} <span className="text-slate-400 font-medium text-2xl">of {totalSteps}</span>
+        {/* 2. SUB-HEADER */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-stretch">
+          <section className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-10 flex flex-col justify-between">
+            <div className="flex justify-between items-start">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">
+                  Question {currentStep} <span className="text-slate-300 font-normal ml-1">of {totalSteps}</span>
                 </h1>
-                <p className="text-slate-500 font-medium mt-1">{topic}</p>
+                <p className="text-slate-500 text-lg font-medium tracking-wide italic">{topic}</p>
               </div>
-              <div className="bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg text-sm font-bold border border-indigo-200">
+              <div className="bg-slate-50 text-slate-600 px-6 py-2 rounded-full text-sm font-bold border border-slate-100">
                 {marks}
               </div>
             </div>
-            <div className="w-full h-3 bg-slate-100 rounded-full flex overflow-hidden mt-4">
-              <div className="h-full bg-indigo-600" style={{ width: '25%' }} />
+            <div className="w-full h-2.5 bg-slate-50 rounded-full flex overflow-hidden mt-12">
+              <div className="h-full bg-indigo-500" style={{ width: '25%' }} />
               <div className="h-full bg-indigo-200" style={{ width: '8%' }} />
-              <div className="flex-1 h-full bg-slate-100" />
+              <div className="flex-1 h-full bg-slate-50" />
             </div>
           </section>
 
-          <aside className="bg-blue-50/60 rounded-2xl border border-blue-100 p-5 flex gap-4">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 rounded-full border-2 border-blue-800 flex items-center justify-center">
-                <Info className="w-5 h-5 text-blue-800" strokeWidth={2.5} />
-              </div>
+          <aside className="bg-indigo-600 rounded-[32px] p-8 flex flex-col justify-center gap-4 text-white shadow-xl shadow-indigo-100">
+            <div className="flex items-center gap-4">
+              <Info className="w-6 h-6 text-indigo-200" strokeWidth={2} />
+              <h2 className="text-xs font-bold uppercase tracking-[0.2em]">Sync Status</h2>
             </div>
-            <div className="flex flex-col gap-1">
-              <h2 className="text-sm font-black text-blue-900 uppercase tracking-tight">Auto-Submit Enabled</h2>
-              <p className="text-[13px] leading-relaxed text-blue-700 font-medium">
-                Your progress is being synced in real-time. Session ends automatically at 00:00.
-              </p>
-            </div>
+            <p className="text-lg leading-relaxed text-indigo-50 font-medium">
+              Auto-Submit is active. Your progress is being saved to the cloud in real-time.
+            </p>
           </aside>
         </div>
 
-        {/* 3. MAIN BODY (Questions & Navigator - image_2caad6.png) */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 mt-2">
+        {/* 3. MAIN BODY */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12">
           {/* Question Content */}
-          <section className="space-y-6">
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 relative overflow-hidden">
-              <h2 className="text-xl font-semibold text-slate-800 leading-relaxed mb-10 relative z-10">
+          <section className="space-y-12">
+            <div className="bg-white rounded-[40px] p-12 md:p-16 shadow-sm border border-slate-100 relative">
+              <h2 className="text-2xl md:text-3xl font-semibold text-slate-800 leading-[1.5] mb-14">
                 In the context of "Parallel Distributed Processing" (PDP) models, how does the system primarily achieve learning through the adjustment of connection weights?
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {options.map((option) => (
                   <button
                     key={option.id}
                     onClick={() => setSelectedOption(option.id)}
-                    className={`w-full flex items-center p-5 rounded-2xl border-2 transition-all text-left ${
+                    className={`w-full flex items-center p-8 rounded-[28px] border-2 transition-all text-left group ${
                       selectedOption === option.id 
-                      ? 'border-indigo-500 bg-indigo-50/30' 
-                      : 'border-slate-100 bg-slate-50/50 hover:border-slate-200'
+                      ? 'border-indigo-600 bg-indigo-50/30' 
+                      : 'border-slate-50 bg-slate-50/50 hover:border-slate-200 hover:bg-slate-50/80'
                     }`}
                   >
-                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm mr-4 shrink-0 ${
-                      selectedOption === option.id ? 'bg-indigo-600 text-white' : 'bg-white text-slate-400 border border-slate-200'
+                    <span className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl mr-8 shrink-0 transition-all ${
+                      selectedOption === option.id 
+                      ? 'bg-indigo-600 text-white scale-110 shadow-lg shadow-indigo-200' 
+                      : 'bg-white text-slate-400 border border-slate-200'
                     }`}>
                       {option.id}
                     </span>
-                    <p className={`flex-1 text-sm font-medium ${selectedOption === option.id ? 'text-slate-900' : 'text-slate-600'}`}>
+                    <p className={`flex-1 text-lg font-medium leading-relaxed ${selectedOption === option.id ? 'text-slate-900' : 'text-slate-600'}`}>
                       {option.text}
                     </p>
-                    {selectedOption === option.id && <CheckCircle2 className="text-indigo-600 w-5 h-5 ml-2" />}
+                    {selectedOption === option.id && (
+                      <CheckCircle2 className="text-indigo-600 w-7 h-7 ml-4" strokeWidth={2.5} />
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Bottom Navigation */}
-            <div className="flex items-center justify-between pt-4">
-              <button className="flex items-center gap-2 text-slate-600 font-bold hover:text-slate-900 transition-colors">
-                <ArrowLeft className="w-5 h-5" /> Previous Question
+            {/* Navigation Buttons */}
+            <div className="flex items-center justify-between">
+              <button className="flex items-center gap-3 text-slate-400 text-lg font-bold hover:text-slate-800 transition-colors">
+                <ArrowLeft className="w-6 h-6" /> Previous
               </button>
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-10">
                 <button 
                   onClick={() => setMarkedForReview(!markedForReview)}
-                  className={`flex items-center gap-2 font-bold transition-colors ${markedForReview ? 'text-orange-600' : 'text-green-700 hover:text-green-800'}`}
+                  className={`flex items-center gap-3 text-lg font-bold transition-all ${markedForReview ? 'text-orange-500' : 'text-emerald-600 hover:text-emerald-700'}`}
                 >
-                  <Bookmark className={`w-5 h-5 ${markedForReview ? 'fill-current' : ''}`} /> Mark for Review
+                  <Bookmark className={`w-6 h-6 ${markedForReview ? 'fill-current' : ''}`} /> Review Later
                 </button>
-                <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 shadow-lg shadow-indigo-200">
-                  Save & Next <ArrowRight className="w-5 h-5" />
+                <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-14 py-6 rounded-[28px] text-xl font-bold flex items-center gap-4 shadow-2xl shadow-indigo-100 transition-transform hover:scale-[1.02] active:scale-95">
+                  Save & Next <ArrowRight className="w-6 h-6" />
                 </button>
               </div>
             </div>
           </section>
 
           {/* Sidebar */}
-          <aside className="space-y-6">
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-              <h3 className="font-bold text-slate-800 mb-6">Question Navigator</h3>
-              <div className="grid grid-cols-5 gap-3">
+          <aside className="space-y-8">
+            <div className="bg-white rounded-[32px] p-10 shadow-sm border border-slate-100">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-10">Question Navigator</h3>
+              <div className="grid grid-cols-5 gap-4">
                 {navigatorItems.map((item) => (
                   <button
                     key={item.id}
-                    className={`h-10 rounded-lg text-xs font-bold border ${
-                      item.status === 'answered' ? 'bg-indigo-600 border-indigo-600 text-white' :
-                      item.status === 'marked' ? 'bg-[#436117] border-[#436117] text-white' :
-                      item.status === 'current' ? 'border-indigo-600 text-indigo-600 ring-1 ring-indigo-600' :
-                      'bg-slate-50 border-slate-200 text-slate-400'
+                    className={`h-14 rounded-2xl text-base font-bold border-2 transition-all ${
+                      item.status === 'answered' ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' :
+                      item.status === 'marked' ? 'bg-emerald-700 border-emerald-700 text-white shadow-md' :
+                      item.status === 'current' ? 'border-indigo-600 text-indigo-600 ring-4 ring-indigo-50' :
+                      'bg-slate-50 border-slate-50 text-slate-400 hover:border-slate-200'
                     }`}
                   >
                     {item.id}
                   </button>
                 ))}
               </div>
-              <div className="mt-8 space-y-3 border-t pt-6">
-                <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
-                  <div className="w-4 h-4 bg-indigo-600 rounded" /> Answered (3)
+              
+              <div className="mt-12 space-y-5 border-t border-slate-50 pt-10">
+                <div className="flex items-center gap-4 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                  <div className="w-4 h-4 bg-indigo-600 rounded-md" /> Answered
                 </div>
-                <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
-                  <div className="w-4 h-4 bg-[#436117] rounded" /> Marked for Review (1)
+                <div className="flex items-center gap-4 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                  <div className="w-4 h-4 bg-emerald-700 rounded-md" /> Marked
                 </div>
-                <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
-                  <div className="w-4 h-4 bg-slate-50 border border-slate-200 rounded" /> Not Visited (11)
+                <div className="flex items-center gap-4 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                  <div className="w-4 h-4 bg-slate-100 rounded-md" /> Pending
                 </div>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-6 text-white relative overflow-hidden group">
+            <div className="bg-slate-900 rounded-[32px] p-10 text-white relative overflow-hidden group">
               <div className="relative z-10">
-                <h4 className="font-bold text-lg mb-2">Deep Research Context</h4>
-                <p className="text-xs text-indigo-100 leading-relaxed">Review the foundational paper by Rumelhart & McClelland if unsure.</p>
+                <h4 className="font-bold text-xl mb-4 tracking-tight">Expert Hint</h4>
+                <p className="text-base text-slate-400 leading-relaxed font-medium">
+                  Focus on the concept of "Parallelism." Connectionism relies on simultaneous weight updates, not linear logic.
+                </p>
               </div>
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl" />
             </div>
           </aside>
         </div>
