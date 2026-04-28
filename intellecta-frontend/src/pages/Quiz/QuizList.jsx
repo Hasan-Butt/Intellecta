@@ -17,10 +17,8 @@ import {
 
 // --- LAYOUT IMPORTS ---
 import Navbar from "../../components/dashboard/Navbar";
-import Sidebar from "../../components/dashboard/StudentSidebar";
-
 import Sidebar from '../../components/dashboard/StudentSidebar';
-import Navbar from '../../components/dashboard/Navbar';
+
 
 const QuizPlatform = () => {
   const [searchTerm, setSearchTerm] = useState("");
