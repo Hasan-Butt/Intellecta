@@ -17,6 +17,7 @@ import PeerComparison from "./pages/Leaderboard/peerComparison";
 import DistractionLog from "./pages/DistractionLog/distraction";
 import FocusSession from "./pages/DistractionLog/focus";
 
+import SubjectFolderPage from "./pages/SubjectFolder/SubjectFolderpage";
 
 export default function AppRoutes() {
   return (
@@ -38,6 +39,7 @@ export default function AppRoutes() {
       <Route path="/peers" element={<PeerComparison />} />
       <Route path="/distractions" element={<DistractionLog />} />
       <Route path="/focusSession" element={<FocusSession />} />
+      <Route path="/folders" element={<SubjectFolderPage />} />
     </Routes>
   );
 }

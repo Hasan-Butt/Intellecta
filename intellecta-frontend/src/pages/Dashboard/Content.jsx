@@ -136,7 +136,7 @@ const ContentPage = () => {
               </div>
 
               <div className="lg:col-span-4 space-y-6">
-                <div className="bg-[#1C1C2D] rounded-[40px] p-8 text-white shadow-2xl">
+                <div className="bg-[#f0f3f3] rounded-[40px] p-8 text-white shadow-2xl">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="bg-emerald-500/20 p-2 rounded-lg">
                       <Zap

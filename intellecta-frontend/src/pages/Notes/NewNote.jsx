@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Maximize2, Trash2, ChevronDown, Tag, 
-  Bold, Italic, List, Link, Image as ImageIcon, Check, X 
+import {
+  Maximize2,
+  Trash2,
+  ChevronDown,
+  Tag,
+  Bold,
+  Italic,
+  List,
+  Link,
+  Image as ImageIcon,
+  Check,
+  X,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
@@ -23,7 +32,7 @@ const NewNote = ({ isOpen, onClose, isSanctuaryMode = false, onSaved }) => {
       if (isSanctuaryMode) {
         setTitle("New Sanctuary Entry");
         setContent(
-`Cognitive Sanctuary: [Topic Name]
+          `Cognitive Sanctuary: [Topic Name]
 Scholar Level Objective: Describe the one sentence "Big Idea" you are mastering.
 
 1. The Core Thesis (The "Anchor")
@@ -38,7 +47,7 @@ Concept C: [Name & Brief Definition]
 Primary Tool: [Insert Formula or Logic Chain here]
 
 4. Upload 
-[Upload an image or Diagram as a flash card for this topic]`
+[Upload an image or Diagram as a flash card for this topic]`,
         );
         setTags(["Mastery"]);
       } else {
@@ -55,11 +64,11 @@ Primary Tool: [Insert Formula or Logic Chain here]
     "Macroeconomics",
     "Comp Sci",
     "World History",
-    "Literature"
+    "Literature",
   ];
 
   const handleAddTag = (e) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
+    if (e.key === "Enter" && tagInput.trim()) {
       if (!tags.includes(tagInput.trim())) {
         setTags([...tags, tagInput.trim()]);
       }
@@ -69,7 +78,7 @@ Primary Tool: [Insert Formula or Logic Chain here]
   };
 
   const removeTag = (tagToRemove) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
   // ← CHANGE 3: replace the old onClose button with this function
@@ -78,10 +87,10 @@ Primary Tool: [Insert Formula or Logic Chain here]
 
     const categoryMap = {
       "Advanced Physics": "ADVANCED_PHYSICS",
-      "Macroeconomics": "MACROECONOMICS",
+      Macroeconomics: "MACROECONOMICS",
       "Comp Sci": "COMP_SCI",
       "World History": "WORLD_HISTORY",
-      "Literature": "LITERATURE",
+      Literature: "LITERATURE",
     };
 
     try {
@@ -93,36 +102,44 @@ Primary Tool: [Insert Formula or Logic Chain here]
         isPinned: false,
         isSpecial: isSanctuaryMode,
         flaggedForReview: false,
-        source: category !== "Select Category" ? `${category} Study Session` : "Personal Note",
+        source:
+          category !== "Select Category"
+            ? `${category} Study Session`
+            : "Personal Note",
       });
-      onSaved(); // closes modal + refreshes NotesPage
+      try {
+        if (onSaved) onSaved();
+      } catch (refreshErr) {
+        console.error("Note saved, but UI failed to refresh:", refreshErr);
+      }
     } catch (err) {
+      // This now only triggers if the actual POST request fails
       console.error("Failed to save note:", err);
-      alert("Could not save note. Is the backend running?");
+      alert("Could not save note. Check if User ID 2 exists in your DB.");
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className={cn(
         "fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md transition-all duration-300",
-        isMaximized ? "p-0" : "p-4"
+        isMaximized ? "p-0" : "p-4",
       )}
-      onClick={onClose} 
+      onClick={onClose}
     >
-      <div 
+      <div
         className={cn(
           "bg-white shadow-2xl overflow-hidden flex flex-col relative transition-all duration-300 ease-in-out",
-          isMaximized 
-            ? "w-full h-full rounded-none" 
-            : "w-full max-w-2xl rounded-[3rem] h-auto max-h-[90vh]"
+          isMaximized
+            ? "w-full h-full rounded-none"
+            : "w-full max-w-2xl rounded-[3rem] h-auto max-h-[90vh]",
         )}
         onClick={(e) => {
           e.stopPropagation();
-          setIsDropdownOpen(false); 
-        }} 
+          setIsDropdownOpen(false);
+        }}
       >
         {/* Header */}
         <div className="flex justify-between items-center px-10 pt-10 pb-4">
@@ -130,22 +147,29 @@ Primary Tool: [Insert Formula or Logic Chain here]
             {isSanctuaryMode ? "Sanctuary Entry" : "Focused Editing"}
           </span>
           <div className="flex items-center gap-5 text-zinc-400">
-            <button 
+            <button
               onClick={() => setIsMaximized(!isMaximized)}
-              className={cn("transition-colors", isMaximized ? "text-[#7C3AED]" : "hover:text-zinc-600")}
+              className={cn(
+                "transition-colors",
+                isMaximized ? "text-[#7C3AED]" : "hover:text-zinc-600",
+              )}
             >
               <Maximize2 size={20} />
             </button>
-           
-            <button onClick={onClose} className="hover:text-red-500"><Trash2 size={20} /></button>
+
+            <button onClick={onClose} className="hover:text-red-500">
+              <Trash2 size={20} />
+            </button>
           </div>
         </div>
 
-        <div className={cn(
-          "px-12 pb-8 space-y-6 overflow-y-auto scrollbar-hide transition-all",
-          isMaximized ? "flex-grow" : "max-h-[75vh]"
-        )}>
-          <input 
+        <div
+          className={cn(
+            "px-12 pb-8 space-y-6 overflow-y-auto scrollbar-hide transition-all",
+            isMaximized ? "flex-grow" : "max-h-[75vh]",
+          )}
+        >
+          <input
             type="text"
             placeholder="Note Title..."
             value={title}
@@ -163,16 +187,22 @@ Primary Tool: [Insert Formula or Logic Chain here]
                     <div className="w-1.5 h-1.5 bg-zinc-400 rounded-[1px]"></div>
                   </div>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={(e) => {
-                    e.stopPropagation(); 
+                    e.stopPropagation();
                     setIsDropdownOpen(!isDropdownOpen);
                   }}
                   className="flex items-center gap-2 bg-zinc-100 hover:bg-zinc-200 px-5 py-2.5 rounded-2xl text-sm font-semibold text-zinc-700 transition-all"
                 >
-                  {category} 
-                  <ChevronDown size={16} className={cn("transition-transform", isDropdownOpen && "rotate-180")} />
+                  {category}
+                  <ChevronDown
+                    size={16}
+                    className={cn(
+                      "transition-transform",
+                      isDropdownOpen && "rotate-180",
+                    )}
+                  />
                 </button>
               </div>
 
@@ -188,7 +218,9 @@ Primary Tool: [Insert Formula or Logic Chain here]
                       className="w-full flex items-center justify-between px-4 py-3 text-sm text-zinc-600 hover:bg-purple-50 hover:text-purple-700 transition-colors"
                     >
                       {cat}
-                      {category === cat && <Check size={14} className="text-purple-600" />}
+                      {category === cat && (
+                        <Check size={14} className="text-purple-600" />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -199,19 +231,19 @@ Primary Tool: [Insert Formula or Logic Chain here]
               <Tag size={20} className="text-zinc-300 ml-2" />
               <div className="flex flex-wrap items-center gap-2">
                 {tags.map((tag) => (
-                  <span 
-                    key={tag} 
+                  <span
+                    key={tag}
                     className="bg-[#F5F3FF] text-[#7C3AED] px-3 py-1 rounded-full text-xs font-bold border border-[#DDD6FE] flex items-center gap-1.5"
                   >
                     #{tag}
-                    <X 
-                      size={12} 
-                      className="cursor-pointer hover:text-red-500" 
+                    <X
+                      size={12}
+                      className="cursor-pointer hover:text-red-500"
                       onClick={() => removeTag(tag)}
                     />
                   </span>
                 ))}
-                
+
                 {isAddingTag ? (
                   <input
                     autoFocus
@@ -224,7 +256,7 @@ Primary Tool: [Insert Formula or Logic Chain here]
                     placeholder="tag..."
                   />
                 ) : (
-                  <button 
+                  <button
                     onClick={() => setIsAddingTag(true)}
                     className="text-[#7C3AED] text-xs font-bold px-2 hover:underline transition-all active:scale-95"
                   >
@@ -240,10 +272,13 @@ Primary Tool: [Insert Formula or Logic Chain here]
             <Italic size={20} className="cursor-pointer hover:text-[#7C3AED]" />
             <List size={20} className="cursor-pointer hover:text-[#7C3AED]" />
             <Link size={20} className="cursor-pointer hover:text-[#7C3AED]" />
-            <ImageIcon size={20} className="cursor-pointer hover:text-[#7C3AED]" />
+            <ImageIcon
+              size={20}
+              className="cursor-pointer hover:text-[#7C3AED]"
+            />
           </div>
 
-          <textarea 
+          <textarea
             placeholder="Start typing your thoughts..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -251,12 +286,14 @@ Primary Tool: [Insert Formula or Logic Chain here]
           />
         </div>
 
-        <div className={cn(
-          "px-10 pb-10 pt-4 transition-all",
-          isMaximized ? "mt-auto" : ""
-        )}>
+        <div
+          className={cn(
+            "px-10 pb-10 pt-4 transition-all",
+            isMaximized ? "mt-auto" : "",
+          )}
+        >
           {/* ← CHANGE 3 continued: onClick changed from onClose to handleSave */}
-          <Button 
+          <Button
             onClick={handleSave}
             className="w-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white py-8 rounded-[1.8rem] text-xl font-bold shadow-xl transition-all"
           >
