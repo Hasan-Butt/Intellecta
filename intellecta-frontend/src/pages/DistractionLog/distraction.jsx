@@ -118,7 +118,7 @@ const AnalyticsDashboard = () => {
         
         <Sidebar />
       
-          <main className="px-8 md:px-16 max-w-[1400px] mx-auto py-16 space-y-12">
+          <main className="flex-1 min-w-0 px-4 md:px-4 lg:px-20 max-w-[1500px] mx-auto py-8 space-y-12">
           
           {/* Header Controls */}
           <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
@@ -148,7 +148,7 @@ const AnalyticsDashboard = () => {
           </section>
 
           {/* Top Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { label: 'Time Lost Today', value: '1h 42m', sub: '+12% vs last wk', icon: TimerOff, color: 'text-red-500', bg: 'bg-red-50' },
               { label: 'Prime Trigger', value: 'Instagram', sub: '14 occurrences', icon: Zap, color: 'text-[#4F27B8]', bg: 'bg-purple-50' },
