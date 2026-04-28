@@ -8,6 +8,7 @@ import {
   Folder, 
   ClipboardCheck, 
   AlertCircle, 
+  ChevronRight,
   BarChart3, 
   Settings, 
   HelpCircle, 
@@ -53,6 +54,42 @@ const Sidebar = () => {
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           
+          // Special handling for Subject Folders with toggle icon
+          if (item.name === 'Subject Folders') {
+            return (
+              <div key={item.name} className="flex items-center w-full">
+                <Link
+                  to={item.path}
+                  state={{ showTree: false }}
+                  className={`
+                    flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group flex-1
+                    ${isActive 
+                      ? 'bg-[#F5F6FF] text-[#451ebb]' 
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-[#451ebb]'}
+                  `}
+                >
+                  <item.icon 
+                    size={20} 
+                    strokeWidth={isActive ? 2.5 : 2}
+                    className={isActive ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'} 
+                  />
+                  <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap">
+                    {item.name}
+                  </span>
+                </Link>
+                <Link
+                  to={item.path}
+                  state={{ showTree: true }}
+                  className="p-3 rounded-xl hover:bg-gray-100 transition-colors"
+                  title="Show folder tree"
+                >
+                  <ChevronRight size={16} className="text-gray-400" />
+                </Link>
+              </div>
+            );
+          }
+          
+          // Regular links for other items
           return (
             <Link
               key={item.name}
@@ -69,7 +106,7 @@ const Sidebar = () => {
                 strokeWidth={isActive ? 2.5 : 2}
                 className={isActive ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'} 
               />
-              <span className="text-sm font-bold uppercase tracking-wide">
+              <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap">
                 {item.name}
               </span>
             </Link>
@@ -81,13 +118,13 @@ const Sidebar = () => {
       <div className="mt-auto border-t border-gray-50">
         <div className="px-4 py-6 flex flex-col gap-6">
           
-          {/* Help Link - Now perfectly aligned with padding and gap */}
+          {/* Help Link */}
           <Link 
             to="/help" 
             className="flex items-center gap-4 px-4 text-gray-500 hover:text-[#451ebb] transition-colors group"
           >
             <HelpCircle size={20} className="text-gray-400 group-hover:text-[#451ebb]" />
-            <span className="text-sm font-bold uppercase tracking-wide">Help</span>
+            <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap">Help</span>
           </Link>
 
           {/* Profile & Logout Section */}
@@ -104,7 +141,7 @@ const Sidebar = () => {
               <span className="text-sm font-bold text-zinc-900 truncate">Muhammad Hasan</span>
               <button 
                 onClick={handleLogout}
-                className="flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider"
+                className="flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider whitespace-nowrap"
               >
                 <LogOut size={12} strokeWidth={3} />
                 Logout
