@@ -3,9 +3,6 @@ import {
   Download,
   RefreshCw,
   ShieldCheck,
-  //Zap,
-  //BarChart3,
-  //Clock,
   Activity,
 } from "lucide-react";
 
@@ -16,13 +13,12 @@ import intellectaLogo from "../../assets/intellectaLogo.jpeg";
 
 const AnalyticsPage = () => {
   const [activeTab, setActiveTab] = useState("Analytics");
+
   return (
     <div className="flex-1 flex flex-col min-w-0">
-      {/* 4. Pass the logo prop just like in Dashboard */}
       <Navbar intellectaLogo={intellectaLogo} />
 
       <div className="flex min-h-screen bg-[#F9FAFB] font-inter text-[#111827]">
-        {/* 5. Pass activeTab and setActiveTab props to the Sidebar */}
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
         <main className="flex-1 p-10 space-y-10 overflow-x-hidden">
@@ -68,7 +64,9 @@ const AnalyticsPage = () => {
                   {[35, 45, 60, 40, 85, 50, 40, 35, 60, 80].map((h, i) => (
                     <div
                       key={i}
-                      className={`flex-1 rounded-lg transition-all duration-500 ${h > 70 ? "bg-[#6C5DD3]" : "bg-[#E3E0F7] hover:bg-[#d0ccf0]"}`}
+                      className={`flex-1 rounded-lg transition-all duration-500 ${
+                        h > 70 ? "bg-[#6C5DD3]" : "bg-[#E3E0F7] hover:bg-[#d0ccf0]"
+                      }`}
                       style={{ height: `${h}%` }}
                     ></div>
                   ))}
@@ -198,26 +196,26 @@ const AnalyticsPage = () => {
                 </div>
               </div>
 
-              {/* System Integrity Side Card */}
+              {/* System Integrity Side Card - UPDATED TO LIGHT THEME */}
               <div className="col-span-12 lg:col-span-4 space-y-8">
-                <div className="bg-[#111827] p-10 rounded-[40px] text-white shadow-2xl relative overflow-hidden group">
+                <div className="bg-white p-10 rounded-[40px] border border-gray-100 shadow-sm relative overflow-hidden group">
                   <div className="relative z-10">
-                    <div className="bg-emerald-500/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-8">
-                      <ShieldCheck size={28} className="text-emerald-400" />
+                    <div className="bg-emerald-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-8">
+                      <ShieldCheck size={28} className="text-emerald-500" />
                     </div>
-                    <h4 className="text-3xl font-black leading-tight">
+                    <h4 className="text-3xl font-black leading-tight text-[#111827]">
                       System Integrity 100%
                     </h4>
                     <p className="text-sm text-gray-400 mt-4 font-bold leading-relaxed">
                       All cognitive edge nodes are synchronized. No latency
                       detected in adaptive quiz engines.
                     </p>
-                    <button className="mt-10 w-full py-5 bg-[#6C5DD3] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#5a4db3] transition-all">
+                    <button className="mt-10 w-full py-5 bg-[#6C5DD3] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#5a4db3] transition-all shadow-lg shadow-indigo-100">
                       Execute Diagnostics
                     </button>
                   </div>
-                  {/* Decorative circle */}
-                  <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[#6C5DD3]/10 rounded-full blur-3xl group-hover:scale-125 transition-transform"></div>
+                  {/* Decorative element */}
+                  <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[#6C5DD3]/5 rounded-full blur-3xl group-hover:scale-125 transition-transform"></div>
                 </div>
 
                 {/* Progress Card */}
