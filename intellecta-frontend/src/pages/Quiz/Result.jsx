@@ -16,24 +16,23 @@ import Navbar from '../../components/dashboard/Navbar';
 /* --- SUB-COMPONENT: PROFICIENCY DASHBOARD --- */
 const ProficiencyDashboard = () => {
   const proficiencyValue = 92;
-  const radius = 70;
+  const radius = 60;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (proficiencyValue / 100) * circumference;
 
   return (
-    /* FIXED: ml-0 ensures the dashboard header stays aligned to the left side */
-    <section className="w-full max-w-x8l ml-0 grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
-      <div className="md:col-span-2 relative overflow-hidden bg-white rounded-[3rem] p-10 md:p-12 border border-slate-100 shadow-2xl shadow-indigo-500/5 flex flex-col md:flex-row items-center justify-between">
+    <section className="w-full max-w-x8l ml-0 grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div className="md:col-span-2 relative overflow-hidden bg-white rounded-2xl p-8 md:p-10 ring-1 ring-slate-200 shadow-sm shadow-indigo-500/5 flex flex-col md:flex-row items-center justify-between">
         <GraduationCap className="absolute -top-10 -right-10 text-slate-50 w-72 h-72 -rotate-12 pointer-events-none" strokeWidth={1} />
         <div className="relative z-10 flex flex-col max-w-full md:max-w-[60%]">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest mb-6 w-fit">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest mb-6 w-fit">
              <span>Overall Standing</span>
           </div>
-          <div className="flex items-baseline gap-3 mb-6">
-            <h1 className="text-7xl md:text-8xl font-extrabold text-slate-900 leading-none tracking-tighter">92%</h1>
-            <span className="text-2xl font-bold text-emerald-600">A+</span>
+          <div className="flex items-baseline gap-3 mb-4">
+            <h1 className="text-6xl font-extrabold text-slate-900 leading-none tracking-tighter">92%</h1>
+            <span className="text-xl font-bold text-emerald-600">A+</span>
           </div>
-          <p className="text-slate-500 text-lg md:text-xl leading-relaxed font-medium">
+          <p className="text-slate-500 text-base leading-relaxed font-medium">
             Excellent performance! You've shown deep understanding of <span className="text-slate-900 font-bold">Modern Rationalism</span>.
           </p>
         </div>
@@ -43,26 +42,26 @@ const ProficiencyDashboard = () => {
             <circle cx="96" cy="96" r={radius} stroke="#6366f1" strokeWidth="12" strokeDasharray={circumference} style={{ strokeDashoffset }} strokeLinecap="round" fill="transparent" className="transition-all duration-1000 ease-out" />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-white rounded-full p-4 shadow-xl border border-slate-50">
+            <div className="bg-white rounded-full p-3.5 ring-1 ring-slate-100">
               <BadgeCheck className="text-[#6366f1] w-10 h-10" fill="currentColor" fillOpacity={0.1} />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6">
-        <div className="bg-white rounded-[3rem] p-10 flex items-center gap-6 border border-slate-100 shadow-sm">
-          <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl"><ClipboardCheck size={28} /></div>
+      <div className="flex flex-col gap-4">
+        <div className="bg-white rounded-2xl p-6 flex items-center gap-5 ring-1 ring-slate-200 shadow-sm flex-1">
+          <div className="p-3 bg-indigo-50 text-indigo-500 rounded-xl shrink-0"><ClipboardCheck size={24} /></div>
           <div>
             <p className="text-slate-400 font-black uppercase tracking-widest text-[10px] mb-1">Accuracy</p>
             <h2 className="text-3xl font-extrabold text-slate-900">14/15</h2>
           </div>
         </div>
-        <div className="bg-[#BEF264] rounded-[3rem] p-10 flex items-center gap-6 shadow-xl shadow-lime-500/20">
+        <div className="bg-[#BEF264] rounded-[3rem] p-6 flex items-center gap-6 shadow-sm flex-1">
           <div className="p-4 bg-black/10 text-[#0F172A] rounded-2xl"><Zap size={28} fill="currentColor" /></div>
           <div>
             <p className="text-[#0F172A]/50 font-black uppercase tracking-widest text-[10px] mb-1">Experience</p>
-            <h2 className="text-3xl font-extrabold text-[#0F172A]">+250 XP</h2>
+            <h2 className="text-2xl font-extrabold text-[#0F172A]">+250 XP</h2>
           </div>
         </div>
       </div>
@@ -74,25 +73,25 @@ const ProficiencyDashboard = () => {
 const QuestionItem = ({ id, text, status, userAnswer, correctSolution, explanation }) => {
   const isCorrect = status === 'correct';
   return (
-    <section className="relative pl-16 md:pl-20 border-b border-slate-50 pb-12 last:border-0 last:pb-0">
-      <span className="absolute left-0 top-0 w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm">
+    <section className="relative pl-16 border-b border-slate-100 pb-10 last:border-0 last:pb-0">
+      <span className="absolute left-0 top-0 w-10 h-10 rounded-xl bg-slate-50 ring-1 ring-slate-200 flex items-center justify-center text-slate-500 font-bold text-sm">
         {id}
       </span>
-      <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight mb-6 tracking-tight">{text}</h2>
-      <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest mb-6 ${
-        isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+      <h2 className="text-lg font-bold text-slate-900 leading-snug mb-4 tracking-tight">{text}</h2>
+      <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-widest mb-5 ${
+        isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
       }`}>
-        {isCorrect ? <CheckCircle2 size={14} /> : <XCircle size={14} />} {status}
+        {isCorrect ? <CheckCircle2 size={12} /> : <XCircle size={12} />} {status}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className={`p-8 rounded-[2.5rem] border-2 ${isCorrect ? 'bg-emerald-50/20 border-emerald-500/20' : 'bg-red-50/20 border-red-500/20'}`}>
-          <span className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Your Answer</span>
-          <p className="text-xl font-bold text-slate-800">{userAnswer}</p>
+        <div className={`p-4 rounded-xl ring-1 ${isCorrect ? 'bg-emerald-50/30 ring-emerald-200' : 'bg-red-50/30 ring-red-200'}`}>
+          <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Your Answer</span>
+          <p className="text-base font-semibold text-slate-800">{userAnswer}</p>
         </div>
         {!isCorrect && (
-          <div className="p-8 rounded-[2.5rem] border-2 bg-emerald-50/20 border-emerald-500/20">
-            <span className="block text-[10px] font-black uppercase tracking-widest text-emerald-600/60 mb-3">Correct Solution</span>
-            <p className="text-xl font-bold text-slate-800">{correctSolution}</p>
+          <div className="p-4 rounded-xl ring-1 bg-emerald-50/30 ring-emerald-200">
+            <span className="block text-[10px] font-bold uppercase tracking-widest text-emerald-600/70 mb-2">Correct Solution</span>
+            <p className="text-base font-semibold text-slate-800">{correctSolution}</p>
           </div>
         )}
       </div>
@@ -112,22 +111,23 @@ const QuizResultsPage = () => {
     <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col">
       <Navbar />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 relative">
         <Sidebar />
 
-        <main className="flex-1 p-6 md:p-12 lg:p-16 overflow-y-auto">
+        <main className="flex-1 p-6 md:p-8 lg:p-12 overflow-y-auto">
+          <div className="max-w-5xl mx-auto"></div>
           
           {/* 1. Statistics Header */}
           <ProficiencyDashboard />
 
           {/* 2. Detailed Review Section */}
-          <section className="max-w-8xl ml-0 bg-white rounded-[3rem] shadow-2xl shadow-indigo-900/5 border border-slate-100 overflow-hidden mb-12">
-            <header className="p-10 md:p-14 flex flex-col md:flex-row md:items-center justify-between border-b border-slate-50">
+          <section className="max-w-5xl ml-0 bg-white rounded-2xl shadow-2xl shadow-indigo-900/5 border border-slate-100 overflow-hidden mb-12">
+            <header className="p-8 md:p-10 flex flex-col md:flex-row md:items-center justify-between border-b border-slate-50">
               <div>
-                <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Question Review</h1>
+                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Question Review</h1>
                 <p className="text-slate-400 text-lg mt-1 font-medium">Deep dive into your performance.</p>
               </div>
-              <div className="flex gap-3 mt-8 md:mt-0">
+              <div className="flex gap-2 mt-6 md:mt-0">
                 <button className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-50 transition-all shadow-sm">
                   All Questions
                 </button>
@@ -137,7 +137,7 @@ const QuizResultsPage = () => {
               </div>
             </header>
 
-            <div className="p-10 md:p-14 flex flex-col gap-16">
+            <div className="p-8 md:p-10 flex flex-col gap-10">
               {questions.map((q) => (
                 <QuestionItem key={q.id} {...q} />
               ))}
@@ -146,16 +146,12 @@ const QuizResultsPage = () => {
 
           {/* Navigation Buttons */}
           <nav className="max-w-8xl ml-0 flex flex-col md:flex-row gap-5 pb-12">
-            <button className="flex-1 group flex items-center justify-center gap-4 bg-indigo-600 hover:bg-indigo-500 text-white py-6 rounded-[2rem] font-bold text-xl transition-all active:scale-95 shadow-2xl shadow-indigo-500/30">
+            <button className="flex-1 group flex items-center justify-center gap-4 bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-2xl font-bold text-lg transition-all active:scale-95 shadow-2xl shadow-indigo-500/30">
               <RotateCcw size={24} className="group-hover:rotate-[-45deg] transition-transform" />
               Retake Quiz
             </button>
-            <button className="flex-1 flex items-center justify-center gap-4 bg-white border border-slate-200 text-slate-700 py-6 rounded-[2rem] font-bold text-xl transition-all hover:bg-slate-50 shadow-sm">
-              <LayoutDashboard size={24} />
-              Back to Dashboard
-            </button>
           </nav>
-        </main> {/* Properly closing the main content area here */}
+        </main>
       </div>
     </div>
   );

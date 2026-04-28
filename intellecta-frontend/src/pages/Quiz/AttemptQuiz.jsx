@@ -42,28 +42,27 @@ const FullAssessmentInterface = ({
   }));
 
   return (
-    <div className="h-screen bg-[#FDFDFF] font-sans text-slate-900 antialiased flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-[#FDFDFF] font-sans text-slate-900 antialiased flex flex-col ">
       <Navbar />
 
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="h-full flex-shrink-0">
+      <div className="flex flex-1 relative items-start">
+        <aside className="h-full flex-shrink-0 sticky top-0">
            <Sidebar />
         </aside>
       
-        <main className="flex-1 overflow-y-auto py-10 pl-6 pr-10">
-          
-          <div className="w-full max-w-[1400px] ml-0 flex flex-col gap-10">
+        <main className="flex-1 overflow-y-auto py-6 px-8">
+          <div className="mx-auto max-w-6xl flex flex-col gap-5">
             
             {/* 1. TOP HEADER */}
-            <section className="bg-white rounded-[32px] shadow-sm border border-slate-200/60 p-6 md:px-12 md:py-10 flex flex-col md:flex-row items-center justify-between gap-10">
-              <div className="flex flex-1 items-center gap-12 w-full">
-                <div className="flex flex-col gap-1 whitespace-nowrap">
-                  <span className="text-[10px] font-bold tracking-[0.25em] text-slate-400 uppercase">Current Progress</span>
-                  <span className="text-3xl font-extrabold text-[#2563EB] tabular-nums">
+            <section className="bg-white rounded-1xl shadow-sm border border-slate-200/60 p-4 md:px-8 md:py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex flex-1 items-center gap-8 w-full">
+                <div className="flex flex-col gap-0.5 whitespace-nowrap">
+                  <span className="text-[9px] font-bold tracking-[0.2em] text-slate-400 uppercase">Current Progress</span>
+                  <span className="text-lg font-bold text-[#2563EB] tabular-nums">
                     {currentStep} <span className="text-slate-300 font-light">/</span> {totalSteps}
                   </span>
                 </div>
-                <div className="relative h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div className="relative h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
                   <div 
                     className="absolute top-0 left-0 h-full bg-[#2563EB] rounded-full transition-all duration-1000 ease-in-out"
                     style={{ width: `${progressPercentage}%` }}
@@ -71,26 +70,26 @@ const FullAssessmentInterface = ({
                 </div>
               </div>
 
-              <div className="hidden md:block w-px h-16 bg-slate-100 mx-4" />
+              <div className="hidden md:block w-px h-10 bg-slate-100 mx-2" />
 
-              <div className="flex items-center gap-6 bg-red-50/50 border border-red-100 rounded-[28px] px-8 py-5 min-w-[260px]">
-                <Timer className="w-9 h-9 text-red-600" strokeWidth={1.5} />
+              <div className="flex items-center gap-4 bg-red-50/50 border border-red-100 rounded-xl px-4 py-2 min-w-[160px]">
+                <Timer className="w-6 h-6 text-red-600" strokeWidth={1.5} />
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-red-500 uppercase tracking-[0.2em] mb-1">Remaining</span>
-                  <span className="text-3xl font-bold text-red-700 tabular-nums tracking-tight">{formatTime(timeLeft)}</span>
+                  <span className="text-[9px] font-bold text-red-500 uppercase tracking-[0.15em] mb-1">Remaining</span>
+                  <span className="text-lg font-bold text-red-700 tabular-nums tracking-tight">{formatTime(timeLeft)}</span>
                 </div>
               </div>
             </section>
 
             {/* 2. SUB-HEADER */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-stretch">
-              <section className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-10 flex flex-col justify-between">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 pb-10 items-start">
+              <section className="bg-white rounded-x1 border border-slate-100 shadow-sm p-5 flex flex-col justify-between">
                 <div className="flex justify-between items-start">
                   <div className="space-y-2">
-                    <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">
+                    <h1 className="text-lg font-extrabold text-slate-800 tracking-tight">
                       Question {currentStep} <span className="text-slate-300 font-normal ml-1">of {totalSteps}</span>
                     </h1>
-                    <p className="text-slate-500 text-lg font-medium tracking-wide italic">{topic}</p>
+                    <p className="text-slate-500 text-lg font-medium tracking-wide">{topic}</p>
                   </div>
                   <div className="bg-slate-50 text-slate-600 px-6 py-2 rounded-full text-sm font-bold border border-slate-100">
                     {marks}
@@ -115,11 +114,11 @@ const FullAssessmentInterface = ({
             </div>
 
             {/* 3. MAIN BODY */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12 pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12 pb-20 items-stretch">
               {/* Question Content */}
               <section className="space-y-12">
-                <div className="bg-white rounded-[40px] p-12 md:p-16 shadow-sm border border-slate-100 relative">
-                  <h2 className="text-2xl md:text-3xl font-semibold text-slate-800 leading-[1.5] mb-14">
+                <div className="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-slate-100 relative">
+                  <h2 className="text-xl md:text-2xl font-semibold text-slate-800 leading-[1.5] mb-8">
                     In the context of "Parallel Distributed Processing" (PDP) models, how does the system primarily achieve learning through the adjustment of connection weights?
                   </h2>
                   <div className="space-y-6">
@@ -127,13 +126,13 @@ const FullAssessmentInterface = ({
                       <button
                         key={option.id}
                         onClick={() => setSelectedOption(option.id)}
-                        className={`w-full flex items-center p-8 rounded-[28px] border-2 transition-all text-left group ${
+                        className={`w-full flex items-center p-3.5 rounded-lg border-2 transition-all text-left group ${
                           selectedOption === option.id 
                           ? 'border-indigo-600 bg-indigo-50/30' 
                           : 'border-slate-50 bg-slate-50/50 hover:border-slate-200 hover:bg-slate-50/80'
                         }`}
                       >
-                        <span className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl mr-8 shrink-0 transition-all ${
+                        <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xl mr-5 shrink-0 transition-all ${
                           selectedOption === option.id 
                           ? 'bg-indigo-600 text-white scale-110 shadow-lg shadow-indigo-200' 
                           : 'bg-white text-slate-400 border border-slate-200'
@@ -156,29 +155,29 @@ const FullAssessmentInterface = ({
                   <button className="flex items-center gap-3 text-slate-400 text-lg font-bold hover:text-slate-800 transition-colors">
                     <ArrowLeft className="w-6 h-6" /> Previous
                   </button>
-                  <div className="flex items-center gap-10">
+                  <div className="flex items-center gap-5">
                     <button 
                       onClick={() => setMarkedForReview(!markedForReview)}
                       className={`flex items-center gap-3 text-lg font-bold transition-all ${markedForReview ? 'text-orange-500' : 'text-emerald-600 hover:text-emerald-700'}`}
                     >
                       <Bookmark className={`w-6 h-6 ${markedForReview ? 'fill-current' : ''}`} /> Review Later
                     </button>
-                    <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-14 py-6 rounded-[28px] text-xl font-bold flex items-center gap-4 shadow-2xl shadow-indigo-100">
-                      Save & Next <ArrowRight className="w-6 h-6" />
+                    <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 ...">
+                      Save & Next <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
               </section>
 
               {/* Right Navigator Sidebar */}
-              <aside className="space-y-8">
-                <div className="bg-white rounded-[32px] p-10 shadow-sm border border-slate-100">
+              <aside className="space-y-6 sticky top-6">
+                <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-100">
                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-10">Question Navigator</h3>
                   <div className="grid grid-cols-5 gap-4">
                     {navigatorItems.map((item) => (
                       <button
                         key={item.id}
-                        className={`h-14 rounded-2xl text-base font-bold border-2 transition-all ${
+                        className={`h-9 rounded-md text-xs font-bold border-2 transition-all ${
                           item.status === 'answered' ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' :
                           item.status === 'marked' ? 'bg-emerald-700 border-emerald-700 text-white shadow-md' :
                           item.status === 'current' ? 'border-indigo-600 text-indigo-600 ring-4 ring-indigo-50' :
@@ -203,7 +202,7 @@ const FullAssessmentInterface = ({
                   </div>
                 </div>
 
-                <div className="bg-slate-900 rounded-[32px] p-10 text-white relative overflow-hidden group">
+                <div className="bg-slate-900 rounded-xl p-6 text-white relative overflow-hidden group">
                   <div className="relative z-10">
                     <h4 className="font-bold text-xl mb-4 tracking-tight">Expert Hint</h4>
                     <p className="text-base text-slate-400 leading-relaxed font-medium">
