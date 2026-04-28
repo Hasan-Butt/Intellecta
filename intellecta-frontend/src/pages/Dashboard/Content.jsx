@@ -11,6 +11,8 @@ import {
   FileText,
   Users,
 } from "lucide-react";
+
+// Correct Paths
 import Sidebar from "../../components/dashboard/Sidebar";
 import Navbar from "../../components/dashboard/Navbar";
 import intellectaLogo from "../../assets/intellectaLogo.jpeg";
@@ -45,7 +47,6 @@ const ContentPage = () => {
       <Navbar intellectaLogo={intellectaLogo} />
 
       <div className="flex min-h-screen bg-[#F9FAFB] font-inter">
-        {/* 5. Sidebar now receives the correct props */}
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
         <main className="flex-1 p-10 space-y-10 overflow-x-hidden">
@@ -136,15 +137,18 @@ const ContentPage = () => {
               </div>
 
               <div className="lg:col-span-4 space-y-6">
-                <div className="bg-[#f0f3f3] rounded-[40px] p-8 text-white shadow-2xl">
+                {/* --- UPDATED ADAPTIVE QUIZ ENGINE CARD --- */}
+                <div className="bg-white rounded-[40px] p-8 border border-gray-100 shadow-sm">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="bg-emerald-500/20 p-2 rounded-lg">
+                    <div className="bg-emerald-50 p-2 rounded-lg">
                       <Zap
                         size={20}
-                        className="text-emerald-400 fill-emerald-400"
+                        className="text-emerald-500 fill-emerald-500"
                       />
                     </div>
-                    <h3 className="font-black text-lg">Adaptive Quiz Engine</h3>
+                    <h3 className="font-black text-lg text-[#111827]">
+                      Adaptive Quiz Engine
+                    </h3>
                   </div>
                   <p className="text-xs text-gray-400 font-bold leading-relaxed mb-8">
                     System-wide AI monitoring active quiz banks to detect
@@ -155,26 +159,26 @@ const ContentPage = () => {
                     <QuizInsight
                       title="Quantum Decoherence Theory"
                       tag="CRITICAL WEAK POINT"
-                      tagColor="bg-red-500/10 text-red-400"
+                      tagColor="bg-red-50 text-red-500"
                       rate="78% Failure Rate"
                       actionText="REINFORCE BANK"
                     />
                     <QuizInsight
                       title="Multivariate Calculus Basics"
                       tag="EMERGING GAP"
-                      tagColor="bg-blue-500/10 text-blue-400"
+                      tagColor="bg-blue-50 text-blue-500"
                       rate="42% Failure Rate"
                       actionText="ADD QUIZ"
                     />
                   </div>
 
-                  <button className="w-full mt-8 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 text-sm transition-colors">
+                  <button className="w-full mt-8 bg-[#6C5DD3] hover:bg-[#5b4eb3] text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 text-sm transition-colors shadow-lg shadow-indigo-100">
                     <Zap size={16} fill="white" /> Generate Weakness Quiz Bank
                   </button>
                 </div>
 
-                <div className="bg-[#F3F4F6]/50 rounded-[40px] p-8">
-                  <h4 className="font-black text-sm uppercase tracking-widest mb-6">
+                <div className="bg-[#F3F4F6]/50 rounded-[40px] p-8 border border-gray-100">
+                  <h4 className="font-black text-sm uppercase tracking-widest mb-6 text-[#111827]">
                     Quick Links
                   </h4>
                   <div className="space-y-5">
@@ -198,7 +202,7 @@ const QuizInsight = ({ title, tag, tagColor, rate, actionText }) => {
   const numericValue = match ? match[0] : 0;
 
   return (
-    <div className="bg-white/5 rounded-[24px] p-5 border border-white/5">
+    <div className="bg-gray-50 rounded-[24px] p-5 border border-gray-100">
       <div className="flex justify-between items-start mb-3">
         <span
           className={`${tagColor} text-[8px] font-black px-2 py-1 rounded-md uppercase tracking-wider`}
@@ -206,18 +210,22 @@ const QuizInsight = ({ title, tag, tagColor, rate, actionText }) => {
           {tag}
         </span>
       </div>
-      <h4 className="font-black text-sm mb-4 leading-tight">{title}</h4>
-      <div className="h-1.5 w-full bg-white/10 rounded-full mb-3 overflow-hidden">
+      <h4 className="font-black text-sm mb-4 leading-tight text-[#111827]">
+        {title}
+      </h4>
+      <div className="h-1.5 w-full bg-gray-200 rounded-full mb-3 overflow-hidden">
         <div
-          className={`h-full ${tag && tag.includes("CRITICAL") ? "bg-red-500" : "bg-blue-500"}`}
+          className={`h-full ${
+            tag && tag.includes("CRITICAL") ? "bg-red-500" : "bg-blue-500"
+          }`}
           style={{ width: `${numericValue}%` }}
         ></div>
       </div>
       <div className="flex justify-between items-center">
-        <span className="text-[10px] font-bold text-gray-500 uppercase">
+        <span className="text-[10px] font-bold text-gray-400 uppercase">
           {rate}
         </span>
-        <button className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
+        <button className="text-[10px] font-black text-[#6C5DD3] uppercase tracking-widest hover:underline">
           {actionText}
         </button>
       </div>
@@ -227,7 +235,7 @@ const QuizInsight = ({ title, tag, tagColor, rate, actionText }) => {
 
 const QuickLink = ({ icon, text }) => (
   <button className="flex items-center gap-4 w-full group text-left">
-    <div className="bg-white p-2 rounded-xl border border-gray-100 group-hover:bg-indigo-50 group-hover:text-[#6C5DD3] transition-colors text-gray-400">
+    <div className="bg-white p-2 rounded-xl border border-gray-100 group-hover:bg-indigo-50 group-hover:text-[#6C5DD3] transition-colors text-gray-400 shadow-sm">
       {icon && React.isValidElement(icon)
         ? React.cloneElement(icon, { size: 18 })
         : null}
