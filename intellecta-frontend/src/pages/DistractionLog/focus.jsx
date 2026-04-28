@@ -17,7 +17,7 @@ import Navbar from '../../components/dashboard/Navbar';
 const IntensityCell = ({ intensity }) => {
   const [hovered, setHovered] = useState(false);
   const bgColors = [
-    'bg-gray-50', 'bg-indigo-100', 'bg-indigo-300', 
+    'bg-gray-200', 'bg-indigo-100', 'bg-indigo-300', 
     'bg-indigo-500', 'bg-indigo-600', 'bg-indigo-700',
   ];
 
@@ -25,7 +25,7 @@ const IntensityCell = ({ intensity }) => {
     <div 
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`h-12 w-full rounded-md transition-all duration-200 cursor-pointer ${bgColors[intensity]} ${
+      className={`aspect-square rounded-sm transition-all duration-200 cursor-pointer ${bgColors[intensity]} ${
         hovered ? 'ring-2 ring-indigo-400 ring-offset-2 scale-110 z-10 shadow-lg' : ''
       }`}
     />
@@ -79,13 +79,13 @@ const PerformanceDashboard = () => {
   const circumference = 2 * Math.PI * radius;
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
-      {/* Sidebar - Fixed Left */}
-      <Sidebar />
-
-      <div className="flex-1 flex flex-col min-w-0 relative">
+    <div className="flex flex-col h-screen bg-[#F8FAFC] overflow-hidden">
         {/* Navbar */}
-        <Navbar />
+      <Navbar />
+
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+      {/* Sidebar - Fixed Left */}
+        <Sidebar />
 
         {/* Scrollable Content Area */}
         <main className="flex-1 overflow-y-auto p-6 lg:p-10 font-inter">
@@ -164,12 +164,23 @@ const PerformanceDashboard = () => {
                     <IntensityCell key={idx} intensity={intensity} />
                   ))}
                 </div>
-                <footer className="mt-10 pt-8 border-t border-gray-50 flex justify-between items-center">
-                  <div>
-                    <span className="block text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Prime Slot</span>
-                    <span className="text-lg font-bold text-gray-800 tracking-tight">08:00 — 12:00</span>
+                <footer className="mt-10 pt-8 border-t border-gray-50 flex flex-row items-center justify-between gap-4">
+                  {/* The left side container */}
+                  <div className="flex items-center gap-4"> 
+                    <div>
+                      <span className="block text-[10px] text-gray-400 font-black uppercase tracking-widest mb-0.5">
+                        Prime Slot
+                      </span>
+                      <span className="text-lg font-bold text-gray-800 tracking-tight whitespace-nowrap">
+                        08:00 — 12:00
+                      </span>
+                    </div>
                   </div>
-                  <span className="px-4 py-2 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-xl">Optimal Flow</span>
+
+                  {/* The right side badge */}
+                  <span className="translate-y-2 flex-shrink-0 px-4 py-2 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-xl">
+                    Optimal Flow
+                  </span>
                 </footer>
               </section>
 
@@ -257,7 +268,7 @@ const PerformanceDashboard = () => {
                     <span className="text-5xl font-black text-[#4A4AB1]">78</span>
                   </div>
                   <p className="text-[15px] text-gray-400 font-medium">
-                    You are in the <span className="text-[#5D5FEF] font-black italic">Top 5%</span> of focused learners this week.
+                    You are in the <span className="text-[#5D5FEF] font-black">Top 5%</span> of focused learners this week.
                   </p>
                 </section>
               </div>
