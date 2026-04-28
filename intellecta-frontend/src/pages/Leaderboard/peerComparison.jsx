@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Moon, Timer, BrainCircuit, Play, FileText } from 'lucide-react';
 
+import Sidebar from '../../components/dashboard/StudentSidebar';
+import Navbar from '../../components/dashboard/Navbar';
+
 // --- START: HEATMAP COMPONENTS ---
 
 const HeatmapSquare = ({ intensity }) => {
@@ -14,8 +17,7 @@ const HeatmapSquare = ({ intensity }) => {
 
   return (
     <div 
-      // Increased square sizes for a more "filled" look
-      className={`h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-md transition-all duration-200 hover:ring-4 hover:ring-offset-2 hover:ring-purple-200 cursor-pointer ${bgColors[intensity]}`}
+      className={`w-full aspect-square rounded-sm transition-all duration-200 hover:ring-2 hover:ring-offset-1 hover:ring-purple-200 cursor-pointer ${bgColors[intensity]}`}
     />
   );
 };
@@ -43,6 +45,7 @@ const WeeklyFocusHeatmap = () => {
   const alexData = [2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1];
 
   return (
+
     <section className="bg-white p-10 md:p-14 rounded-[40px] border border-gray-100 shadow-sm mt-10">
       <header className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
         <div>
@@ -158,8 +161,8 @@ const Card = ({ title, subtitle, badge, children }) => (
 
 // --- Subject Proficiency (Radar) ---
 const SubjectProficiency = () => {
-  const jordanPoints = "100,30 170,80 150,160 50,160 30,80";
-  const alexPoints = "100,60 140,90 130,140 70,140 60,90";
+  const jordanPoints = "100,35 155,75 140,145 60,145 45,75";
+  const alexPoints = "100,60 135,85 125,130 75,130 65,85";
 
   return (
     <Card title="Subject Proficiency" subtitle="Skill distribution across core disciplines">
@@ -179,11 +182,11 @@ const SubjectProficiency = () => {
           <polygon points={jordanPoints} fill="#4c35b5" fillOpacity="0.1" stroke="#4c35b5" strokeWidth="2.5" />
           <polygon points={alexPoints} fill="none" stroke="#b8b0e8" strokeWidth="2.5" strokeDasharray="4 2" />
           
-          <text x="100" y="10" textAnchor="middle" className="text-[11px] fill-gray-500 font-bold">Mathematics</text>
-          <text x="200" y="105" textAnchor="start" className="text-[11px] fill-gray-500 font-bold">Phys</text>
-          <text x="165" y="195" textAnchor="start" className="text-[11px] fill-gray-500 font-bold">Logic</text>
-          <text x="35" y="195" textAnchor="end" className="text-[11px] fill-gray-500 font-bold">Literature</text>
-          <text x="0" y="105" textAnchor="end" className="text-[11px] fill-gray-500 font-bold">History</text>
+          <text x="100" y="25" textAnchor="middle" className="text-[11px] fill-gray-500 font-bold">Mathematics</text>
+          <text x="175" y="90" textAnchor="start" className="text-[11px] fill-gray-500 font-bold">Physics</text>
+          <text x="150" y="170" textAnchor="start" className="text-[11px] fill-gray-500 font-bold">Logic</text>
+          <text x="50" y="170" textAnchor="end" className="text-[11px] fill-gray-500 font-bold">Literature</text>
+          <text x="25" y="90" textAnchor="end" className="text-[11px] fill-gray-500 font-bold">History</text>
         </svg>
 
         <div className="flex gap-8 mt-12">
@@ -332,30 +335,36 @@ const ComparisonCTA = () => {
 // --- Full Page Layout ---
 const PeerComparisonPage = () => {
   return (
-    <div className="min-h-screen bg-[#fcfdfe] font-sans">
-      <main className="p-8 md:p-16 max-w-[1600px] mx-auto">
-        {/* Header Section */}
-        <PeerComparisonTitle />
-        
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          <div className="lg:col-span-5">
-            <SubjectProficiency />
+    <div className="flex flex-col min-h-screen bg-[#fcfdfe] font-sans">
+          <Navbar />
+          
+          <div className="flex flex-1">
+            <Sidebar />
+
+        <main className="p-8 md:p-16 max-w-[1600px] mx-auto">
+          {/* Header Section */}
+          <PeerComparisonTitle />
+          
+          {/* Charts Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div className="lg:col-span-5">
+              <SubjectProficiency />
+            </div>
+            <div className="lg:col-span-7">
+              <DailyFocusIntensity />
+            </div>
           </div>
-          <div className="lg:col-span-7">
-            <DailyFocusIntensity />
-          </div>
-        </div>
 
-        {/* Behavioral Insights Cards */}
-        <BehavioralInsights />
+          {/* Behavioral Insights Cards */}
+          <BehavioralInsights />
 
-        {/* Weekly Focus Heatmap Section */}
-        <WeeklyFocusHeatmap />
+          {/* Weekly Focus Heatmap Section */}
+          <WeeklyFocusHeatmap />
 
-        {/* Comparison CTA Section */}
-        <ComparisonCTA />
-      </main>
+          {/* Comparison CTA Section */}
+          <ComparisonCTA />
+        </main>
+      </div>
     </div>
   );
 };
