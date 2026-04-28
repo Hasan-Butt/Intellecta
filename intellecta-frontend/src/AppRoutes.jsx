@@ -14,7 +14,7 @@ import AttemptQuiz from "./pages/Quiz/AttemptQuiz";
 import Result from "./pages/Quiz/Result";
 import Leaderboard from "./pages/Leaderboard/leaderboard";
 import PeerComparison from "./pages/Leaderboard/peerComparison";
-
+import SubjectFolderPage from "./pages/SubjectFolder/SubjectFolderpage";
 
 export default function AppRoutes() {
   return (
@@ -34,6 +34,7 @@ export default function AppRoutes() {
       <Route path="/Result" element={<Result />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
       <Route path="/peers" element={<PeerComparison />} />
+      <Route path="/folders" element={<SubjectFolderPage />} />
     </Routes>
   );
 }
