@@ -14,17 +14,44 @@ import {
   Check,
   Sparkles,
   Clock,
+  Folder,
+  FolderOpen,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
 
+// ── Folder Tree Data ────────────────────────────────────────────────────────────
+const FOLDER_TREE = [
+  {
+    id: 1,
+    name: "Semester 1",
+    subjects: [
+      { id: "phy", name: "Physics", count: 3 },
+      { id: "math", name: "Mathematics", count: 3 },
+      { id: "chem", name: "Chemistry", count: 1 },
+    ],
+  },
+  {
+    id: 2,
+    name: "Semester 2",
+    subjects: [],
+  },
+  {
+    id: 3,
+    name: "Semester 3",
+    subjects: [],
+  },
+];
+
+// ── Mock Files (with subject field) ────────────────────────────────────────────
 const MOCK_FILES = [
   {
     id: 1,
     name: "Quantum Mechanics Lecture 01.pdf",
     type: "pdf",
     size: "3.2 MB",
+    subject: "phy",
     tags: ["Physics", "Quantum"],
     date: "Oct 12, 2023",
   },
@@ -33,6 +60,7 @@ const MOCK_FILES = [
     name: "Lab Results - Thermodynamics.docs",
     type: "doc",
     size: "1.1 MB",
+    subject: "phy",
     tags: ["Physics", "Lab"],
     date: "Oct 15, 2023",
   },
@@ -41,8 +69,45 @@ const MOCK_FILES = [
     name: "Kinematics Diagram.png",
     type: "image",
     size: "2 MB",
+    subject: "phy",
     tags: ["Physics", "Visual"],
     date: "Sept 28, 2023",
+  },
+  {
+    id: 4,
+    name: "Calculus Notes Chapter 1.pdf",
+    type: "pdf",
+    size: "1.5 MB",
+    subject: "math",
+    tags: ["Mathematics", "Calculus"],
+    date: "Oct 10, 2023",
+  },
+  {
+    id: 5,
+    name: "Linear Algebra Worksheet.doc",
+    type: "doc",
+    size: "0.8 MB",
+    subject: "math",
+    tags: ["Mathematics", "Algebra"],
+    date: "Oct 11, 2023",
+  },
+  {
+    id: 6,
+    name: "Integration Practice.pdf",
+    type: "pdf",
+    size: "2.1 MB",
+    subject: "math",
+    tags: ["Mathematics"],
+    date: "Oct 14, 2023",
+  },
+  {
+    id: 7,
+    name: "Periodic Table Reference.png",
+    type: "image",
+    size: "1.2 MB",
+    subject: "chem",
+    tags: ["Chemistry"],
+    date: "Oct 9, 2023",
   },
 ];
 
@@ -60,6 +125,8 @@ const RECENTLY_VIEWED = [
     thumb: "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=400&q=80",
   },
 ];
+
+// ── Sub Components ──────────────────────────────────────────────────────────────
 
 const FileIcon = ({ type, size = 16 }) => {
   if (type === "pdf")
@@ -246,12 +313,23 @@ const RecentCard = ({ item }) => (
   </div>
 );
 
+// ── Main Page ───────────────────────────────────────────────────────────────────
+
 const SubjectFolderpage = () => {
   const [files, setFiles] = useState(MOCK_FILES);
   const [searchQuery, setSearchQuery] = useState("");
   const [showBanner, setShowBanner] = useState(true);
   const [sortOpen, setSortOpen] = useState(false);
   const [activeSort, setActiveSort] = useState("Date");
+
+  // folder tree state
+  const [openSemesters, setOpenSemesters] = useState([1]);
+  const [activeSubject, setActiveSubject] = useState("phy");
+
+  const toggleSemester = (id) =>
+    setOpenSemesters((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
 
   const handleFileSelect = (newFiles) => {
     const mapped = newFiles.map((f, i) => ({
@@ -265,6 +343,7 @@ const SubjectFolderpage = () => {
         ? "image"
         : "file",
       size: `${(f.size / (1024 * 1024)).toFixed(1)} MB`,
+      subject: activeSubject,
       tags: [],
       date: new Date().toLocaleDateString("en-US", {
         month: "short",
@@ -285,10 +364,16 @@ const SubjectFolderpage = () => {
     );
   };
 
+  // active subject name for the header
+  const activeSubjectName = FOLDER_TREE
+    .flatMap((s) => s.subjects)
+    .find((s) => s.id === activeSubject)?.name || "All Files";
+
   const filtered = files.filter(
     (f) =>
-      f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      f.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()))
+      f.subject === activeSubject &&
+      (f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        f.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())))
   );
 
   return (
@@ -296,8 +381,95 @@ const SubjectFolderpage = () => {
       <Navbar />
 
       <div className="bg-[#f9f9ff] min-h-screen flex w-full">
+        {/* Col 1: Student Sidebar */}
         <Sidebar />
 
+        {/* Col 2: Folder Tree Panel */}
+        <div className="w-52 bg-white border-r border-gray-100 flex-shrink-0 flex flex-col py-6 px-3 sticky top-0 h-screen overflow-y-auto">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 mb-4">
+            Study Folders
+          </p>
+
+          <div className="space-y-1">
+            {FOLDER_TREE.map((semester) => {
+              const isOpen = openSemesters.includes(semester.id);
+              return (
+                <div key={semester.id}>
+                  {/* Semester Row */}
+                  <button
+                    onClick={() => toggleSemester(semester.id)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-2">
+                      {isOpen ? (
+                        <FolderOpen size={15} className="text-[#7c3aed]" />
+                      ) : (
+                        <Folder size={15} className="text-gray-400 group-hover:text-[#7c3aed]" />
+                      )}
+                      <span className={cn(
+                        "text-xs font-bold transition-colors",
+                        isOpen ? "text-[#7c3aed]" : "text-gray-600 group-hover:text-gray-800"
+                      )}>
+                        {semester.name}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      size={13}
+                      className={cn(
+                        "text-gray-400 transition-transform duration-200",
+                        isOpen && "rotate-180"
+                      )}
+                    />
+                  </button>
+
+                  {/* Subjects under semester */}
+                  {isOpen && (
+                    <div className="ml-4 mt-0.5 space-y-0.5 border-l border-gray-100 pl-3">
+                      {semester.subjects.length === 0 ? (
+                        <p className="text-[10px] text-gray-400 italic py-2 px-2">
+                          No subjects yet
+                        </p>
+                      ) : (
+                        semester.subjects.map((sub) => {
+                          const isActive = activeSubject === sub.id;
+                          return (
+                            <button
+                              key={sub.id}
+                              onClick={() => setActiveSubject(sub.id)}
+                              className={cn(
+                                "w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all",
+                                isActive
+                                  ? "bg-[#f5f3ff] text-[#7c3aed]"
+                                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                              )}
+                            >
+                              <span className={cn(
+                                "text-xs font-bold",
+                                isActive ? "text-[#7c3aed]" : ""
+                              )}>
+                                {sub.name}
+                              </span>
+                              <span className={cn(
+                                "text-[10px] font-black px-1.5 py-0.5 rounded-md",
+                                isActive
+                                  ? "bg-[#ede9fe] text-[#7c3aed]"
+                                  : "bg-gray-100 text-gray-400"
+                              )}>
+                                {sub.count}
+                              </span>
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Col 3: Main Content */}
         <main className="flex-1 overflow-y-auto">
           <div className="px-10 py-10 max-w-4xl">
 
@@ -402,6 +574,17 @@ const SubjectFolderpage = () => {
 
             {/* File Table */}
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm mb-10 overflow-hidden">
+              {/* Active subject label */}
+              <div className="px-6 pt-5 pb-2 flex items-center gap-2">
+                <FolderOpen size={16} className="text-[#7c3aed]" />
+                <span className="text-sm font-black text-[#7c3aed]">
+                  {activeSubjectName}
+                </span>
+                <span className="text-[10px] text-gray-400 font-bold">
+                  — {filtered.length} file{filtered.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+
               <div className="grid grid-cols-[1fr_auto_auto] gap-4 items-center px-4 py-3 border-b border-gray-50">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-11">
                   Filenames
@@ -417,7 +600,7 @@ const SubjectFolderpage = () => {
               <div className="px-3 py-2 divide-y divide-gray-50">
                 {filtered.length === 0 ? (
                   <p className="text-center text-gray-400 text-sm py-10">
-                    No files found. Upload your first document!
+                    No files in {activeSubjectName} yet. Upload your first document!
                   </p>
                 ) : (
                   filtered.map((f) => (
@@ -442,6 +625,8 @@ const SubjectFolderpage = () => {
           </div>
         </main>
       </div>
+
+      {/* FAB */}
       <button className="fixed bottom-8 right-8 w-14 h-14 bg-[#7c3aed] text-white rounded-2xl shadow-xl shadow-indigo-200 flex items-center justify-center hover:bg-[#6d28d9] transition-all hover:scale-105 active:scale-95 z-50">
         <Plus size={28} strokeWidth={2.5} />
       </button>
