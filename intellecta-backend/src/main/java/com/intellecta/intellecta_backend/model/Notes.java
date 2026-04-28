@@ -1,9 +1,27 @@
 package com.intellecta.intellecta_backend.model;
 
-import com.intellecta.intellecta_backend.enums.NoteCategory;
-import jakarta.persistence.*;
-import lombok.*;
 import java.time.LocalDateTime;
+
+import com.intellecta.intellecta_backend.enums.NoteCategory;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "notes")
@@ -30,8 +48,13 @@ public class Notes {
     @Column(name = "tags", columnDefinition = "VARCHAR(500)")
     private String tags;
 
+    @Builder.Default
     private boolean isPinned = false;
+
+    @Builder.Default
     private boolean isSpecial = false;
+
+    @Builder.Default
     private boolean flaggedForReview = false;
 
     @Column(nullable = false, updatable = false)
