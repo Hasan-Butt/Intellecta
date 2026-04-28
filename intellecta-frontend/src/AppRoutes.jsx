@@ -16,7 +16,7 @@ import Leaderboard from "./pages/Leaderboard/leaderboard";
 import PeerComparison from "./pages/Leaderboard/peerComparison";
 import DistractionLog from "./pages/DistractionLog/distraction";
 import FocusSession from "./pages/DistractionLog/focus";
-
+import CoverageTrackerPage from "./pages/CoverageTracker/CoverageTrackerPage";
 import SubjectFolderPage from "./pages/SubjectFolder/SubjectFolderpage";
 
 export default function AppRoutes() {
@@ -40,6 +40,7 @@ export default function AppRoutes() {
       <Route path="/distractions" element={<DistractionLog />} />
       <Route path="/focusSession" element={<FocusSession />} />
       <Route path="/folders" element={<SubjectFolderPage />} />
+      <Route path="/coverage" element={<CoverageTrackerPage />} />
     </Routes>
   );
 }
