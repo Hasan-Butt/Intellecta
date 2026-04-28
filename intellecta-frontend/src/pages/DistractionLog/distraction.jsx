@@ -131,17 +131,17 @@ const AnalyticsDashboard = () => {
               <p className="text-[#6F767E] text-xl font-medium tracking-tight">Deep-dive into your cognitive leaks and focus sessions.</p>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 mb-1.5">
               <button 
                 onClick={() => setIsDatePickerOpen(!isDatePickerOpen)} 
-                className="flex items-center gap-4 bg-white hover:border-purple-200 transition-all px-6 py-4 rounded-2xl border border-gray-200 shadow-sm group"
+                className="flex items-center gap-3 bg-white hover:border-purple-200 transition-all px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm group"
               >
-                <Calendar size={20} className="text-[#4F27B8] group-hover:scale-110 transition-transform" />
-                <span className="text-base font-semibold text-[#1A1D1F] tabular-nums">Oct 12 - Oct 19, 2023</span>
-                <ChevronDown size={18} className={`text-[#6F767E] transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
+                <Calendar size={18} className="text-[#4F27B8] group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-semibold text-[#1A1D1F] tabular-nums">Oct 12 - 19, 2023</span>
+                <ChevronDown size={14} className={`text-[#6F767E] transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
               </button>
-              <button className="bg-[#1A1D1F] hover:bg-black text-white px-8 py-4 rounded-2xl font-bold text-[15px] shadow-xl shadow-gray-200 transition-all flex items-center gap-3 tracking-wide">
-                <ExternalLink size={18} />
+              <button className="bg-[#1A1D1F] hover:bg-black text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-xl shadow-gray-200 transition-all flex items-center gap-2 tracking-wide">
+                <ExternalLink size={16} />
                 Export
               </button>
             </div>
@@ -203,45 +203,47 @@ const AnalyticsDashboard = () => {
             </div>
 
             <div className="w-full overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-[#F9FAFB] text-[11px] font-bold text-[#6F767E] uppercase tracking-[0.15em]">
-                    <th className="px-10 py-5">Time</th>
-                    <th className="px-10 py-5">Duration</th>
-                    <th className="px-10 py-5">Category</th>
-                    <th className="px-10 py-5">Description</th>
-                    <th className="px-10 py-5">Context</th>
-                    <th className="px-10 py-5 text-right">Impact</th>
+            <table className="w-full text-left border-collapse table-fixed lg:table-auto">
+              <thead>
+                <tr className="bg-[#F9FAFB] text-[10px] font-bold text-[#6F767E] uppercase tracking-[0.12em]">
+                  <th className="px-4 lg:px-6 py-4 w-[100px]">Time</th>
+                  <th className="px-4 lg:px-6 py-4 w-[90px]">Duration</th>
+                  <th className="px-4 lg:px-6 py-4 w-[140px]">Category</th>
+                  <th className="px-4 lg:px-6 py-4">Description</th>
+                  <th className="px-4 lg:px-6 py-4 w-[160px]">Context</th>
+                  <th className="px-4 lg:px-6 py-4 text-right w-[110px]">Impact</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {logData.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50/50 transition-all">
+                    <td className="px-4 lg:px-6 py-5 text-[14px] font-bold text-[#1A1D1F] tabular-nums whitespace-nowrap">
+                      {row.time.split(' ')[0]} <span className="text-[10px] font-medium text-[#9CA3AF]">{row.time.split(' ')[1]}</span>
+                    </td>
+                    <td className="px-4 lg:px-6 py-5 text-[14px] text-[#1A1D1F] font-semibold whitespace-nowrap">{row.duration}</td>
+                    <td className="px-4 lg:px-6 py-5">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <row.category.icon size={16} className={row.category.color} />
+                        <span className="text-[14px] font-semibold text-[#1A1D1F]">{row.category.label}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 lg:px-6 py-5 text-[13px] text-[#6F767E] italic leading-snug truncate max-w-[200px] lg:max-w-none hover:whitespace-normal">
+                      "{row.description}"
+                    </td>
+                    <td className="px-4 lg:px-6 py-5 whitespace-nowrap">
+                      <span className="bg-[#F0F2FF] text-[#4F27B8] text-[10px] font-bold px-3 py-1 rounded-full border border-purple-100 uppercase">
+                        {row.context}
+                      </span>
+                    </td>
+                    <td className="px-4 lg:px-6 py-5 text-right">
+                      <span className={`${row.impact.color} border text-[10px] font-bold px-3 py-1 rounded-lg uppercase`}>
+                        {row.impact.label}
+                      </span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {logData.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50/50 transition-all">
-                      <td className="px-10 py-7 text-[15px] font-bold text-[#1A1D1F] tabular-nums">
-                        {row.time.split(' ')[0]} <span className="text-xs font-medium text-[#9CA3AF] ml-1">{row.time.split(' ')[1]}</span>
-                      </td>
-                      <td className="px-10 py-7 text-[15px] text-[#1A1D1F] font-semibold tabular-nums">{row.duration}</td>
-                      <td className="px-10 py-7">
-                        <div className="flex items-center gap-3">
-                          <row.category.icon size={18} className={row.category.color} />
-                          <span className="text-[15px] font-semibold text-[#1A1D1F] tracking-tight">{row.category.label}</span>
-                        </div>
-                      </td>
-                      <td className="px-10 py-7 text-[15px] text-[#6F767E] italic leading-relaxed">"{row.description}"</td>
-                      <td className="px-10 py-7">
-                        <span className="bg-[#F0F2FF] text-[#4F27B8] text-[11px] font-bold px-4 py-1.5 rounded-full border border-purple-100 tracking-wide">
-                          {row.context}
-                        </span>
-                      </td>
-                      <td className="px-10 py-7 text-right">
-                        <span className={`${row.impact.color} border text-[11px] font-bold px-4 py-1.5 rounded-xl tracking-wide`}>
-                          {row.impact.label}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
             </div>
             <div className="bg-[#F9FAFB] py-8 text-center border-t border-gray-50">
               <button className="inline-flex items-center gap-3 text-[15px] font-bold text-[#4F27B8] hover:gap-5 transition-all tracking-wide">
