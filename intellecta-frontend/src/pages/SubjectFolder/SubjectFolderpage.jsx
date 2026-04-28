@@ -20,6 +20,7 @@ import {
 import { cn } from "../../lib/utils";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
+import { useLocation } from "react-router-dom";
 
 // ── Folder Tree Data ────────────────────────────────────────────────────────────
 const FOLDER_TREE = [
@@ -326,6 +327,17 @@ const SubjectFolderpage = () => {
   const [openSemesters, setOpenSemesters] = useState([1]);
   const [activeSubject, setActiveSubject] = useState("phy");
 
+  // Tree visibility state - starts hidden
+  const location = useLocation();
+  const [showTree, setShowTree] = useState(false);
+
+  // Show tree when coming from sidebar click
+  React.useEffect(() => {
+    if (location.state?.showTree) {
+      setShowTree(true);
+    }
+  }, [location]);
+
   const toggleSemester = (id) =>
     setOpenSemesters((prev) =>
       prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
@@ -384,90 +396,101 @@ const SubjectFolderpage = () => {
         {/* Col 1: Student Sidebar */}
         <Sidebar />
 
-        {/* Col 2: Folder Tree Panel */}
-        <div className="w-52 bg-white border-r border-gray-100 flex-shrink-0 flex flex-col py-6 px-3 sticky top-0 h-screen overflow-y-auto">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 mb-4">
-            Study Folders
-          </p>
+        {/* Col 2: Folder Tree Panel - only visible when showTree is true */}
+        {showTree && (
+          <div className="w-52 bg-white border-r border-gray-100 flex-shrink-0 flex flex-col py-6 px-3 sticky top-0 h-screen overflow-y-auto relative">
+            {/* Close button to hide tree */}
+            <button 
+              onClick={() => setShowTree(false)}
+              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-gray-100 transition-colors z-10"
+              title="Hide folder tree"
+            >
+              <X size={16} className="text-gray-400" />
+            </button>
+            
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 mb-4">
+              Study Folders
+            </p>
 
-          <div className="space-y-1">
-            {FOLDER_TREE.map((semester) => {
-              const isOpen = openSemesters.includes(semester.id);
-              return (
-                <div key={semester.id}>
-                  {/* Semester Row */}
-                  <button
-                    onClick={() => toggleSemester(semester.id)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors group"
-                  >
-                    <div className="flex items-center gap-2">
-                      {isOpen ? (
-                        <FolderOpen size={15} className="text-[#7c3aed]" />
-                      ) : (
-                        <Folder size={15} className="text-gray-400 group-hover:text-[#7c3aed]" />
-                      )}
-                      <span className={cn(
-                        "text-xs font-bold transition-colors",
-                        isOpen ? "text-[#7c3aed]" : "text-gray-600 group-hover:text-gray-800"
-                      )}>
-                        {semester.name}
-                      </span>
-                    </div>
-                    <ChevronDown
-                      size={13}
-                      className={cn(
-                        "text-gray-400 transition-transform duration-200",
-                        isOpen && "rotate-180"
-                      )}
-                    />
-                  </button>
+            <div className="space-y-1">
+              {FOLDER_TREE.map((semester) => {
+                const isOpen = openSemesters.includes(semester.id);
+                return (
+                  <div key={semester.id}>
+                    {/* Semester Row */}
+                    <button
+                      onClick={() => toggleSemester(semester.id)}
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors group"
+                    >
+                      <div className="flex items-center gap-2">
+                        {isOpen ? (
+                          <FolderOpen size={15} className="text-[#7c3aed]" />
+                        ) : (
+                          <Folder size={15} className="text-gray-400 group-hover:text-[#7c3aed]" />
+                        )}
+                        <span className={cn(
+                          "text-xs font-bold transition-colors",
+                          isOpen ? "text-[#7c3aed]" : "text-gray-600 group-hover:text-gray-800"
+                        )}>
+                          {semester.name}
+                        </span>
+                      </div>
+                      <ChevronDown
+                        size={13}
+                        className={cn(
+                          "text-gray-400 transition-transform duration-200",
+                          isOpen && "rotate-180"
+                        )}
+                      />
+                    </button>
 
-                  {/* Subjects under semester */}
-                  {isOpen && (
-                    <div className="ml-4 mt-0.5 space-y-0.5 border-l border-gray-100 pl-3">
-                      {semester.subjects.length === 0 ? (
-                        <p className="text-[10px] text-gray-400 italic py-2 px-2">
-                          No subjects yet
-                        </p>
-                      ) : (
-                        semester.subjects.map((sub) => {
-                          const isActive = activeSubject === sub.id;
-                          return (
-                            <button
-                              key={sub.id}
-                              onClick={() => setActiveSubject(sub.id)}
-                              className={cn(
-                                "w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all",
-                                isActive
-                                  ? "bg-[#f5f3ff] text-[#7c3aed]"
-                                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                              )}
-                            >
-                              <span className={cn(
-                                "text-xs font-bold",
-                                isActive ? "text-[#7c3aed]" : ""
-                              )}>
-                                {sub.name}
-                              </span>
-                              <span className={cn(
-                                "text-[10px] font-black px-1.5 py-0.5 rounded-md",
-                                isActive
-                                  ? "bg-[#ede9fe] text-[#7c3aed]"
-                                  : "bg-gray-100 text-gray-400"
-                              )}>
-                                {sub.count}
-                              </span>
-                            </button>
-                          );
-                        })
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    {/* Subjects under semester */}
+                    {isOpen && (
+                      <div className="ml-4 mt-0.5 space-y-0.5 border-l border-gray-100 pl-3">
+                        {semester.subjects.length === 0 ? (
+                          <p className="text-[10px] text-gray-400 italic py-2 px-2">
+                            No subjects yet
+                          </p>
+                        ) : (
+                          semester.subjects.map((sub) => {
+                            const isActive = activeSubject === sub.id;
+                            return (
+                              <button
+                                key={sub.id}
+                                onClick={() => setActiveSubject(sub.id)}
+                                className={cn(
+                                  "w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all",
+                                  isActive
+                                    ? "bg-[#f5f3ff] text-[#7c3aed]"
+                                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                                )}
+                              >
+                                <span className={cn(
+                                  "text-xs font-bold",
+                                  isActive ? "text-[#7c3aed]" : ""
+                                )}>
+                                  {sub.name}
+                                </span>
+                                <span className={cn(
+                                  "text-[10px] font-black px-1.5 py-0.5 rounded-md",
+                                  isActive
+                                    ? "bg-[#ede9fe] text-[#7c3aed]"
+                                    : "bg-gray-100 text-gray-400"
+                                )}>
+                                  {sub.count}
+                                </span>
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Col 3: Main Content */}
         <main className="flex-1 overflow-y-auto">
