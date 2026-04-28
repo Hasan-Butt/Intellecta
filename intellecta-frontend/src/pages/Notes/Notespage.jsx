@@ -40,11 +40,20 @@ const NotesPage = () => {
   const getNotes = useCallback(async () => {
     setLoading(true);
     try {
-      // Calls the IMPORTED getAllNotes service function
-      const data = await getAllNotes();
-      setNotes(data);
+      const response = await getAllNotes();
+
+      // Safety check: if response.data exists, use it; otherwise use response
+      const data = response.data || response;
+
+      if (Array.isArray(data)) {
+        setNotes(data);
+      } else {
+        console.error("Backend did not return an array:", data);
+        setNotes([]);
+      }
     } catch (err) {
       console.error("Error fetching notes:", err);
+      setNotes([]);
     } finally {
       setLoading(false);
     }
@@ -116,8 +125,9 @@ const NotesPage = () => {
   };
 
   // Collect all unique tags from all notes for the filter dropdown
-  const allTags = [...new Set(notes.flatMap((n) => n.tags || []))];
-
+  const allTags = Array.isArray(notes)
+    ? [...new Set(notes.flatMap((n) => n.tags || []))]
+    : [];
   const toggleTagFilter = (tag) => {
     setActiveTagFilters((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
@@ -141,7 +151,7 @@ const NotesPage = () => {
 
     // Tab filter
     if (activeTab === "review" && !note.flaggedForReview) return false;
-    if (activeTab === "pinned" && !note.pinned) return false;
+    if (activeTab === "pinned" && !note.ispinned) return false;
 
     // Tag filter
     if (activeTagFilters.length > 0) {
