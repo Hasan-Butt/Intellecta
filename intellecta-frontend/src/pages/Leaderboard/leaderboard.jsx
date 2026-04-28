@@ -33,8 +33,10 @@ const GlobalLeaderboard = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] font-['Inter',_sans-serif] text-slate-900 antialiased pb-20">
-      
+
       <main className="max-w-[1440px] mx-auto p-6 lg:p-10 pt-20">
+
+        
         
         {/* HEADER AREA */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
@@ -312,7 +314,8 @@ const PodiumCard = ({ rank, name, univ, pts, active, img }) => (
     active 
       ? 'bg-[#512de3] text-white pt-24 pb-16 shadow-[0_50px_100px_-20px_rgba(81,45,227,0.4)] relative z-10 scale-110' 
       : 'bg-white text-slate-900 shadow-2xl shadow-slate-200/50 border border-slate-200/50'
-  }`}>
+  }`}>    
+
     <div className="relative mb-8">
       <div className={`w-32 h-32 rounded-full overflow-hidden ${active ? 'ring-8 ring-indigo-400/30' : 'ring-4 ring-slate-100'}`}>
          <img src={img} alt={name} className="w-full h-full object-cover" />

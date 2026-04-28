@@ -14,6 +14,9 @@ import AttemptQuiz from "./pages/Quiz/AttemptQuiz";
 import Result from "./pages/Quiz/Result";
 import Leaderboard from "./pages/Leaderboard/leaderboard";
 import PeerComparison from "./pages/Leaderboard/peerComparison";
+import DistractionLog from "./pages/DistractionLog/distraction";
+import FocusSession from "./pages/DistractionLog/focus";
+
 import SubjectFolderPage from "./pages/SubjectFolder/SubjectFolderpage";
 
 export default function AppRoutes() {
@@ -34,6 +37,8 @@ export default function AppRoutes() {
       <Route path="/Result" element={<Result />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
       <Route path="/peers" element={<PeerComparison />} />
+      <Route path="/distractions" element={<DistractionLog />} />
+      <Route path="/focusSession" element={<FocusSession />} />
       <Route path="/folders" element={<SubjectFolderPage />} />
     </Routes>
   );
