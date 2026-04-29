@@ -23,18 +23,18 @@ const QuizPlatform = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
-      {/*Dashboard Sidebar */}
-      <Sidebar />
+    <div className="flex-1 flex flex-col min-w-0">
+      {/* 1. Navbar at the very top */}
+      <Navbar />
 
-      {/*Primary Content Container */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/*Dashboard Navbar */}
-        <Navbar />
+      <div className="bg-[#f9f9ff] min-h-screen flex w-full">
+        {/* 2. Sidebar to the left of the main content */}
+        <Sidebar />
 
-        {/* Scrollable Quiz Platform Body */}
-        <main className="flex-1 overflow-y-auto font-sans selection:bg-indigo-100 selection:text-indigo-900">
+        {/* 3. Main Content Wrapper */}
+        <main className="flex-1 overflow-y-auto selection:bg-indigo-100 selection:text-indigo-900">
           <div className="p-6 md:p-12 lg:p-16 max-w-7xl mx-auto">
+            
             {/* --- HERO SECTION --- */}
             <section className="relative w-full overflow-hidden rounded-[3.5rem] shadow-2xl shadow-indigo-900/20 mb-20 min-h-[400px] flex items-center">
               {/* Image Layer */}
