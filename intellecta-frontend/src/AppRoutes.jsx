@@ -18,6 +18,9 @@ import DistractionLog from "./pages/DistractionLog/distraction";
 import FocusSession from "./pages/DistractionLog/focus";
 import CoverageTrackerPage from "./pages/CoverageTracker/CoverageTrackerPage";
 import SubjectFolderPage from "./pages/SubjectFolder/SubjectFolderpage";
+import StudySessionPage from "./pages/FocusSession/Session"
+import StudySchedulePage from "./pages/StudySchedule/StudySchedulePage"
+
 
 export default function AppRoutes() {
   return (
@@ -41,6 +44,9 @@ export default function AppRoutes() {
       <Route path="/focusSession" element={<FocusSession />} />
       <Route path="/folders" element={<SubjectFolderPage />} />
       <Route path="/coverage" element={<CoverageTrackerPage />} />
+      <Route path="/focus" element={<StudySessionPage/>}/>
+      <Route path="/schedule" element={<StudySchedulePage/>}/>
+
     </Routes>
   );
 }
