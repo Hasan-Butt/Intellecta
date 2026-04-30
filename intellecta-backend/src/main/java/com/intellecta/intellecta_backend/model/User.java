@@ -25,6 +25,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRoles role;
 
+    private String status;
+
     // Constructors
     public User() {}
 
@@ -71,5 +73,13 @@ public class User {
 
     public void setRole(UserRoles role) {
         this.role = role;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
