@@ -1,6 +1,6 @@
 import api from "./api";
 
-const USER_ID = 2; // temporary — replace with JWT user later
+const USER_ID = 1; // temporary — replace with JWT user later
 
 export const getAllNotes = () => api.get(`/notes/user/${USER_ID}`);
 
