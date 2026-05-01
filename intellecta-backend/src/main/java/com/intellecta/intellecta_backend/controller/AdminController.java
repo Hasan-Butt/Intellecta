@@ -2,6 +2,7 @@ package com.intellecta.intellecta_backend.controller;
 
 import com.intellecta.intellecta_backend.dto.request.UserCreateRequestDto;
 import com.intellecta.intellecta_backend.dto.request.UserUpdateRequestDto;
+import com.intellecta.intellecta_backend.dto.response.AnalyticsDto;
 import com.intellecta.intellecta_backend.dto.response.PlatformStatsDTO;
 import com.intellecta.intellecta_backend.dto.response.UserResponseDto;
 import com.intellecta.intellecta_backend.service.AdminService;
@@ -75,7 +76,22 @@ public class AdminController {
     }
 
     @GetMapping("/analytics")
-    public ResponseEntity<PlatformStatsDTO> getAnalytics() {
-        return ResponseEntity.ok(adminService.getPlatformStats());
+    public ResponseEntity<AnalyticsDto> getAnalytics(
+            @RequestParam(required = false, defaultValue = "") String from,
+            @RequestParam(required = false, defaultValue = "") String to) {
+        return ResponseEntity.ok(adminService.getAnalytics(from, to));
+    }
+
+    @GetMapping("/analytics/export")
+    public ResponseEntity<byte[]> exportAnalytics(
+            @RequestParam(required = false, defaultValue = "") String from,
+            @RequestParam(required = false, defaultValue = "") String to) {
+        String csv = adminService.exportAnalyticsCsv(from, to);
+        byte[] bytes = csv.getBytes();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"analytics.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .contentLength(bytes.length)
+                .body(bytes);
     }
 }
