@@ -2,9 +2,7 @@ package com.intellecta.intellecta_backend.controller;
 
 import com.intellecta.intellecta_backend.dto.request.UserCreateRequestDto;
 import com.intellecta.intellecta_backend.dto.request.UserUpdateRequestDto;
-import com.intellecta.intellecta_backend.dto.response.AnalyticsDto;
-import com.intellecta.intellecta_backend.dto.response.PlatformStatsDTO;
-import com.intellecta.intellecta_backend.dto.response.UserResponseDto;
+import com.intellecta.intellecta_backend.dto.response.*;
 import com.intellecta.intellecta_backend.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +20,8 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminService adminService;
+
+    // ── User Management ──────────────────────────────────────────────────────
 
     @GetMapping("/users")
     public ResponseEntity<Page<UserResponseDto>> getUsers(
@@ -60,20 +60,15 @@ public class AdminController {
 
     @GetMapping("/users/export")
     public ResponseEntity<byte[]> exportUsers() {
-        String csv = adminService.exportUsersCsv();
-        byte[] bytes = csv.getBytes();
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"users.csv\"")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .contentLength(bytes.length)
-                .body(bytes);
+        return csvResponse(adminService.exportUsersCsv(), "users.csv");
     }
 
     @PostMapping("/interventions")
     public ResponseEntity<Map<String, String>> triggerIntervention() {
-        String message = adminService.triggerIntervention();
-        return ResponseEntity.ok(Map.of("message", message));
+        return ResponseEntity.ok(Map.of("message", adminService.triggerIntervention()));
     }
+
+    // ── Analytics ────────────────────────────────────────────────────────────
 
     @GetMapping("/analytics")
     public ResponseEntity<AnalyticsDto> getAnalytics(
@@ -86,10 +81,41 @@ public class AdminController {
     public ResponseEntity<byte[]> exportAnalytics(
             @RequestParam(required = false, defaultValue = "") String from,
             @RequestParam(required = false, defaultValue = "") String to) {
-        String csv = adminService.exportAnalyticsCsv(from, to);
+        return csvResponse(adminService.exportAnalyticsCsv(from, to), "analytics.csv");
+    }
+
+    // ── Performance Trends ───────────────────────────────────────────────────
+
+    @GetMapping("/performance")
+    public ResponseEntity<PerformanceTrendDto> getPerformanceTrends(
+            @RequestParam(required = false, defaultValue = "") String search,
+            @RequestParam(required = false, defaultValue = "") String from,
+            @RequestParam(required = false, defaultValue = "") String to) {
+        return ResponseEntity.ok(adminService.getPerformanceTrends(search, from, to));
+    }
+
+    @GetMapping("/performance/student/{id}")
+    public ResponseEntity<?> getStudentPerformance(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(adminService.getStudentPerformance(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/performance/export")
+    public ResponseEntity<byte[]> exportPerformance(
+            @RequestParam(required = false, defaultValue = "") String from,
+            @RequestParam(required = false, defaultValue = "") String to) {
+        return csvResponse(adminService.exportPerformanceCsv(from, to), "performance_trends.csv");
+    }
+
+    // ── Shared helper ────────────────────────────────────────────────────────
+
+    private ResponseEntity<byte[]> csvResponse(String csv, String filename) {
         byte[] bytes = csv.getBytes();
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"analytics.csv\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .contentLength(bytes.length)
                 .body(bytes);

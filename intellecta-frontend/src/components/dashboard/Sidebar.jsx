@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom'; // Added useNavigate
-import { 
-  LayoutDashboard, 
-  Users, 
-  BookOpen, 
-  BarChart3, 
-  Settings, 
-  LifeBuoy, 
-  LogOut 
+import {
+  LayoutDashboard,
+  Users,
+  BookOpen,
+  BarChart3,
+  TrendingUp,
+  Settings,
+  LifeBuoy,
+  LogOut
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -28,6 +29,7 @@ const Sidebar = () => {
     { name: 'Users', icon: Users, path: '/users' },
     { name: 'Content', icon: BookOpen, path: '/content' },
     { name: 'Analytics', icon: BarChart3, path: '/analytics' },
+    { name: 'Trends', icon: TrendingUp, path: '/trends' },
     { name: 'Configuration', icon: Settings, path: '/configuration' },
     { name: 'Support', icon: LifeBuoy, path: '/support' },
   ];
