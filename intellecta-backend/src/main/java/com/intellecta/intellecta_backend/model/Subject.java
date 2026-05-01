@@ -2,6 +2,7 @@ package com.intellecta.intellecta_backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.List;
 
 @Entity
 @Table(name = "subjects")
@@ -13,13 +14,21 @@ public class Subject {
     private Long id;
 
     @Column(nullable = false)
-    private String name; // e.g. "Physics"
+    private String name;
 
-    private String semester; // e.g. "Semester 1"
+    private String semester;
 
-    private String color; // e.g. "#7c3aed" for UI
+    private String color;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Topic> topics = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Exam> exams = new java.util.ArrayList<>();
 }
