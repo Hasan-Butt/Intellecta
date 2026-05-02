@@ -6,6 +6,7 @@ import NotesPage from "./pages/Notes/Notespage";
 import UsersPage from "./pages/Dashboard/Users";
 import ContentPage from "./pages/Dashboard/Content.jsx";
 import AnalyticsPage from "./pages/Dashboard/Analytics.jsx";
+import PerformanceTrends from "./pages/Dashboard/PerformanceTrends.jsx";
 import ConfigurationPage from "./pages/Dashboard/Configuration.jsx";
 import SupportPage from "./pages/Dashboard/Support.jsx";
 import StudentDashboardPage from "./pages/StudentDashboard/Dashboard";
@@ -33,6 +34,7 @@ export default function AppRoutes() {
       <Route path="/users" element={<UsersPage />} />
       <Route path="/content" element={<ContentPage />} />
       <Route path="/analytics" element={<AnalyticsPage />} />
+      <Route path="/trends" element={<PerformanceTrends />} />
       <Route path="/configuration" element={<ConfigurationPage />} />
       <Route path="/support" element={<SupportPage />} />
       <Route path="/quiz" element={<QuizList />} />
