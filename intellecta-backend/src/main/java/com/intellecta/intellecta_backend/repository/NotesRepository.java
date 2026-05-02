@@ -32,4 +32,8 @@ public interface NotesRepository extends JpaRepository<Notes, Long> {
     @Query("SELECT n FROM Notes n WHERE n.user.id = :userId AND " +
            "LOWER(n.tags) LIKE LOWER(CONCAT('%', :tag, '%'))")
     List<Notes> findByTag(@Param("userId") Long userId, @Param("tag") String tag);
+
+    long countByUserId(Long userId);
+
+    long countByUserIdAndFlaggedForReviewTrue(Long userId);
 }

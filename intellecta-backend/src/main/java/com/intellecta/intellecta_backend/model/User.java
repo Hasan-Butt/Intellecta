@@ -1,7 +1,12 @@
 package com.intellecta.intellecta_backend.model;
 
+import java.time.LocalDate;
+
+import org.hibernate.annotations.ColumnDefault;
+
 import com.intellecta.intellecta_backend.enums.UserRoles;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -25,6 +30,22 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRoles role;
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private long xp = 0;
+
+    @Column(nullable = false)
+    @ColumnDefault("1")
+    private int level = 1;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private int streakDays = 0;
+
+    @Column
+    private LocalDate lastStudyDate;
+
+    
     // Constructors
     public User() {}
 
@@ -72,4 +93,38 @@ public class User {
     public void setRole(UserRoles role) {
         this.role = role;
     }
+
+    public long getXp(){
+        return xp;
+    }
+
+    public void setXp(long xp){
+        this.xp = xp;
+    }
+
+    public int getLevel(){
+        return level;
+    }
+
+    public void setLevel(int level){
+        this.level = level; 
+    }
+
+    public int getStreakDays() {
+        return streakDays;
+    }
+
+    public void setStreakDays(int streakDays){
+        this.streakDays = streakDays;
+    }
+
+    public LocalDate getLastStudyDate() {
+        return lastStudyDate;
+    }
+
+    public void setLastStudyDate(LocalDate lastStudyDate) {
+        this.lastStudyDate = lastStudyDate;
+    }
+
+    
 }

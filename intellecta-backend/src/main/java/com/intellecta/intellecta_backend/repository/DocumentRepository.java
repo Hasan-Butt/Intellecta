@@ -28,4 +28,6 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
         @Param("userId") Long userId,
         @Param("subject") String subject,
         @Param("q") String q);
+
+    long countByUserId(Long userId);
 }

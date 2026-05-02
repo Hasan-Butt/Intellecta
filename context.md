@@ -1,7 +1,7 @@
 # Intellecta — Project Context
 
-**Last Updated:** 2026-04-25  
-**Status:** Core authentication live and verified. Most features are stubs awaiting implementation.
+**Last Updated:** 2026-05-02  
+**Status:** Authentication live. Student Dashboard fully wired. Study sessions, courses, distractions, notes, documents, and subjects implemented.
 
 ---
 
@@ -30,33 +30,33 @@ Intellecta is a full-stack intelligent study companion that helps students plan,
 
 ```
 hasan-butt-intellecta/
-├── docs/                          # Word documents (proposals, ideas)
+├── docs/
 ├── intellecta-backend/
 │   └── src/main/java/com/intellecta/intellecta_backend/
 │       ├── config/                # SecurityConfig, WebConfig (CORS)
 │       ├── controller/            # REST endpoints
 │       ├── dto/
-│       │   ├── request/           # Incoming request bodies
-│       │   └── response/          # Outgoing response shapes
-│       ├── enums/                 # UserRoles (STUDENT, ADMIN)
-│       ├── model/                 # JPA entities
-│       ├── repository/            # JPA repositories
+│       │   ├── request/           # CourseRequest, StudySessionRequest, DistractionRequest, SubjectRequest, NoteRequest, LoginRequest, DocumentTagRequest, QuizAttemptRequest
+│       │   └── response/          # DashboardResponse, CourseResponse, StudySessionResponse, SubjectResponse, NoteResponse, DocumentResponse, FocusDayDTO, ScheduleBlockDTO, ReviewItemDTO, DistractionSummaryDTO, LeaderboardEntryDTO
+│       ├── enums/                 # UserRoles, DocumentCategory, NoteCategory, CourseDifficulty
+│       ├── model/                 # All JPA entities
+│       ├── repository/            # All JPA repositories
 │       ├── service/               # Business logic
-│       └── util/                  # Helper classes
+│       └── util/                  # DateUtils, FileNameParser
 ├── intellecta-frontend/
-│   ├── public/                    # index.html, manifest, robots.txt
+│   ├── public/
 │   └── src/
-│       ├── components/            # Atomic UI (shadcn/ui, ApiButton, LoginForm)
-│       ├── lib/                   # cn utility for Tailwind
-│       ├── pages/                 # Full-screen views
-│       │   ├── Auth/              # Login.jsx
-│       │   ├── Dashboard/         # Dashboard.jsx
-│       │   └── ...                # Admin, Quiz stubs
-│       ├── routes/                # AppRoutes.jsx
-│       ├── services/              # api.js (Axios instance) + stubs
-│       ├── styles/                # global.css (Tailwind directives)
-│       ├── App.jsx                # Router provider
-│       └── index.js               # Entry point
+│       ├── components/            # Navbar, Sidebar, StudentSidebar, LoginForm, ApiButton, shadcn/ui
+│       ├── lib/                   # cn utility
+│       ├── pages/
+│       │   ├── Auth/              # Login.jsx, Register.jsx (stub)
+│       │   ├── StudentDashboard/  # Dashboard.jsx (fully wired)
+│       │   ├── SubjectFolder/     # SubjectFolderpage.jsx
+│       │   └── ...                # Other stubs
+│       ├── services/              # api.js, dashboardService.js, documentService.js, authService.js, notesService.js, quizService.js, courseService.js
+│       ├── styles/                # global.css
+│       ├── App.jsx
+│       └── index.js
 ```
 
 ---
@@ -64,21 +64,20 @@ hasan-butt-intellecta/
 ## 4. Backend — Configuration
 
 ### SecurityConfig.java
-- CORS: allows `http://localhost:3000`, methods `GET POST PUT DELETE OPTIONS`, credentials allowed
+- CORS: allows `http://localhost:3000`, methods `GET POST PUT DELETE PATCH OPTIONS`, credentials allowed
 - CSRF: **disabled**
 - All `/api/**` endpoints are **publicly accessible** (temporary — to be locked down with JWT)
 - No form login, no HTTP Basic
 - `PasswordEncoder` = `BCryptPasswordEncoder`
 
 ### WebConfig.java
-- Additional CORS mapping on `/api/**` (defensive double-config alongside SecurityConfig)
+- Additional CORS mapping on `/api/**`
 
 ### application.properties
 - Active profile: `dev`
-- Database: SQL Server (`ddl-auto=update` — tables auto-created/updated from entities)
+- Database: SQL Server (`ddl-auto=update`)
 - JWT secret and expiration: **placeholders only**, not functional yet
-- Default Spring Security user: `admin` / `password123` (for non-API endpoints only, not used for `/api/auth/login`)
-- **DB credentials (`url`, `username`, `password`) are NOT in this file** — provide via `application-dev.properties` or environment variables
+- **DB credentials are NOT in this file** — provide via `application-dev.properties` or environment variables
 
 ---
 
@@ -86,109 +85,144 @@ hasan-butt-intellecta/
 
 ### Controllers & Endpoints
 
-| Controller | Endpoint | Method | Response |
+| Controller | Endpoint | Method | Description |
 |---|---|---|---|
-| `TestController` | `/api/hello` | GET | `"Connection Successful! Hello from Spring Boot."` |
-| `AuthController` | `/api/auth/login` | POST | `"LOGIN SUCCESS"` (200) or error message (401) |
-
-All other controllers (`AdminController`, `QuizController`, `ScheduleController`, `StudySessionController`, `AnalyticsController`) are **empty stubs**.
+| `TestController` | `/api/hello` | GET | Connection check |
+| `AuthController` | `/api/auth/login` | POST | Login, returns `"LOGIN SUCCESS"` |
+| `DashboardController` | `/api/dashboard/user/{userId}` | GET | Full dashboard data |
+| `StudySessionController` | `/api/sessions/user/{userId}/start` | POST | Start a study session |
+| `StudySessionController` | `/api/sessions/{sessionId}/end` | PATCH | End a study session |
+| `StudySessionController` | `/api/sessions/user/{userId}` | GET | Get all sessions for user |
+| `CourseController` | `/api/courses/user/{userId}` | POST | Add a course/exam |
+| `CourseController` | `/api/courses/user/{userId}` | GET | Get all courses for user |
+| `CourseController` | `/api/courses/user/{userId}/{courseId}` | PUT | Update a course |
+| `CourseController` | `/api/courses/user/{userId}/{courseId}` | DELETE | Delete a course |
+| `SubjectController` | `/api/subjects/user/{userId}` | POST | Create a subject folder |
+| `SubjectController` | `/api/subjects/user/{userId}` | GET | Get all subjects |
+| `SubjectController` | `/api/subjects/user/{userId}/{subjectId}` | DELETE | Delete a subject |
+| `DocumentController` | `/api/documents/upload/user/{userId}` | POST | Upload a document (multipart) |
+| `DocumentController` | `/api/documents/user/{userId}/subject` | GET | Get docs by subject |
+| `DocumentController` | `/api/documents/user/{userId}/search` | GET | Search documents |
+| `DocumentController` | `/api/documents/user/{userId}/{documentId}/tags` | PUT | Update tags |
+| `DocumentController` | `/api/documents/user/{userId}/{documentId}` | DELETE | Delete document |
+| `DistractionController` | `/api/distractions/user/{userId}` | POST | Log a distraction |
+| `AnalyticsController` | `/api/analytics` | — | Stub only |
 
 ### AuthServiceImpl — Login Flow
 1. Fetch user by email via `UserRepository.findByEmail(email)`
 2. Validate password: `passwordEncoder.matches(plainPassword, storedHash)`
-3. Return `"LOGIN SUCCESS"` — **JWT token generation not yet implemented**
-
-### User Entity (only fully implemented entity)
-```java
-@Entity
-@Table(name = "users")
-public class User {
-    Long id;
-    String username;
-    String email;
-    String password;      // BCrypt hash, VARCHAR(255)
-    @Enumerated(STRING)
-    UserRoles role;       // STUDENT or ADMIN (uppercase in DB)
-}
-```
-
-### UserRepository
-```java
-Optional<User> findByEmail(String email);
-```
-
-### All Other Models (empty placeholders — need full implementation)
-`Course`, `Quiz`, `Schedule`, `StudySession`, `Achievement`, `Notes`, `Document`, `Question`, `QuizAttempt`, `Analytics`, `Admin`, `Student`
-
-### All Other Repositories (empty stubs)
-`QuizRepository`, `ScheduleRepository`, `StudySessionRepository`, `NoteRepository`, `DocumentRepository`, `AnalyticsRepository`, `AchievementRepository`
-
-### All Other Services (empty stubs)
-`AnalyticsService`, `QuizService`, `ScheduleService`, `StudySessionService`, `GamificationService`, `NotesService`
+3. Return `"LOGIN SUCCESS"` — **JWT not yet implemented**
 
 ---
 
-## 6. Frontend — Implemented Features
+## 6. Implemented Models (fully annotated JPA entities)
+
+| Model | Table | Notes |
+|---|---|---|
+| `User` | `users` | Has `xp`, `level`, `streakDays`, `lastStudyDate` fields added |
+| `StudySession` | `study_sessions` | `subject`, `startTime`, `endTime`, `pomodorosCompleted`, `deepWork` |
+| `Course` | `courses` | `courseName`, `examDate`, `difficulty` (enum), `plannedHoursPerDay` |
+| `Subject` | `subjects` | `name`, `semester`, `color`, linked to `User` |
+| `Notes` | `notes` | `title`, `content`, `tags`, `category`, `flaggedForReview`, `isPinned` |
+| `Document` | `documents` | `fileName`, `filePath`, `subject`, `tags`, `uploadDate` |
+| `Achievement` | `achievements` | `badgeName`, `description`, `earnedAt`, linked to `User` |
+| `Analytics` | `analytics` | One-to-one with `User`, currently minimal |
+| `DistractionEntry` | `distraction_entries` | `reason`, `loggedAt`, linked to `User` |
+
+### Stub models (exist but empty — need full implementation)
+`Quiz`, `Question`, `QuizAttempt`, `Schedule`, `Admin`, `Student`
+
+---
+
+## 7. Implemented Repositories
+
+| Repository | Key Methods |
+|---|---|
+| `UserRepository` | `findByEmail`, `findAll` |
+| `StudySessionRepository` | `findByUserIdOrderByStartTimeDesc`, `findTop5ByUserId`, `findByUserIdAndStartTimeAfter`, `countByUserId`, `sumPomodorosByUserId` (returns `Integer` not `int`), `dailyFocusMinutes` |
+| `CourseRepository` | `findByUserIdOrderByExamDateAsc`, `findByUserIdAndExamDateAfterOrderByExamDateAsc` |
+| `SubjectRepository` | `findByUserIdOrderBySemesterAscNameAsc`, `findByUserIdAndNameAndSemester`, `countByUserId` |
+| `NotesRepository` | `findByUserIdOrderByIsPinnedDescCreatedAtDesc`, `findByUserIdAndFlaggedForReviewTrue`, `searchByKeyword`, `countByUserId`, `countByUserIdAndFlaggedForReviewTrue` |
+| `DocumentRepository` | `findByUserIdOrderByUploadDateDesc`, `findByUserIdAndSubjectOrderByUploadDateDesc`, `searchByNameOrTag`, `countByUserId` |
+| `AchievementRepository` | `findTop3ByUserIdOrderByEarnedAtDesc`, `countByUserId` |
+| `DistractionRepository` | `findTopByUserIdOrderByLoggedAtDesc`, `findByUserIdAndLoggedAtAfterOrderByLoggedAtDesc`, `dailyDistractionCounts` |
+| `AnalyticsRepository` | `findByUserId` |
+
+### Stub repositories (exist but empty)
+`QuizRepository`, `ScheduleRepository`
+
+---
+
+## 8. Implemented Services
+
+| Service | Status |
+|---|---|
+| `AuthServiceImpl` | Login only, no JWT yet |
+| `DashboardServiceImpl` | Full — aggregates all dashboard data |
+| `StudySessionServiceImpl` | Start, end, get sessions — returns `StudySessionResponse` DTO |
+| `CourseServiceImpl` | Full CRUD |
+| `SubjectServiceImpl` | Full CRUD |
+| `DocumentServiceImpl` | Upload, list, search, tag, delete |
+| `NotesServiceImpl` | Full CRUD |
+
+### Stub services (interface only, no impl)
+`AnalyticsService`, `QuizService`, `ScheduleService`, `GamificationService`
+
+---
+
+## 9. Frontend — Implemented Features
 
 ### Routing (AppRoutes.jsx)
-| Path | Page |
-|---|---|
-| `/` | `HomePage` |
-| `/login` | `LoginPage` (Auth/Login.jsx) |
-| `/dashboard` | `DashboardPage` |
+| Path | Page | Status |
+|---|---|---|
+| `/` | `HomePage` | Working |
+| `/login` | `LoginPage` | Working |
+| `/dashboard` | `StudentDashboard/Dashboard.jsx` | Fully wired to API |
+| `/subjects` | `SubjectFolderpage.jsx` | Working |
 
 ### Working Pages
-- **HomePage** — displays "Intellecta is Live!" and tests `GET /api/hello`, shows connection status
-- **LoginPage** — email/password form using `LoginForm` component, calls `POST /api/auth/login`, redirects to `/dashboard` on success, shows `err.response?.data` on failure
-- **DashboardPage** — simple placeholder shell
+- **HomePage** — connection test
+- **LoginPage** — calls `POST /api/auth/login`, redirects to `/dashboard`
+- **StudentDashboard/Dashboard.jsx** — fully wired, all widgets pull live data:
+  - Greeting with capitalized username
+  - Daily goal circular progress (today study hours / 6h goal)
+  - Focus streak (days)
+  - Focus intensity chart (7-day bar chart with distraction dots)
+  - Today's itinerary (from courses, scrollable after 3)
+  - Review queue (from flagged notes, scrollable after 3)
+  - Pre-exam checklist (seeded from courses, scrollable after 3)
+  - Distraction log (live POST + summary refresh)
+  - XP / Level / Progress bar
+  - Recent achievement badges
+  - Cohort leaderboard (all users ranked by XP)
+  - Skeleton loading state while fetching
+- **SubjectFolderpage.jsx** — subject/document management working
 
-### Empty/Stub Pages (need implementation)
-- `Admin/`: `ManageQuizzes`, `ManageUsers`, `QuestionBank`
-- `Auth/`: `Register`
-- `Dashboard/`: `Analytics`, `StudyPlanner`
-- `Quiz/`: `AttemptQuiz`, `QuizList`, `Result`
+### Frontend Services
+| File | Purpose |
+|---|---|
+| `api.js` | Axios instance, baseURL `http://localhost:8080/api` |
+| `dashboardService.js` | `getDashboard()`, `logDistraction()`, `startSession()`, `endSession()` |
+| `documentService.js` | Subject and document CRUD |
+| `authService.js` | Login |
+| `notesService.js` | Notes CRUD |
 
-### Key Components
-- **`ApiButton`** — reusable button for API calls
-- **`LoginForm`** — fully functional, uses shadcn/ui `Card`, `Input`, `Label`, `Button`
-- **shadcn/ui** components: `Button`, `Card`, `Input`, `Label`
-
-### Axios Instance (src/services/api.js)
-```javascript
-import axios from "axios";
-const api = axios.create({
-  baseURL: "http://localhost:8080/api",
-  headers: { "Content-Type": "application/json" },
-});
-export default api;
-```
-**All API calls must use this instance — never hardcode the base URL.**
-
-### Login Request Pattern
-```javascript
-const res = await api.post("/auth/login", { email, password });
-// On success: navigate("/dashboard")
-// On error: alert(err.response?.data)
-```
-
-### Styling Rules
-- `global.css` imports Tailwind base/components/utilities
-- CSS variables follow shadcn/ui default zinc palette
-- Primary button color: black (login button)
-- New components: use `cn` utility from `src/lib/`, import UI from `@/components/ui`
+### USER_ID Note
+All frontend services currently use `const USER_ID = 2` hardcoded — **must be replaced with JWT-decoded userId in Phase 1**.
 
 ---
 
-## 7. Database — Critical Rules
+## 10. Database — Critical Rules
 
 | Rule | Detail |
 |---|---|
-| Password column type | `VARCHAR(255)` — **never** `CHAR` (trailing spaces break BCrypt equality check) |
-| Role column values | **Uppercase only**: `STUDENT` or `ADMIN` — must match Java enum exactly |
-| String length checks | Use `LEN()` — SQL Server does **not** support `LENGTH()` |
-| DDL | `ddl-auto=update` — tables auto-created from entity definitions |
+| Password column type | `VARCHAR(255)` — never `CHAR` |
+| Role column values | Uppercase only: `STUDENT` or `ADMIN` |
+| String length checks | Use `LEN()` — SQL Server does not support `LENGTH()` |
+| DDL | `ddl-auto=update` — tables auto-created from entities |
+| `sumPomodorosByUserId` return type | Must be `Integer` (not `int`) — returns `null` when no sessions exist |
 
-### Test Data Insert
+### Test User
 ```sql
 INSERT INTO users (username, email, password, role)
 VALUES (
@@ -197,142 +231,103 @@ VALUES (
   '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMp99Y6O0sba',
   'STUDENT'
 );
-```
-
-### Generating a BCrypt Hash (for manual inserts)
-```java
-// Run in a test or temporary main method
-String hash = new BCryptPasswordEncoder().encode("plainPassword");
-System.out.println(hash);
+-- password: password123
+-- id: 2
 ```
 
 ---
 
-## 8. Troubleshooting Reference
-
-| Symptom | Likely Cause & Fix |
-|---|---|
-| `403 Forbidden` | URL mismatch (e.g., `/api/login` vs `/api/auth/login`), or Spring Security blocking — check `SecurityConfig` `permitAll` pattern |
-| `401 Unauthorized` | Wrong credentials · Password not BCrypt-hashed · Role in DB is lowercase (`student` not `STUDENT`) · Email not found |
-| SQL Server errors | Using `LENGTH()` instead of `LEN()` · Using `CHAR` instead of `VARCHAR` for password/role columns |
-| JS deprecation warning | Add `"ignoreDeprecations": "6.0"` to `jsconfig.json` to silence `baseUrl` warnings |
-| Login works but no redirect | Check `useNavigate()` is called only after confirming `res.data === "LOGIN SUCCESS"` |
-
----
-
-## 9. Core Domain — Feature List
-
-This is the complete feature set the application must ultimately support.
-
-### Student Features
-- Study schedule generator (input courses, exam dates, difficulty level → auto-generated timetable with subject time blocks; auto-adjusts when student falls behind)
-- Pomodoro timer (configurable work/break intervals — default 25 min/5 min, session counter per subject, XP awarded on completion, reminder popup if session inactive too long)
-- Focus analytics dashboard (planned vs actual study time, subject-wise focus breakdown, productive hours heatmap, distraction log with reason tracking, weak topic detection from quiz performance, score trend charts)
-- Notes (create during study sessions, tag by subject/topic, keyword search, review queue for notes marked "review later", link notes to specific sessions)
-- Document management (upload PDFs/images/Word docs, drag-and-drop, per-subject folder structure, auto-categorization by filename, custom tags, quick-open, search by name or tag)
-- Coverage tracker (topic checklist per subject: Not Started → In Progress → Reviewed → Mastered, progress bar per subject)
-- Exam countdown with panic meter (visual countdown, days remaining vs % material covered alert)
-- Pre-exam checklist (things to review, things to bring — e.g., calculator, ID)
-- Review queue (notes and topics flagged for later review)
-- Quiz/exam attempt (MCQ and descriptive questions, countdown timer, auto-submit on expiry, results screen with score and correct answers highlighted, XP awarded)
-- Gamification: XP system, level progression, achievement badges (Early Bird, Night Owl, Marathon, Focused Week, Subject Master, Distraction Slayer, Comeback, Balanced Learner), level-up unlocks themes and avatars, streak tracking
-- Leaderboard and peer comparison (rank, XP, study hours, badge showcase)
-- Export study plan as CSV or PDF
-- AI chatbot integration (proxied through backend to protect API key)
-- Active window tracking (classify productive apps vs distractions by window title)
-- Distraction blocker (fullscreen motivational quotes mode with custom quote support)
-
-### Admin Features
-- User account management (create, update, delete accounts, assign roles)
-- Question bank (add/edit/delete MCQ and descriptive questions, filter by subject)
-- Quiz/exam builder (select questions from bank, set marks per question, configure time limit, set auto-grading rules, preview, publish)
-- Manual grading interface for descriptive answers
-- Platform-wide analytics dashboard (total users, active sessions, avg scores, top performers)
-- Monitor student performance trends over time
-- Configure achievement badges and XP rule thresholds
-
----
-
-## 10. Planned Entity Relationships
-
-| Relationship | Type |
-|---|---|
-| Student → Schedule | One-to-many |
-| Student → StudySession | One-to-many |
-| Student → Note | One-to-many |
-| Student → Document | One-to-many |
-| Student → QuizAttempt | One-to-many |
-| Student → Achievement | Many-to-many |
-| Admin → Quiz | One-to-many |
-| Quiz → Question | Composition one-to-many |
-| QuizAttempt → Quiz | Many-to-one |
-| Schedule → Course | One-to-many |
-| StudySession → Course | Many-to-one |
-| Analytics → Student | One-to-one |
-
----
-
-## 11. Enums Required
+## 11. Enums
 
 ```java
-// UserRoles.java — already exists
+// UserRoles.java — exists
 STUDENT, ADMIN
+
+// CourseDifficulty.java — exists
+EASY, MEDIUM, HARD
+
+// NoteCategory.java — exists
+// DocumentCategory.java — exists
+PAST_PAPERS, LECTURE_NOTES, ASSIGNMENTS, OTHER
 
 // TopicStatus.java — to be created
 NOT_STARTED, IN_PROGRESS, REVIEWED, MASTERED
 
 // QuestionType.java — to be created
 MCQ, DESCRIPTIVE
-
-// DocumentCategory.java — to be created
-PAST_PAPERS, LECTURE_NOTES, ASSIGNMENTS, OTHER
 ```
 
 ---
 
-## 12. Development Roadmap
+## 12. Troubleshooting Reference
 
-### Phase 1 — Security Hardening (current priority)
-- Implement JWT token generation in `AuthServiceImpl.login()` (return signed token instead of plain string)
-- Add `JwtUtil.java` — generate token, validate token, extract claims
-- Add `JwtAuthFilter.java` — extends `OncePerRequestFilter`, reads `Authorization: Bearer <token>` header
-- Update `SecurityConfig` to register JWT filter and restrict non-auth endpoints by role
-- Frontend: store JWT in `localStorage`, attach to every request via Axios request interceptor
-- Frontend: add `ProtectedRoute` wrapper component that redirects unauthenticated users to `/login`
-
-### Phase 2 — User Onboarding
-- `POST /api/auth/register` — validate unique email, BCrypt-hash password, assign role, save user
-- Frontend: `/register` page with name, email, password, role selector fields
-
-### Phase 3 — Core Domain Entities
-- Implement all empty JPA entity classes with full fields, annotations, and relationships
-- Fill in all repository interfaces with required query methods
-- Build CRUD services and controllers for: `Schedule`, `StudySession`, `Quiz`, `Question`, `QuizAttempt`, `Notes`, `Document`, `Course`
-- Implement schedule generation algorithm in `util/ScheduleAlgorithm.java`
-- Implement XP calculation logic in `util/XpCalculator.java`
-
-### Phase 4 — Analytics & Gamification
-- `AnalyticsService` — aggregate study time, compute quiz score trends, detect weak topics
-- `GamificationService` — award XP on session completion, check badge unlock criteria, handle level-up
-- Expose analytics and gamification data via REST endpoints
-- Frontend: analytics charts using recharts
-
-### Phase 5 — Remaining Features
-- Leaderboard endpoint aggregating user XP and study hours
-- Document upload: multipart file endpoint, store file path in `Document` entity
-- AI chatbot: proxy endpoint (`POST /api/chat`) that forwards to external AI API (key stays on server)
-- Export: server-side CSV/PDF generation for study plans
-- Active window tracking integration
-
-### Phase 6 — Polish & Hardening
-- Global exception handler (`@ControllerAdvice`) returning consistent JSON: `{ "error": "...", "status": 404 }`
-- Frontend: loading states, error boundaries, toast notifications, form validation
-- Full RBAC: `@PreAuthorize("hasRole('ADMIN')")` on all admin endpoints
-- Responsive UI pass for mobile compatibility
+| Symptom | Likely Cause & Fix |
+|---|---|
+| `403 Forbidden` | Backend not restarted after changes — always restart after adding new controllers |
+| `403 on /api/**` | Check `SecurityConfig` — pattern must match exactly. Try `anyRequest().permitAll()` temporarily |
+| `401 Unauthorized` | Wrong credentials · Password not BCrypt-hashed · Role lowercase in DB |
+| `NullPointerException` on `sumPomodoros` | Return type must be `Integer` not `int` — SQL SUM returns null when no rows |
+| `Not a managed type` | Model class missing `@Entity` annotation |
+| Duplicate bean on startup | Two `SecurityConfig.java` files exist — delete the duplicate |
+| SQL Server errors | Using `LENGTH()` instead of `LEN()` · Using `CHAR` instead of `VARCHAR` |
+| Password exposed in response | Returning raw entity — always map to DTO before returning from controller |
+| Dashboard shows zeros | No data in DB yet — add sessions/courses/notes via Postman first |
+| Itinerary/checklist not scrolling | Add `max-h-[280px] overflow-y-auto pr-1` to the items container div |
 
 ---
 
-## 13. Running the Application
+## 13. Development Roadmap
+
+### ✅ Completed
+- Login (email + BCrypt)
+- Student Dashboard fully wired (all widgets live)
+- Study sessions (start/end/list)
+- Courses/exams (full CRUD)
+- Subject folders (full CRUD)
+- Document management (upload, list, search, tag, delete)
+- Notes (full CRUD with flagged review)
+- Distraction logging
+- Leaderboard (ranked by XP)
+- Username capitalization in dashboard greeting
+
+### Phase 1 — Security Hardening (next priority)
+- Implement JWT token generation in `AuthServiceImpl.login()`
+- Add `JwtUtil.java` — generate, validate, extract claims
+- Add `JwtAuthFilter.java` — reads `Authorization: Bearer <token>`
+- Update `SecurityConfig` to register JWT filter and restrict by role
+- Frontend: store JWT in `localStorage`, attach via Axios request interceptor
+- Frontend: replace hardcoded `USER_ID = 2` with JWT-decoded userId
+- Frontend: add `ProtectedRoute` wrapper — redirect unauthenticated users to `/login`
+
+### Phase 2 — User Onboarding
+- `POST /api/auth/register` — validate unique email, BCrypt-hash, assign role
+- Frontend: `/register` page
+
+### Phase 3 — Remaining Core Entities
+- `Quiz`, `Question`, `QuizAttempt` — full implementation
+- `Schedule` — generation algorithm in `util/ScheduleAlgorithm.java`
+- XP calculation on session end in `util/XpCalculator.java`
+- `GamificationService` — award XP, check badge criteria, level-up
+
+### Phase 4 — Analytics & Gamification
+- `AnalyticsService` — aggregate study time, score trends, weak topic detection
+- Expose via `/api/analytics/user/{userId}`
+- Frontend: analytics charts using recharts
+
+### Phase 5 — Remaining Features
+- AI chatbot proxy (`POST /api/chat`)
+- Export study plan as CSV/PDF
+- Active window tracking
+
+### Phase 6 — Polish & Hardening
+- Global exception handler (`@ControllerAdvice`) — consistent JSON error shape
+- Frontend: toast notifications, error boundaries, form validation
+- Full RBAC: `@PreAuthorize("hasRole('ADMIN')")` on admin endpoints
+- Responsive UI pass
+
+---
+
+## 14. Running the Application
 
 ### Backend
 ```bash
@@ -341,7 +336,7 @@ cd intellecta-backend
 ./mvnw spring-boot:run
 # Starts on http://localhost:8080
 ```
-DB credentials must be provided externally (not in `application.properties`):
+DB credentials via `application-dev.properties`:
 ```properties
 spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=intellecta
 spring.datasource.username=your_user
@@ -358,19 +353,21 @@ npm start
 
 ---
 
-## 14. Contributor Rules
+## 15. Contributor Rules
 
 1. **Never store plain-text passwords** — always BCrypt-hash before persisting.
 2. **Always use the `api` Axios instance** from `src/services/api.js` — never hardcode `http://localhost:8080`.
-3. **Role strings in DB must be uppercase** — `STUDENT`, `ADMIN` — to match the Java enum.
-4. **New UI components** must follow shadcn/ui pattern: import from `@/components/ui`, use `cn()` from `src/lib/`, Tailwind classes only.
-5. **No business logic in controllers** — controllers receive the request, call one service method, return the result.
-6. **No DB queries in services** — services call repositories only; never write raw JDBC in a service.
-7. **DTOs in, DTOs out** — never expose raw JPA entity objects in API responses; always map to a response DTO.
-8. **SQL Server syntax** — use `LEN()` not `LENGTH()`, `VARCHAR` not `CHAR` for password and enum columns.
-9. **Security is currently permissive** (`/api/**` is open) — when adding JWT, update `SecurityConfig` to add the filter chain and restrict endpoints by role.
-10. **When implementing any feature** — check if the model, repository, service, and controller already exist as stubs. If they do, fill them in rather than creating duplicates.
+3. **Role strings in DB must be uppercase** — `STUDENT`, `ADMIN`.
+4. **New UI components** must follow shadcn/ui pattern: import from `@/components/ui`, use `cn()` from `src/lib/`, Tailwind only.
+5. **No business logic in controllers** — call one service method, return result.
+6. **No DB queries in services** — call repositories only.
+7. **DTOs in, DTOs out** — never expose raw JPA entities in API responses.
+8. **SQL Server syntax** — `LEN()` not `LENGTH()`, `VARCHAR` not `CHAR`.
+9. **`sumPomodorosByUserId` must return `Integer`** — primitive `int` causes NPE when no sessions exist.
+10. **Check for existing stubs** before creating new files — fill in, don't duplicate.
+11. **Always restart backend** after adding new controllers or models.
+12. **Username display** — capitalize first letter in `DashboardServiceImpl` before setting in response DTO.
 
 ---
 
-*This file is the single source of truth for Intellecta's development context. Update it whenever a major feature (JWT, registration, a new entity, a new working endpoint) is completed.*
+*This file is the single source of truth for Intellecta's development context. Update it whenever a major feature is completed.*
