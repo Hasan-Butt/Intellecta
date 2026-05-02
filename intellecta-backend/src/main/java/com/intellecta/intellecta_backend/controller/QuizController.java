@@ -23,6 +23,11 @@ public class QuizController {
         return ResponseEntity.ok(quizService.getAllQuizzes());
     }
 
+    @PostMapping
+    public ResponseEntity<Quiz> createQuiz(@RequestBody Quiz quiz) {
+        return ResponseEntity.ok(quizService.createQuiz(quiz));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Quiz> getQuizById(@PathVariable Long id) {
         return ResponseEntity.ok(quizService.getQuizById(id));
