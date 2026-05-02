@@ -2,6 +2,7 @@ package com.intellecta.intellecta_backend.service;
 
 import com.intellecta.intellecta_backend.dto.request.UserCreateRequestDto;
 import com.intellecta.intellecta_backend.dto.request.UserUpdateRequestDto;
+import com.intellecta.intellecta_backend.dto.response.AnalyticsDto;
 import com.intellecta.intellecta_backend.dto.response.PlatformStatsDTO;
 import com.intellecta.intellecta_backend.dto.response.UserResponseDto;
 import com.intellecta.intellecta_backend.enums.UserRoles;
@@ -96,6 +97,47 @@ public class AdminService {
                 .filter(u -> u.getRole() == UserRoles.STUDENT)
                 .count();
         return "Intervention alerts sent to " + studentCount + " students.";
+    }
+
+    public AnalyticsDto getAnalytics(String from, String to) {
+        List<User> users = userRepository.findAll();
+        long totalUsers = users.size();
+        long activeUsers = users.stream().filter(u -> "Active".equals(u.getStatus())).count();
+        long studentCount = users.stream().filter(u -> u.getRole() == UserRoles.STUDENT).count();
+        long adminCount = users.stream().filter(u -> u.getRole() == UserRoles.ADMIN).count();
+        double activePercentage = totalUsers == 0 ? 0.0 : Math.round((activeUsers * 100.0 / totalUsers) * 10) / 10.0;
+
+        return AnalyticsDto.builder()
+                .totalUsers(totalUsers)
+                .activeUsers(activeUsers)
+                .inactiveUsers(totalUsers - activeUsers)
+                .studentCount(studentCount)
+                .adminCount(adminCount)
+                .activeUserPercentage(activePercentage)
+                .totalQuizzesTaken(0)
+                .averageQuizScore(0.0)
+                .totalQuestions(0)
+                .dateFrom(from)
+                .dateTo(to)
+                .build();
+    }
+
+    public String exportAnalyticsCsv(String from, String to) {
+        AnalyticsDto data = getAnalytics(from, to);
+        StringBuilder csv = new StringBuilder();
+        csv.append("Metric,Value\n");
+        csv.append("Total Users,").append(data.getTotalUsers()).append("\n");
+        csv.append("Active Users,").append(data.getActiveUsers()).append("\n");
+        csv.append("Inactive Users,").append(data.getInactiveUsers()).append("\n");
+        csv.append("Students,").append(data.getStudentCount()).append("\n");
+        csv.append("Admins,").append(data.getAdminCount()).append("\n");
+        csv.append("Active User %,").append(data.getActiveUserPercentage()).append("%\n");
+        csv.append("Total Quizzes Taken,").append(data.getTotalQuizzesTaken()).append("\n");
+        csv.append("Average Quiz Score,").append(data.getAverageQuizScore()).append("\n");
+        csv.append("Total Questions,").append(data.getTotalQuestions()).append("\n");
+        if (from != null && !from.isBlank()) csv.append("Date From,").append(from).append("\n");
+        if (to != null && !to.isBlank()) csv.append("Date To,").append(to).append("\n");
+        return csv.toString();
     }
 
     public PlatformStatsDTO getPlatformStats() {
