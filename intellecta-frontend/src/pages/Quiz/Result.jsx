@@ -1,7 +1,7 @@
 import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   RotateCcw, 
-  //LayoutDashboard, 
   CheckCircle2, 
   XCircle,
   BadgeCheck, 
@@ -14,26 +14,34 @@ import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
 
 /* --- SUB-COMPONENT: PROFICIENCY DASHBOARD --- */
-const ProficiencyDashboard = () => {
-  const proficiencyValue = 92;
+const ProficiencyDashboard = ({ score, total }) => {
+  const proficiencyValue = total > 0 ? Math.round((score / total) * 100) : 0;
   const radius = 60;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (proficiencyValue / 100) * circumference;
 
+  const getGrade = (val) => {
+    if (val >= 90) return 'A+';
+    if (val >= 80) return 'A';
+    if (val >= 70) return 'B';
+    if (val >= 60) return 'C';
+    return 'D';
+  };
+
   return (
-    <section className="w-full max-w-x8l ml-0 grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-      <div className="md:col-span-2 relative overflow-hidden bg-white rounded-2xl p-8 md:p-10 ring-1 ring-slate-200 shadow-sm shadow-indigo-500/5 flex flex-col md:flex-row items-center justify-between">
+    <section className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div className="md:col-span-2 relative overflow-hidden bg-white rounded-3xl p-8 md:p-10 border border-slate-200 shadow-lg flex flex-col md:flex-row items-center justify-between">
         <GraduationCap className="absolute -top-10 -right-10 text-slate-50 w-72 h-72 -rotate-12 pointer-events-none" strokeWidth={1} />
         <div className="relative z-10 flex flex-col max-w-full md:max-w-[60%]">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest mb-6 w-fit">
              <span>Overall Standing</span>
           </div>
           <div className="flex items-baseline gap-3 mb-4">
-            <h1 className="text-6xl font-extrabold text-slate-900 leading-none tracking-tighter">92%</h1>
-            <span className="text-xl font-bold text-emerald-600">A+</span>
+            <h1 className="text-6xl font-extrabold text-slate-900 leading-none tracking-tighter">{proficiencyValue}%</h1>
+            <span className="text-xl font-bold text-emerald-600">{getGrade(proficiencyValue)}</span>
           </div>
           <p className="text-slate-500 text-base leading-relaxed font-medium">
-            Excellent performance! You've shown deep understanding of <span className="text-slate-900 font-bold">Modern Rationalism</span>.
+            Assessment completed! You've correctly answered <span className="text-slate-900 font-bold">{score} out of {total}</span> questions.
           </p>
         </div>
         <div className="relative mt-8 md:mt-0 flex items-center justify-center">
@@ -42,7 +50,7 @@ const ProficiencyDashboard = () => {
             <circle cx="96" cy="96" r={radius} stroke="#6366f1" strokeWidth="12" strokeDasharray={circumference} style={{ strokeDashoffset }} strokeLinecap="round" fill="transparent" className="transition-all duration-1000 ease-out" />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-white rounded-full p-3.5 ring-1 ring-slate-100">
+            <div className="bg-white rounded-full p-3.5 shadow-xl">
               <BadgeCheck className="text-[#6366f1] w-10 h-10" fill="currentColor" fillOpacity={0.1} />
             </div>
           </div>
@@ -50,18 +58,18 @@ const ProficiencyDashboard = () => {
       </div>
 
       <div className="flex flex-col gap-4">
-        <div className="bg-white rounded-2xl p-6 flex items-center gap-5 ring-1 ring-slate-200 shadow-sm flex-1">
+        <div className="bg-white rounded-3xl p-6 flex items-center gap-5 border border-slate-200 shadow-md flex-1">
           <div className="p-3 bg-indigo-50 text-indigo-500 rounded-xl shrink-0"><ClipboardCheck size={24} /></div>
           <div>
             <p className="text-slate-400 font-black uppercase tracking-widest text-[10px] mb-1">Accuracy</p>
-            <h2 className="text-3xl font-extrabold text-slate-900">14/15</h2>
+            <h2 className="text-3xl font-extrabold text-slate-900">{score}/{total}</h2>
           </div>
         </div>
-        <div className="bg-[#BEF264] rounded-[3rem] p-6 flex items-center gap-6 shadow-sm flex-1">
+        <div className="bg-[#BEF264] rounded-[2.5rem] p-6 flex items-center gap-6 shadow-lg flex-1">
           <div className="p-4 bg-black/10 text-[#0F172A] rounded-2xl"><Zap size={28} fill="currentColor" /></div>
           <div>
             <p className="text-[#0F172A]/50 font-black uppercase tracking-widest text-[10px] mb-1">Experience</p>
-            <h2 className="text-2xl font-extrabold text-[#0F172A]">+250 XP</h2>
+            <h2 className="text-2xl font-extrabold text-[#0F172A]">+{score * 50} XP</h2>
           </div>
         </div>
       </div>
@@ -69,43 +77,81 @@ const ProficiencyDashboard = () => {
   );
 };
 
-/* --- SUB-COMPONENT: QUESTION ITEM --- */
-const QuestionItem = ({ id, text, status, userAnswer, correctSolution, explanation }) => {
-  const isCorrect = status === 'correct';
+/* --- SUB-COMPONENT: DETAILED BREAKDOWN --- */
+const DetailedBreakdown = ({ quiz, userAnswers }) => {
+  if (!quiz || !quiz.questions || !userAnswers) return null;
+
   return (
-    <section className="relative pl-16 border-b border-slate-100 pb-10 last:border-0 last:pb-0">
-      <span className="absolute left-0 top-0 w-10 h-10 rounded-xl bg-slate-50 ring-1 ring-slate-200 flex items-center justify-center text-slate-500 font-bold text-sm">
-        {id}
-      </span>
-      <h2 className="text-lg font-bold text-slate-900 leading-snug mb-4 tracking-tight">{text}</h2>
-      <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-[10px] uppercase tracking-widest mb-5 ${
-        isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
-      }`}>
-        {isCorrect ? <CheckCircle2 size={12} /> : <XCircle size={12} />} {status}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className={`p-4 rounded-xl ring-1 ${isCorrect ? 'bg-emerald-50/30 ring-emerald-200' : 'bg-red-50/30 ring-red-200'}`}>
-          <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Your Answer</span>
-          <p className="text-base font-semibold text-slate-800">{userAnswer}</p>
-        </div>
-        {!isCorrect && (
-          <div className="p-4 rounded-xl ring-1 bg-emerald-50/30 ring-emerald-200">
-            <span className="block text-[10px] font-bold uppercase tracking-widest text-emerald-600/70 mb-2">Correct Solution</span>
-            <p className="text-base font-semibold text-slate-800">{correctSolution}</p>
-          </div>
-        )}
+    <section className="mb-12">
+      <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-6">Question Breakdown</h2>
+      <div className="space-y-4">
+        {quiz.questions.map((q, idx) => {
+          const userAnswer = userAnswers[q.id];
+          const isCorrect = userAnswer === q.correctOptionIndex;
+          const isSkipped = userAnswer === undefined || userAnswer === null;
+
+          return (
+            <div key={q.id} className={`p-6 rounded-3xl border shadow-sm ${isCorrect ? 'bg-emerald-50/30 border-emerald-100' : isSkipped ? 'bg-white border-slate-200' : 'bg-red-50/30 border-red-100'}`}>
+              <div className="flex items-start justify-between gap-4 mb-5">
+                <h3 className="text-lg font-bold text-slate-800 leading-relaxed">
+                  <span className="text-slate-300 mr-2">{idx + 1}.</span> {q.text}
+                </h3>
+                <div className="shrink-0">
+                  {isCorrect ? (
+                    <div className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><CheckCircle2 size={16} /> Correct</div>
+                  ) : isSkipped ? (
+                    <div className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">Skipped</div>
+                  ) : (
+                    <div className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><XCircle size={16} /> Incorrect</div>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {q.options.map((opt, optIdx) => {
+                  const isUserSelection = userAnswer === optIdx;
+                  const isActualCorrect = q.correctOptionIndex === optIdx;
+                  
+                  let optionClass = "bg-white border-slate-100 text-slate-600 hover:border-slate-200";
+                  if (isActualCorrect) {
+                    optionClass = "bg-emerald-50 border-emerald-200 text-emerald-800 font-bold shadow-sm shadow-emerald-100/50";
+                  } else if (isUserSelection && !isActualCorrect) {
+                    optionClass = "bg-red-50 border-red-200 text-red-800 font-bold shadow-sm shadow-red-100/50";
+                  }
+
+                  return (
+                    <div key={optIdx} className={`p-3.5 rounded-xl border-2 flex items-center gap-3 transition-all ${optionClass}`}>
+                      <span className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-black shrink-0 ${isActualCorrect ? 'bg-emerald-500 text-white' : isUserSelection ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                        {String.fromCharCode(65 + optIdx)}
+                      </span>
+                      <span className="text-sm">{opt}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
 };
+
 
 /* --- MAIN PAGE COMPONENT --- */
 const QuizResultsPage = () => {
-  const questions = [
-    { id: '01', text: "Who is often referred to as the 'Father of Modern Philosophy'?", status: 'correct', userAnswer: 'René Descartes' },
-    { id: '05', text: "Spinoza's concept of 'Deus sive Natura' suggests that God and nature are what?", status: 'incorrect', userAnswer: 'Distinct entities', correctSolution: 'Identical substance', explanation: '"God is the single substance."' },
-    { id: '12', text: "The principle of 'Tabula Rasa' is associated with which philosopher?", status: 'correct', userAnswer: 'John Locke' }
-  ];
+  const location = useLocation();
+  const navigate = useNavigate();
+  const attempt = location.state?.attempt;
+  const quiz = location.state?.quiz;
+
+  if (!attempt) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen space-y-4">
+        <p className="text-xl font-bold text-slate-400">No result data available.</p>
+        <button onClick={() => navigate('/quiz')} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold">Go Back</button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col">
@@ -115,42 +161,42 @@ const QuizResultsPage = () => {
         <Sidebar />
 
         <main className="flex-1 p-6 md:p-8 lg:p-12 overflow-y-auto">
-          <div className="max-w-5xl mx-auto"></div>
-          
-          {/* 1. Statistics Header */}
-          <ProficiencyDashboard />
+          <div className="max-w-5xl mx-auto">
+            {/* 1. Statistics Header */}
+            <ProficiencyDashboard score={attempt.score} total={attempt.totalQuestions} />
 
-          {/* 2. Detailed Review Section */}
-          <section className="max-w-5xl ml-0 bg-white rounded-2xl shadow-2xl shadow-indigo-900/5 border border-slate-100 overflow-hidden mb-12">
-            <header className="p-8 md:p-10 flex flex-col md:flex-row md:items-center justify-between border-b border-slate-50">
-              <div>
-                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Question Review</h1>
-                <p className="text-slate-400 text-lg mt-1 font-medium">Deep dive into your performance.</p>
+            {/* 2. Detailed Breakdown */}
+            {quiz && attempt.userAnswers && (
+               <DetailedBreakdown quiz={quiz} userAnswers={attempt.userAnswers} />
+            )}
+
+            {/* 3. Completion Card */}
+            <section className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden mb-12 p-10 text-center">
+              <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 size={48} />
               </div>
-              <div className="flex gap-2 mt-6 md:mt-0">
-                <button className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-50 transition-all shadow-sm">
-                  All Questions
+              <h1 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Quiz Submitted Successfully!</h1>
+              <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
+                Great job completing the <span className="text-slate-900 font-bold">{attempt.quiz?.title || 'Assessment'}</span>. Your progress has been updated in the global leaderboard.
+              </p>
+              
+              <div className="flex flex-col md:flex-row gap-5 justify-center">
+                <button 
+                  onClick={() => navigate('/quiz')}
+                  className="flex-1 max-w-xs group flex items-center justify-center gap-4 bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-2xl font-bold text-lg transition-all active:scale-95 shadow-2xl shadow-indigo-500/30"
+                >
+                  <RotateCcw size={24} className="group-hover:rotate-[-45deg] transition-transform" />
+                  Try Another Quiz
                 </button>
-                <button className="px-8 py-4 bg-red-50 text-red-600 rounded-2xl font-bold text-sm border border-red-100 shadow-sm">
-                  Mistakes (1)
+                <button 
+                   onClick={() => navigate('/leaderboard')}
+                   className="flex-1 max-w-xs px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-lg hover:bg-slate-50 transition-all shadow-sm"
+                >
+                   Check Leaderboard
                 </button>
               </div>
-            </header>
-
-            <div className="p-8 md:p-10 flex flex-col gap-10">
-              {questions.map((q) => (
-                <QuestionItem key={q.id} {...q} />
-              ))}
-            </div>
-          </section>
-
-          {/* Navigation Buttons */}
-          <nav className="max-w-8xl ml-0 flex flex-col md:flex-row gap-5 pb-12">
-            <button className="flex-1 group flex items-center justify-center gap-4 bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-2xl font-bold text-lg transition-all active:scale-95 shadow-2xl shadow-indigo-500/30">
-              <RotateCcw size={24} className="group-hover:rotate-[-45deg] transition-transform" />
-              Retake Quiz
-            </button>
-          </nav>
+            </section>
+          </div>
         </main>
       </div>
     </div>
@@ -158,3 +204,4 @@ const QuizResultsPage = () => {
 };
 
 export default QuizResultsPage;
+;
