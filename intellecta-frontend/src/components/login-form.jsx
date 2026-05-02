@@ -23,6 +23,7 @@ export function LoginForm({ className, ...props }) {
       });
 
       if (res.data === "LOGIN SUCCESS") {
+        localStorage.setItem("userId", 2); // temporary until JWT returns userId
         navigate("/studentDashboard");
       }
     } catch (err) {

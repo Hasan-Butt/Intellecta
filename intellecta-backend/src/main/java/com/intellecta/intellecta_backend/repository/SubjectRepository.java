@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface SubjectRepository extends JpaRepository<Subject, Long> {
     List<Subject> findByUserIdOrderBySemesterAscNameAsc(Long userId);
     Optional<Subject> findByUserIdAndNameAndSemester(Long userId, String name, String semester);
+    long countByUserId(Long userId);
+
 }

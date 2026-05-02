@@ -1,19 +1,16 @@
 package com.intellecta.intellecta_backend.model;
 
 import java.time.LocalDateTime;
-
 import org.hibernate.annotations.CreationTimestamp;
-
-import com.intellecta.intellecta_backend.enums.BadgeType;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 
 @Entity
-@Table(name = "achievements")
+@Table(name = "distraction_entries")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class Achievement {
+public class DistractionEntry {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,16 +20,10 @@ public class Achievement {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Badge names match the dashboard icons:
-    // STREAK_FIRE, STAR_SCHOLAR, LEAF_BALANCED, MARATHON, EARLY_BIRD etc.
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private BadgeType badgeName;
-
-    @Column
-    private String description;
+    private String reason;   // free text or tag label
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    private LocalDateTime earnedAt;
+    private LocalDateTime loggedAt;
 }
