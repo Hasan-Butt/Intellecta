@@ -30,6 +30,7 @@ public class QuizAttempt {
 
     private Integer score;
     private Integer totalQuestions;
+    private Integer xpGained;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String status; // "IN_PROGRESS", "COMPLETED"

@@ -71,11 +71,16 @@ public class QuizService {
                 }
             }
 
+            int xpGained = score * 50;
+            user.setXp(user.getXp() + xpGained);
+            userRepository.save(user);
+
             QuizAttempt attempt = QuizAttempt.builder()
                     .user(user)
                     .quiz(quiz)
                     .score(score)
                     .totalQuestions(questions != null ? questions.size() : 0)
+                    .xpGained(xpGained)
                     .userAnswers(userAnswers)
                     .startTime(LocalDateTime.now().minusMinutes(quiz.getTimeLimit()))
                     .endTime(LocalDateTime.now())
