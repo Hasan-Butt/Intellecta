@@ -14,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class TempQuiz implements CommandLineRunner {
 
-    private final QuizService quizService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -30,7 +29,5 @@ public class TempQuiz implements CommandLineRunner {
         }
         System.out.println("Total users in DB: " + userRepository.count());
 
-        quizService.getAllQuizzes();
-        System.out.println("Quizzes initialized successfully.");
     }
 }
