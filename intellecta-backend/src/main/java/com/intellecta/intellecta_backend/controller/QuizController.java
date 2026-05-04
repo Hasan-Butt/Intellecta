@@ -19,8 +19,8 @@ public class QuizController {
     private final QuizService quizService;
 
     @GetMapping
-    public ResponseEntity<List<Quiz>> getAllQuizzes() {
-        return ResponseEntity.ok(quizService.getAllQuizzes());
+    public ResponseEntity<List<Quiz>> getAllQuizzes(@RequestParam(required = false) Long userId) {
+        return ResponseEntity.ok(quizService.getAllQuizzes(userId));
     }
 
     @PostMapping
