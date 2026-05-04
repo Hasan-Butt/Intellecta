@@ -1,12 +1,10 @@
 package com.intellecta.intellecta_backend.service;
 
 import com.intellecta.intellecta_backend.dto.request.QuizSubmissionRequest;
-import com.intellecta.intellecta_backend.model.Question;
-import com.intellecta.intellecta_backend.model.Quiz;
-import com.intellecta.intellecta_backend.model.QuizAttempt;
-import com.intellecta.intellecta_backend.model.User;
+import com.intellecta.intellecta_backend.model.*;
 import com.intellecta.intellecta_backend.repository.QuizAttemptRepository;
 import com.intellecta.intellecta_backend.repository.QuizRepository;
+import com.intellecta.intellecta_backend.repository.SectionalXPRepository;
 import com.intellecta.intellecta_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +20,7 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final QuizAttemptRepository quizAttemptRepository;
     private final UserRepository userRepository;
+    private final SectionalXPRepository sectionalXPRepository;
 
     public List<Quiz> getAllQuizzes() {
         return quizRepository.findAll();
@@ -74,6 +73,21 @@ public class QuizService {
             int xpGained = score * 50;
             user.setXp(user.getXp() + xpGained);
             userRepository.save(user);
+
+            String category = quiz.getCategory();
+            if (category == null || category.trim().isEmpty()) {
+                category = "General";
+            }
+
+            SectionalXP sectionalXP = sectionalXPRepository.findByUserAndCategory(user, category)
+                    .orElse(SectionalXP.builder()
+                            .user(user)
+                            .category(category)
+                            .xp(0L)
+                            .build());
+
+            sectionalXP.setXp(sectionalXP.getXp() + xpGained);
+            sectionalXPRepository.save(sectionalXP);
 
             QuizAttempt attempt = QuizAttempt.builder()
                     .user(user)
