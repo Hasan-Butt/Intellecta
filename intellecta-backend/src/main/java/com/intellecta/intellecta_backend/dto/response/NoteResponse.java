@@ -1,5 +1,6 @@
 package com.intellecta.intellecta_backend.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.intellecta.intellecta_backend.enums.NoteCategory;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +14,13 @@ public class NoteResponse {
     private String content;
     private NoteCategory category;
     private String source;
+
+    @JsonProperty("isPinned")
     private boolean isPinned;
+
+    @JsonProperty("isSpecial")
     private boolean isSpecial;
+
     private boolean flaggedForReview;
     private List<String> tags;
     private LocalDateTime createdAt;
