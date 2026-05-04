@@ -20,10 +20,10 @@ public class Quiz {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title;
     private String description;
     private Integer timeLimit; // mins
     private String category;
+    private String topic;
     private String difficulty; // "Beginner", "Intermediate", "Expert" (set by admin.)
     private String imageUrl;
 

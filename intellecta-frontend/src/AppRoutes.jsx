@@ -9,6 +9,7 @@ import AnalyticsPage from "./pages/Dashboard/Analytics.jsx";
 import PerformanceTrends from "./pages/Dashboard/PerformanceTrends.jsx";
 import ConfigurationPage from "./pages/Dashboard/Configuration.jsx";
 import StudentDashboardPage from "./pages/StudentDashboard/Dashboard";
+import CreateQuizPage from "./pages/Dashboard/CreateQuiz.jsx";
 import QuizList from "./pages/Quiz/QuizList";
 import AttemptQuiz from "./pages/Quiz/AttemptQuiz";
 import Result from "./pages/Quiz/Result";
@@ -46,7 +47,7 @@ export default function AppRoutes() {
       <Route path="/coverage" element={<CoverageTrackerPage />} />
       <Route path="/focus" element={<StudySessionPage/>}/>
       <Route path="/schedule" element={<StudySchedulePage/>}/>
-
+      <Route path="/create-quiz" element={<CreateQuizPage />} />
     </Routes>
   );
 }

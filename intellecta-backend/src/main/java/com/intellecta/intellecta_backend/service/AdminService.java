@@ -452,7 +452,7 @@ public class AdminService {
             QuizAttempt sample = allAttempts.get(0);
             System.out.println("[WEAK_TOPICS_DEBUG] sample score=" + sample.getScore()
                     + " totalQ=" + sample.getTotalQuestions()
-                    + " quiz=" + (sample.getQuiz() != null ? sample.getQuiz().getTitle() : "null"));
+                    + " quiz=" + (sample.getQuiz() != null ? sample.getQuiz().getTopic() : "null"));
         }
         Map<String, List<Double>> scoresByTopic = new HashMap<>();
         for (QuizAttempt a : allAttempts) {
@@ -460,7 +460,7 @@ public class AdminService {
             String topic;
             try {
                 String cat   = (a.getQuiz() != null) ? a.getQuiz().getCategory() : null;
-                String title = (a.getQuiz() != null) ? a.getQuiz().getTitle()    : null;
+                String title = (a.getQuiz() != null) ? a.getQuiz().getTopic()    : null;
                 topic = (cat != null && !cat.isBlank()) ? cat
                       : (title != null && !title.isBlank()) ? title
                       : "General";

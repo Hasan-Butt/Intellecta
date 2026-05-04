@@ -58,7 +58,7 @@ public class QuizService {
             List<Question> questions = quiz.getQuestions();
             Map<Long, Integer> userAnswers = request.getAnswers();
 
-            System.out.println("Processing submission for quiz: " + quiz.getTitle() + " (Questions: "
+            System.out.println("Processing submission for quiz: " + quiz.getTopic() + " (Questions: "
                     + (questions != null ? questions.size() : 0) + ")");
 
             if (userAnswers != null && questions != null) {
@@ -74,6 +74,7 @@ public class QuizService {
             user.setXp(user.getXp() + xpGained);
             userRepository.save(user);
 
+            // Update sectional XP
             String category = quiz.getCategory();
             if (category == null || category.trim().isEmpty()) {
                 category = "General";

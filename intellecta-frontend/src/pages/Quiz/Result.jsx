@@ -25,7 +25,8 @@ const ProficiencyDashboard = ({ score, total }) => {
     if (val >= 80) return 'A';
     if (val >= 70) return 'B';
     if (val >= 60) return 'C';
-    return 'D';
+    if (val >= 50) return 'D';
+    return 'F';
   };
 
   return (
@@ -177,7 +178,7 @@ const QuizResultsPage = () => {
               </div>
               <h1 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Quiz Submitted Successfully!</h1>
               <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
-                Great job completing the <span className="text-slate-900 font-bold">{attempt.quiz?.title || 'Assessment'}</span>. Your progress has been updated in the global leaderboard.
+                Great job completing the <span className="text-slate-900 font-bold">{attempt.quiz?.topic || 'Assessment'}</span>. Your progress has been updated in the global leaderboard.
               </p>
               
               <div className="flex flex-col md:flex-row gap-5 justify-center">
