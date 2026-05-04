@@ -23,9 +23,10 @@ const FullAssessmentInterface = () => {
     const fetchQuiz = async () => {
       try {
         const response = await api.get(`/quizzes/${quizId}`);
-        setQuiz(response.data);
-        // FOR TESTING: Temporarily forced to 1 minute (60 seconds) to test auto-submit
-        setTimeLeft(60); 
+        const quizData = response.data;
+        setQuiz(quizData);
+        // Use the actual timeLimit from the quiz (mins to secs)
+        setTimeLeft(quizData.timeLimit * 60); 
       } catch (error) {
         console.error("Error fetching quiz:", error);
       } finally {
@@ -135,7 +136,7 @@ const FullAssessmentInterface = () => {
                     <h1 className="text-lg font-extrabold text-slate-800 tracking-tight">
                       Question {currentQuestionIndex + 1} <span className="text-slate-300 font-normal ml-1">of {quiz.questions.length}</span>
                     </h1>
-                    <p className="text-slate-500 text-lg font-medium tracking-wide">{quiz.title}</p>
+                    <p className="text-slate-500 text-lg font-medium tracking-wide">{quiz.topic}</p>
                   </div>
                   <div className="bg-slate-50 text-slate-600 px-6 py-2 rounded-full text-sm font-bold border border-slate-100">
                     +1.0 Marks

@@ -46,8 +46,8 @@ const QuizPlatform = () => {
   };
 
   const filteredQuizzes = quizzes.filter(q => 
-    q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    q.category.toLowerCase().includes(searchTerm.toLowerCase())
+    (q.topic || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (q.category || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -144,7 +144,7 @@ const QuizPlatform = () => {
                       <img
                         src={quiz.imageUrl || "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&q=80&w=800"}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                        alt={quiz.title}
+                        alt={quiz.topic}
                       />
                     </div>
                     <div className="p-10 flex flex-col flex-1">
@@ -157,7 +157,7 @@ const QuizPlatform = () => {
                         </span>
                       </div>
                       <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                        {quiz.title}
+                        {quiz.topic}
                       </h3>
                       <p className="text-slate-500 text-base mb-8">
                         {quiz.description}
