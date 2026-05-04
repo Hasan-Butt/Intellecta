@@ -11,40 +11,37 @@ import {
   getAllNotes,
   flagForReview,
   updateNote,
-} from "../../services/notesService"; // Adjust path as needed
-import { cn } from "../../lib/utils"; // Common path for Shadcn 'cn' utility
+} from "../../services/notesService";
+import { cn } from "../../lib/utils";
 import NoteCard from "../../components/ui/NoteCard";
 import NewNote from "./NewNote";
+import EditNote from "./EditNote";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
+import { LayoutGrid, List } from "lucide-react";
 
 const NotesPage = () => {
   const [notes, setNotes] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // STATE TO CONTROL MODAL AND ITS TYPE
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState(null);
   const [isNewNoteOpen, setIsNewNoteOpen] = useState(false);
   const [isSanctuaryMode, setIsSanctuaryMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState([]);
   const [tagInput, setTagInput] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
-
   const [activeTab, setActiveTab] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
   const [activeTagFilters, setActiveTagFilters] = useState([]);
 
-  // FIX 1: Renamed local function to getNotes to avoid shadowing the imported fetchNotes
   const getNotes = useCallback(async () => {
     setLoading(true);
     try {
       const response = await getAllNotes();
-
-      // Safety check: if response.data exists, use it; otherwise use response
       const data = response.data || response;
-
       if (Array.isArray(data)) {
         setNotes(data);
       } else {
@@ -62,6 +59,17 @@ const NotesPage = () => {
   useEffect(() => {
     getNotes();
   }, [getNotes]);
+
+  const handleEditNote = (note) => {
+    setEditingNote(note);
+    setIsEditOpen(true);
+  };
+
+  const handleEditSaved = () => {
+    setIsEditOpen(false);
+    setEditingNote(null);
+    getNotes();
+  };
 
   const openModal = (sanctuary = false) => {
     setIsSanctuaryMode(sanctuary);
@@ -110,8 +118,8 @@ const NotesPage = () => {
             content: note.content,
             category: note.category,
             source: note.source,
-            isPinned: note.pinned,
-            isSpecial: note.special,
+            isPinned: note.isPinned,
+            isSpecial: note.isSpecial,
             flaggedForReview: note.flaggedForReview,
             tags: [...existingTags, tagInput.trim()],
           });
@@ -124,10 +132,10 @@ const NotesPage = () => {
     }
   };
 
-  // Collect all unique tags from all notes for the filter dropdown
   const allTags = Array.isArray(notes)
     ? [...new Set(notes.flatMap((n) => n.tags || []))]
     : [];
+
   const toggleTagFilter = (tag) => {
     setActiveTagFilters((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
@@ -138,38 +146,29 @@ const NotesPage = () => {
     setActiveTagFilters((prev) => prev.filter((t) => t !== tag));
   };
 
-  // FIX 2: Apply search query on top of tab + tag filters
   const displayedNotes = notes.filter((note) => {
-    // Search filter
     if (
       searchQuery &&
-      !note.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !note.category.toLowerCase().includes(searchQuery.toLowerCase())
+      !note.title?.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !note.category?.toLowerCase().includes(searchQuery.toLowerCase())
     ) {
       return false;
     }
-
-    // Tab filter
     if (activeTab === "review" && !note.flaggedForReview) return false;
-    if (activeTab === "pinned" && !note.ispinned) return false;
-
-    // Tag filter
+    if (activeTab === "pinned" && !note.isPinned) return false;
     if (activeTagFilters.length > 0) {
       const noteTags = note.tags || [];
       if (!activeTagFilters.every((tag) => noteTags.includes(tag)))
         return false;
     }
-
     return true;
   });
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
-      {/* Navbar */}
       <Navbar />
 
       <div className="bg-[#f9f9ff] min-h-screen flex w-full">
-        {/* Sidebar */}
         <Sidebar />
 
         <main className="flex-1 overflow-y-auto">
@@ -184,7 +183,6 @@ const NotesPage = () => {
                   Organize your thoughts and fuel your intellect.
                 </p>
               </div>
-
               <Button
                 onClick={() => openModal(false)}
                 className="bg-[#7C3AED] text-white px-6 py-6 rounded-xl shadow-lg transition-all hover:scale-105"
@@ -204,7 +202,7 @@ const NotesPage = () => {
               />
             </div>
 
-            {/* FIX 3: Tab switcher to make activeTab and setActiveTab actually used */}
+            {/* Tabs */}
             <div className="flex gap-6 border-b border-zinc-200 mb-8">
               {["all", "pinned", "review"].map((tab) => (
                 <button
@@ -225,32 +223,37 @@ const NotesPage = () => {
               ))}
             </div>
 
-            {/* View mode toggle — makes viewMode and setViewMode used */}
+            {/* View mode + tag filters */}
             <div className="flex items-center gap-3 mb-6">
+              {/* Grid icon */}
               <button
                 onClick={() => setViewMode("grid")}
                 className={cn(
-                  "text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors",
+                  "p-2 rounded-lg transition-colors",
                   viewMode === "grid"
                     ? "bg-purple-100 text-purple-700"
                     : "text-zinc-400 hover:text-zinc-600",
                 )}
+                title="Grid view"
               >
-                Grid
+                <LayoutGrid size={18} />
               </button>
+
+              {/* List icon */}
               <button
                 onClick={() => setViewMode("list")}
                 className={cn(
-                  "text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors",
+                  "p-2 rounded-lg transition-colors",
                   viewMode === "list"
                     ? "bg-purple-100 text-purple-700"
                     : "text-zinc-400 hover:text-zinc-600",
                 )}
+                title="List view"
               >
-                List
+                <List size={18} />
               </button>
 
-              {/* Active tag filters display — makes allTags, toggleTagFilter, removeTagFilter used */}
+              {/* Tag filter pills */}
               {allTags.length > 0 && (
                 <div className="flex items-center gap-2 ml-4 flex-wrap">
                   {allTags.map((tag) => (
@@ -270,7 +273,6 @@ const NotesPage = () => {
                 </div>
               )}
 
-              {/* Active tag filter pills */}
               {activeTagFilters.length > 0 && (
                 <div className="flex items-center gap-2 ml-2 flex-wrap">
                   {activeTagFilters.map((tag) => (
@@ -291,7 +293,7 @@ const NotesPage = () => {
               )}
             </div>
 
-            {/* FIX 4: Single notes grid using displayedNotes only (removed duplicate filteredNotes.map) */}
+            {/* Notes grid */}
             {loading ? (
               <p className="text-zinc-400 text-center mt-20">
                 Loading notes...
@@ -311,10 +313,10 @@ const NotesPage = () => {
                     onRefresh={getNotes}
                     isSelected={selectedIds.includes(note.id)}
                     onSelect={handleSelect}
+                    onEdit={handleEditNote}  // ← THIS WAS MISSING
                   />
                 ))}
 
-                {/* Only show sanctuary button on All Notes tab */}
                 {activeTab === "all" && (
                   <button
                     onClick={() => openModal(true)}
@@ -332,17 +334,14 @@ const NotesPage = () => {
                   </button>
                 )}
 
-                {/* Empty states */}
                 {displayedNotes.length === 0 && activeTab === "review" && (
                   <p className="text-zinc-400 text-center mt-20 col-span-2">
-                    No notes in review queue yet. Select notes and click Review
-                    Queue to add them.
+                    No notes in review queue yet.
                   </p>
                 )}
                 {displayedNotes.length === 0 && activeTab === "pinned" && (
                   <p className="text-zinc-400 text-center mt-20 col-span-2">
-                    No pinned notes yet. Click the bookmark icon on any note to
-                    pin it.
+                    No pinned notes yet. Click the bookmark icon on any note to pin it.
                   </p>
                 )}
                 {displayedNotes.length === 0 && activeTab === "all" && (
@@ -356,15 +355,13 @@ const NotesPage = () => {
         </main>
       </div>
 
-      {/* FIX 5: Floating bar — only shown when notes are selected, with working handlers */}
+      {/* Floating selection bar */}
       {selectedIds.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#6D28D9] text-white py-4 px-8 rounded-[2.2rem] shadow-2xl flex items-center gap-6 z-50">
           <span className="text-sm font-medium">
             {selectedIds.length} notes selected
           </span>
           <div className="h-4 w-[1px] bg-white/20" />
-
-          {/* Tag input inline toggle */}
           {showTagInput ? (
             <div className="flex items-center gap-2">
               <input
@@ -383,10 +380,7 @@ const NotesPage = () => {
                 Add
               </button>
               <button
-                onClick={() => {
-                  setShowTagInput(false);
-                  setTagInput("");
-                }}
+                onClick={() => { setShowTagInput(false); setTagInput(""); }}
                 className="text-sm opacity-70 hover:opacity-100"
               >
                 <X size={14} />
@@ -400,7 +394,6 @@ const NotesPage = () => {
               <BookmarkCheck size={16} /> Add Tag
             </button>
           )}
-
           <button
             onClick={handleReviewQueue}
             className="flex items-center gap-2 text-sm hover:text-purple-200 transition-colors"
@@ -415,13 +408,22 @@ const NotesPage = () => {
         </div>
       )}
 
-      {/* RENDER NEWNOTE MODAL */}
       <NewNote
         isOpen={isNewNoteOpen}
         onClose={() => setIsNewNoteOpen(false)}
         isSanctuaryMode={isSanctuaryMode}
         onSaved={handleNoteSaved}
       />
+
+      {/* EditNote — was completely missing from the JSX */}
+      {isEditOpen && editingNote && (
+        <EditNote
+          isOpen={isEditOpen}
+          onClose={() => { setIsEditOpen(false); setEditingNote(null); }}
+          note={editingNote}
+          onSaved={handleEditSaved}
+        />
+      )}
     </div>
   );
 };

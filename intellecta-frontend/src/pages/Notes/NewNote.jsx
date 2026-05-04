@@ -1,63 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Maximize2,
   Trash2,
   ChevronDown,
   Tag,
-  Bold,
-  Italic,
-  List,
-  Link,
   Image as ImageIcon,
   Check,
   X,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
-import { createNote } from "../../services/notesService"; // ← CHANGE 1: add this import
+import { createNote } from "../../services/notesService";
 
-// ← CHANGE 2: add onSaved to the props
 const NewNote = ({ isOpen, onClose, isSanctuaryMode = false, onSaved }) => {
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
   const [isMaximized, setIsMaximized] = useState(false);
   const [category, setCategory] = useState("Select Category");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [tags, setTags] = useState([]);
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [tagInput, setTagInput] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
+  const [activeFormats, setActiveFormats] = useState({ bold: false, italic: false });
 
-  useEffect(() => {
-    if (isOpen) {
-      if (isSanctuaryMode) {
-        setTitle("New Sanctuary Entry");
-        setContent(
-          `Cognitive Sanctuary: [Topic Name]
-Scholar Level Objective: Describe the one sentence "Big Idea" you are mastering.
-
-1. The Core Thesis (The "Anchor")
-Define the subject in its most essential form. What is the fundamental truth of this topic?
-
-2. High-Level Concepts (The "Building Blocks")
-Concept A: [Name & Brief Definition]
-Concept B: [Name & Brief Definition]
-Concept C: [Name & Brief Definition]
-
-3. Key Equations or Frameworks
-Primary Tool: [Insert Formula or Logic Chain here]
-
-4. Upload 
-[Upload an image or Diagram as a flash card for this topic]`,
-        );
-        setTags(["Mastery"]);
-      } else {
-        setTitle("");
-        setContent("");
-        setTags([]);
-        setCategory("Select Category");
-      }
-    }
-  }, [isOpen, isSanctuaryMode]);
+  const editorRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const savedSelectionRef = useRef(null);
 
   const categories = [
     "Advanced Physics",
@@ -66,6 +34,90 @@ Primary Tool: [Insert Formula or Logic Chain here]
     "World History",
     "Literature",
   ];
+
+  const categoryMap = {
+    "Advanced Physics": "ADVANCED_PHYSICS",
+    Macroeconomics: "MACROECONOMICS",
+    "Comp Sci": "COMP_SCI",
+    "World History": "WORLD_HISTORY",
+    Literature: "LITERATURE",
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      if (isSanctuaryMode) {
+        setTitle("New Sanctuary Entry");
+        setTags(["Mastery"]);
+        setTimeout(() => {
+          if (editorRef.current) {
+            editorRef.current.innerHTML = `Cognitive Sanctuary: [Topic Name]<br>Scholar Level Objective: Describe the one sentence "Big Idea" you are mastering.<br><br>1. The Core Thesis (The "Anchor")<br>Define the subject in its most essential form. What is the fundamental truth of this topic?<br><br>2. High-Level Concepts (The "Building Blocks")<br>Concept A: [Name &amp; Brief Definition]<br>Concept B: [Name &amp; Brief Definition]<br>Concept C: [Name &amp; Brief Definition]<br><br>3. Key Equations or Frameworks<br>Primary Tool: [Insert Formula or Logic Chain here]<br><br>4. Upload<br>[Upload an image or Diagram as a flash card for this topic]`;
+          }
+        }, 0);
+      } else {
+        setTitle("");
+        setTags([]);
+        setCategory("Select Category");
+        setImagePreview(null);
+        setActiveFormats({ bold: false, italic: false });
+        setTimeout(() => {
+          if (editorRef.current) editorRef.current.innerHTML = "";
+        }, 0);
+      }
+    }
+  }, [isOpen, isSanctuaryMode]);
+
+  const saveSelection = () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      savedSelectionRef.current = sel.getRangeAt(0).cloneRange();
+    }
+  };
+
+  const restoreSelection = () => {
+    const sel = window.getSelection();
+    if (savedSelectionRef.current && sel) {
+      sel.removeAllRanges();
+      sel.addRange(savedSelectionRef.current);
+    }
+  };
+
+  const updateActiveFormats = () => {
+    setActiveFormats({
+      bold: document.queryCommandState("bold"),
+      italic: document.queryCommandState("italic"),
+    });
+  };
+
+  const handleBold = () => {
+    restoreSelection();
+    document.execCommand("bold", false, null);
+    editorRef.current?.focus();
+    updateActiveFormats();
+  };
+
+  const handleItalic = () => {
+    restoreSelection();
+    document.execCommand("italic", false, null);
+    editorRef.current?.focus();
+    updateActiveFormats();
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setImagePreview(ev.target.result);
+      restoreSelection();
+      editorRef.current?.focus();
+      document.execCommand(
+        "insertHTML",
+        false,
+        `<img src="${ev.target.result}" style="max-width:100%;border-radius:12px;margin:8px 0;" />`,
+      );
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleAddTag = (e) => {
     if (e.key === "Enter" && tagInput.trim()) {
@@ -81,22 +133,13 @@ Primary Tool: [Insert Formula or Logic Chain here]
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  // ← CHANGE 3: replace the old onClose button with this function
   const handleSave = async () => {
     if (!title.trim()) return;
-
-    const categoryMap = {
-      "Advanced Physics": "ADVANCED_PHYSICS",
-      Macroeconomics: "MACROECONOMICS",
-      "Comp Sci": "COMP_SCI",
-      "World History": "WORLD_HISTORY",
-      Literature: "LITERATURE",
-    };
-
+    const htmlContent = editorRef.current?.innerHTML || "";
     try {
       await createNote({
         title,
-        content,
+        content: htmlContent,
         category: categoryMap[category] || null,
         tags,
         isPinned: false,
@@ -107,15 +150,10 @@ Primary Tool: [Insert Formula or Logic Chain here]
             ? `${category} Study Session`
             : "Personal Note",
       });
-      try {
-        if (onSaved) onSaved();
-      } catch (refreshErr) {
-        console.error("Note saved, but UI failed to refresh:", refreshErr);
-      }
+      if (onSaved) onSaved();
     } catch (err) {
-      // This now only triggers if the actual POST request fails
       console.error("Failed to save note:", err);
-      alert("Could not save note. Check if User ID 2 exists in your DB.");
+      alert("Could not save note.");
     }
   };
 
@@ -142,7 +180,7 @@ Primary Tool: [Insert Formula or Logic Chain here]
         }}
       >
         {/* Header */}
-        <div className="flex justify-between items-center px-10 pt-10 pb-4">
+        <div className="flex justify-between items-center px-10 pt-10 pb-4 shrink-0">
           <span className="text-[11px] font-bold tracking-[0.25em] text-[#7C3AED] uppercase">
             {isSanctuaryMode ? "Sanctuary Entry" : "Focused Editing"}
           </span>
@@ -156,16 +194,16 @@ Primary Tool: [Insert Formula or Logic Chain here]
             >
               <Maximize2 size={20} />
             </button>
-
             <button onClick={onClose} className="hover:text-red-500">
               <Trash2 size={20} />
             </button>
           </div>
         </div>
 
+        {/* Scrollable body */}
         <div
           className={cn(
-            "px-12 pb-8 space-y-6 overflow-y-auto scrollbar-hide transition-all",
+            "px-12 pb-8 space-y-6 overflow-y-auto scrollbar-hide",
             isMaximized ? "flex-grow" : "max-h-[75vh]",
           )}
         >
@@ -177,17 +215,17 @@ Primary Tool: [Insert Formula or Logic Chain here]
             className="w-full text-4xl font-bold text-zinc-900 outline-none placeholder:text-zinc-200"
           />
 
+          {/* Category */}
           <div className="space-y-4">
             <div className="relative inline-block text-left">
               <div className="flex items-center gap-3">
                 <div className="bg-zinc-100 p-2.5 rounded-xl">
                   <div className="grid grid-cols-2 gap-[2px]">
-                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-[1px]"></div>
-                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-[1px]"></div>
-                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-[1px]"></div>
+                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-[1px]" />
+                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-[1px]" />
+                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-[1px]" />
                   </div>
                 </div>
-
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -205,9 +243,8 @@ Primary Tool: [Insert Formula or Logic Chain here]
                   />
                 </button>
               </div>
-
               {isDropdownOpen && (
-                <div className="absolute left-14 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-zinc-100 z-[110] py-2 animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute left-14 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-zinc-100 z-[110] py-2">
                   {categories.map((cat) => (
                     <button
                       key={cat}
@@ -227,6 +264,7 @@ Primary Tool: [Insert Formula or Logic Chain here]
               )}
             </div>
 
+            {/* Tags */}
             <div className="flex items-center gap-3">
               <Tag size={20} className="text-zinc-300 ml-2" />
               <div className="flex flex-wrap items-center gap-2">
@@ -243,7 +281,6 @@ Primary Tool: [Insert Formula or Logic Chain here]
                     />
                   </span>
                 ))}
-
                 {isAddingTag ? (
                   <input
                     autoFocus
@@ -258,7 +295,7 @@ Primary Tool: [Insert Formula or Logic Chain here]
                 ) : (
                   <button
                     onClick={() => setIsAddingTag(true)}
-                    className="text-[#7C3AED] text-xs font-bold px-2 hover:underline transition-all active:scale-95"
+                    className="text-[#7C3AED] text-xs font-bold px-2 hover:underline"
                   >
                     + Add Tag
                   </button>
@@ -267,32 +304,95 @@ Primary Tool: [Insert Formula or Logic Chain here]
             </div>
           </div>
 
-          <div className="flex items-center gap-6 py-4 px-8 bg-zinc-50/80 rounded-2xl text-zinc-400 border border-zinc-100">
-            <Bold size={20} className="cursor-pointer hover:text-[#7C3AED]" />
-            <Italic size={20} className="cursor-pointer hover:text-[#7C3AED]" />
-            <List size={20} className="cursor-pointer hover:text-[#7C3AED]" />
-            <Link size={20} className="cursor-pointer hover:text-[#7C3AED]" />
-            <ImageIcon
-              size={20}
-              className="cursor-pointer hover:text-[#7C3AED]"
+          {/* Toolbar */}
+          <div className="flex items-center gap-4 py-3 px-6 bg-zinc-50/80 rounded-2xl text-zinc-400 border border-zinc-100 w-fit">
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleBold();
+              }}
+              title="Bold"
+              className={cn(
+                "transition-colors font-bold text-base w-8 h-8 flex items-center justify-center rounded-lg",
+                activeFormats.bold
+                  ? "bg-purple-100 text-[#7C3AED]"
+                  : "hover:bg-purple-50 hover:text-[#7C3AED]",
+              )}
+            >
+              B
+            </button>
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleItalic();
+              }}
+              title="Italic"
+              className={cn(
+                "transition-colors italic text-base w-8 h-8 flex items-center justify-center rounded-lg",
+                activeFormats.italic
+                  ? "bg-purple-100 text-[#7C3AED]"
+                  : "hover:bg-purple-50 hover:text-[#7C3AED]",
+              )}
+            >
+              I
+            </button>
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }}
+              title="Insert image"
+              className="hover:text-[#7C3AED] transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-purple-50"
+            >
+              <ImageIcon size={18} />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
             />
           </div>
 
-          <textarea
-            placeholder="Start typing your thoughts..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full h-64 text-zinc-600 text-lg leading-relaxed outline-none resize-none placeholder:text-zinc-300"
+          {/* Image preview */}
+          {imagePreview && (
+            <div className="relative w-fit">
+              <img
+                src={imagePreview}
+                alt="preview"
+                className="max-h-48 rounded-2xl border border-zinc-200 shadow-sm"
+              />
+              <button
+                onClick={() => setImagePreview(null)}
+                className="absolute top-2 right-2 bg-white rounded-full p-1 shadow text-zinc-400 hover:text-red-500"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
+          {/* Rich text editor */}
+          <div
+            ref={editorRef}
+            contentEditable
+            suppressContentEditableWarning
+            onMouseUp={() => { saveSelection(); updateActiveFormats(); }}
+            onKeyUp={() => { saveSelection(); updateActiveFormats(); }}
+            onSelect={() => { saveSelection(); updateActiveFormats(); }}
+            className="w-full min-h-[240px] text-zinc-600 text-lg leading-relaxed outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-zinc-300"
+            style={{ whiteSpace: "pre-wrap" }}
+            data-placeholder="Start typing your thoughts..."
           />
         </div>
 
+        {/* Footer */}
         <div
           className={cn(
-            "px-10 pb-10 pt-4 transition-all",
+            "px-10 pb-10 pt-4 shrink-0",
             isMaximized ? "mt-auto" : "",
           )}
         >
-          {/* ← CHANGE 3 continued: onClick changed from onClose to handleSave */}
           <Button
             onClick={handleSave}
             className="w-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white py-8 rounded-[1.8rem] text-xl font-bold shadow-xl transition-all"
