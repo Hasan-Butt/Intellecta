@@ -9,4 +9,6 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
     @org.springframework.data.jpa.repository.Query("SELECT q FROM Quiz q LEFT JOIN FETCH q.questions")
     java.util.List<Quiz> findAllWithQuestions();
+
+    long countByCategory(String category);
 }
