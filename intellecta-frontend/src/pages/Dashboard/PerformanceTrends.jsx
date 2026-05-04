@@ -251,22 +251,21 @@ export default function PerformanceTrends() {
                 </span>
               </div>
               <div className="flex items-end justify-between h-48 gap-2">
-                {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"].map((month, i) => {
-                  const heights = [0, 0, 0, 0, 0, 0, 0];
-                  return (
-                    <div key={month} className="flex-1 flex flex-col items-center gap-3">
-                      <div
-                        className={`w-full rounded-xl transition-all duration-500 ${heights[i] > 0 ? "bg-[#6C5DD3]" : "bg-[#E3E0F7]"}`}
-                        style={{ height: heights[i] > 0 ? `${heights[i]}%` : "8px" }}
-                      />
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-tight">{month}</span>
-                    </div>
-                  );
-                })}
+                {(data?.performanceOverTime ?? Array(7).fill({ month: "—", score: 0 })).map((item, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-3">
+                    <div
+                      className={`w-full rounded-xl transition-all duration-500 ${item.score > 0 ? "bg-[#6C5DD3]" : "bg-[#E3E0F7]"}`}
+                      style={{ height: item.score > 0 ? `${Math.min(item.score, 100)}%` : "8px" }}
+                    />
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-tight">{item.month}</span>
+                  </div>
+                ))}
               </div>
-              <p className="text-center text-xs font-bold text-gray-400 mt-6 uppercase tracking-widest">
-                Performance data will appear here as students complete quizzes
-              </p>
+              {(!data?.performanceOverTime || data.performanceOverTime.every(m => m.score === 0)) && (
+                <p className="text-center text-xs font-bold text-gray-400 mt-6 uppercase tracking-widest">
+                  Performance data will appear here as students complete quizzes
+                </p>
+              )}
             </div>
 
             {/* SUBJECT COMPARISON */}
@@ -387,8 +386,8 @@ export default function PerformanceTrends() {
                 </table>
               </div>
 
-              {/* Student detail panel */}
-              <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm p-8 flex flex-col">
+              {/* Student detail panel — fixed height, scrollable content */}
+              <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm p-8 flex flex-col" style={{ maxHeight: "520px" }}>
                 {!selectedStudent ? (
                   <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 text-gray-300">
                     <User size={48} />
@@ -398,50 +397,56 @@ export default function PerformanceTrends() {
                   </div>
                 ) : (
                   <>
-                    <div className="flex justify-between items-start mb-6">
+                    {/* Fixed header */}
+                    <div className="flex justify-between items-start mb-4 flex-shrink-0">
                       <h3 className="text-lg font-black text-[#111827]">Student Detail</h3>
                       <button onClick={() => { setSelectedStudent(null); setStudentDetail(null); }}
                         className="p-1.5 rounded-xl text-gray-400 hover:bg-gray-50 transition-all">
                         <X size={16} />
                       </button>
                     </div>
-                    <div className="flex items-center gap-4 mb-8">
+                    <div className="flex items-center gap-3 mb-5 flex-shrink-0">
                       <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedStudent.username}`}
-                        alt="" className="w-14 h-14 rounded-full border border-gray-100" />
-                      <div>
-                        <p className="text-base font-black text-[#111827]">{selectedStudent.username}</p>
-                        <p className="text-xs font-bold text-gray-400">{selectedStudent.email}</p>
+                        alt="" className="w-12 h-12 rounded-full border border-gray-100 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-black text-[#111827] truncate">{selectedStudent.username}</p>
+                        <p className="text-[10px] font-bold text-gray-400 truncate">{selectedStudent.email}</p>
                         <StatusBadge status={selectedStudent.status} />
                       </div>
                     </div>
 
-                    {studentLoading ? (
-                      <p className="text-sm font-bold text-gray-400 text-center py-8">Loading...</p>
-                    ) : (
-                      <div className="space-y-5 flex-1">
-                        <DetailRow label="Avg Score"
-                          value={studentDetail?.quizAttempts > 0 ? `${studentDetail.averageScore}%` : "No data yet"} />
-                        <DetailRow label="Quiz Attempts" value={studentDetail?.quizAttempts ?? 0} />
-                        <DetailRow label="Trend" value={<TrendIcon trend={studentDetail?.trend ?? "STABLE"} />} />
+                    {/* Scrollable stats */}
+                    <div className="overflow-y-auto flex-1 pr-1">
+                      {studentLoading ? (
+                        <p className="text-sm font-bold text-gray-400 text-center py-8">Loading...</p>
+                      ) : (
+                        <div className="space-y-4">
+                          <DetailRow label="Avg Score"
+                            value={studentDetail?.quizAttempts > 0 ? `${studentDetail.averageScore}%` : "No data yet"} />
+                          <DetailRow label="Quiz Attempts" value={studentDetail?.quizAttempts ?? 0} />
+                          <DetailRow label="Trend" value={<TrendIcon trend={studentDetail?.trend ?? "STABLE"} />} />
 
-                        <div className="mt-8 pt-6 border-t border-gray-50">
-                          <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">
-                            Score History
-                          </p>
-                          <div className="flex items-end gap-1.5 h-20">
-                            {[0, 0, 0, 0, 0, 0, 0].map((h, i) => (
-                              <div key={i}
-                                className="flex-1 bg-[#E3E0F7] rounded-md"
-                                style={{ height: h > 0 ? `${h}%` : "6px" }}
-                              />
-                            ))}
+                          <div className="pt-5 border-t border-gray-50">
+                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">
+                              Score History
+                            </p>
+                            <div className="flex items-end gap-1.5 h-16">
+                              {(studentDetail?.scoreHistory ?? [0, 0, 0, 0, 0, 0, 0]).map((h, i) => (
+                                <div key={i}
+                                  className={`flex-1 rounded-md transition-all duration-500 ${h > 0 ? "bg-[#6C5DD3]" : "bg-[#E3E0F7]"}`}
+                                  style={{ height: h > 0 ? `${Math.min(h, 100)}%` : "6px" }}
+                                />
+                              ))}
+                            </div>
+                            {(!studentDetail?.scoreHistory || studentDetail.scoreHistory.every(h => h === 0)) && (
+                              <p className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-tight">
+                                Score history will populate after quiz attempts
+                              </p>
+                            )}
                           </div>
-                          <p className="text-[10px] font-bold text-gray-400 mt-3 uppercase tracking-tight">
-                            Score history will populate after quiz attempts
-                          </p>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </>
                 )}
               </div>

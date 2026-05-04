@@ -54,6 +54,9 @@ const UsersPage = () => {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Stats cards
+  const [stats, setStats] = useState(null);
+
   // Row action dropdown
   const [openMenuId, setOpenMenuId] = useState(null);
   const menuRef = useRef(null);
@@ -94,9 +97,19 @@ const UsersPage = () => {
     }
   }, [search, page]);
 
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await api.get("/admin/users/stats");
+      setStats(res.data);
+    } catch {
+      // stats are non-critical, fail silently
+    }
+  }, []);
+
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+    fetchStats();
+  }, [fetchUsers, fetchStats]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -207,8 +220,9 @@ const UsersPage = () => {
     showToast("Showing all students in the table below.");
   };
 
-  const studentCount = users.filter((u) => u.role === "STUDENT").length;
-  const activeCount = users.filter((u) => u.status === "Active").length;
+  // Use server-wide stats; fall back to page-count while stats load
+  const studentCount = stats?.totalStudents ?? users.filter((u) => u.role === "STUDENT").length;
+  const activeCount  = stats?.totalActiveUsers ?? users.filter((u) => u.status === "Active").length;
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -244,21 +258,21 @@ const UsersPage = () => {
                 icon={<UsersIcon />}
                 label="Total Users"
                 value={loading ? "—" : totalElements.toLocaleString()}
-                trend="+12%"
+                trend={stats?.userGrowthLabel ?? "—"}
                 color="text-[#6C5DD3]"
               />
               <StatCard
                 icon={<Brain />}
                 label="Avg. Focus Score"
-                value="88.4"
-                trend="+4.2%"
+                value={stats ? stats.avgFocusScore.toFixed(1) : "—"}
+                trend={stats?.focusTrendLabel ?? "—"}
                 color="text-purple-500"
               />
               <StatCard
                 icon={<Activity />}
-                label="Active Sessions"
-                value={loading ? "—" : activeCount.toString()}
-                trend="Stable"
+                label="Active Students"
+                value={stats ? activeCount.toString() : "—"}
+                trend={stats?.sessionTrendLabel ?? "—"}
                 color="text-blue-500"
               />
               <div className="bg-[#6C5DD3] rounded-[32px] p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-100">
@@ -267,7 +281,7 @@ const UsersPage = () => {
                   Students
                 </p>
                 <h4 className="text-4xl font-black mt-4">
-                  {loading ? "—" : studentCount}
+                  {stats ? studentCount : (loading ? "—" : studentCount)}
                 </h4>
               </div>
             </div>
@@ -427,7 +441,7 @@ const UsersPage = () => {
                 <div className="max-w-md relative z-10">
                   <h4 className="text-2xl font-black">Cognitive Health Alert</h4>
                   <p className="text-gray-400 font-bold mt-4 text-sm leading-relaxed">
-                    34 students show a downward trend in focus score over the last 48 hours.
+                    {stats ? stats.downwardTrendStudents : "—"} students show a downward trend in focus score over the last 48 hours.
                     Suggest triggering proactive intervention modules.
                   </p>
                   <div className="mt-8 flex gap-4">
@@ -458,12 +472,12 @@ const UsersPage = () => {
                   </span>
                 </div>
                 <div className="space-y-4">
-                  <StatusRow label="Real-time Sync" value="Active" />
-                  <StatusRow label="Database Latency" value="14ms" />
-                  <StatusRow label="Storage Capacity" value="42%" />
+                  <StatusRow label="Real-time Sync" value={stats?.syncStatus ?? "—"} />
+                  <StatusRow label="Database Latency" value={stats?.dbLatency ?? "—"} />
+                  <StatusRow label="Storage Capacity" value={stats?.storageCapacity ?? "—"} />
                 </div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase mt-12 tracking-widest text-center">
-                  Last Maintenance: Oct 24, 2023 at 04:00 AM
+                  {stats?.lastMaintenance ? `Last Maintenance: ${stats.lastMaintenance}` : "Loading maintenance info..."}
                 </p>
               </div>
             </div>

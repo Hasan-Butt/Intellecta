@@ -34,9 +34,9 @@ public class QuizAttempt {
     private LocalDateTime endTime;
     private String status; // "IN_PROGRESS", "COMPLETED"
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "quiz_attempt_answers", joinColumns = @JoinColumn(name = "attempt_id"))
     @MapKeyColumn(name = "question_id")
     @Column(name = "selected_option_index")
-    private java.util.Map<Long, Integer> userAnswers = new java.util.HashMap<>();   
+    private java.util.Map<Long, Integer> userAnswers = new java.util.HashMap<>();
 }

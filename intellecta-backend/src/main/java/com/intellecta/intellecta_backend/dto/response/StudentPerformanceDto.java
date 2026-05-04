@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data @Builder @AllArgsConstructor @NoArgsConstructor
 public class StudentPerformanceDto {
     private Long id;
@@ -14,4 +16,5 @@ public class StudentPerformanceDto {
     private long quizAttempts;
     private String trend; // "UP", "DOWN", "STABLE"
     private String status;
+    private List<Double> scoreHistory;
 }

@@ -16,6 +16,7 @@ public class PerformanceTrendDto {
     private List<StudentPerformanceDto> students;
     private List<SubjectPerformanceDto> subjectBreakdown;
     private List<String> weakTopics;
+    private List<MonthlyScoreDto> performanceOverTime;
     private String dateFrom;
     private String dateTo;
 }

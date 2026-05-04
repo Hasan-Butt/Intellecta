@@ -30,7 +30,11 @@ const AnalyticsPage = () => {
   const [dateError, setDateError] = useState("");
 
   const [analytics, setAnalytics] = useState(null);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [integrity, setIntegrity] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [integrityLoading, setIntegrityLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
   const showToast = (message, type = "success") => {
@@ -52,9 +56,35 @@ const AnalyticsPage = () => {
     }
   }, [appliedFrom, appliedTo]);
 
+  const fetchAuditLogs = useCallback(async () => {
+    setAuditLoading(true);
+    try {
+      const res = await api.get("/admin/audit");
+      setAuditLogs(res.data);
+    } catch {
+      showToast("Failed to load audit logs.", "error");
+    } finally {
+      setAuditLoading(false);
+    }
+  }, []);
+
+  const fetchIntegrity = useCallback(async () => {
+    setIntegrityLoading(true);
+    try {
+      const res = await api.get("/admin/integrity");
+      setIntegrity(res.data);
+    } catch {
+      showToast("Failed to load system integrity.", "error");
+    } finally {
+      setIntegrityLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchAnalytics();
-  }, [fetchAnalytics]);
+    fetchAuditLogs();
+    fetchIntegrity();
+  }, [fetchAnalytics, fetchAuditLogs, fetchIntegrity]);
 
   const handleApplyDateRange = () => {
     if (fromDate && toDate && fromDate > toDate) {
@@ -117,7 +147,7 @@ const AnalyticsPage = () => {
                   <Download size={18} strokeWidth={3} /> Export Report
                 </button>
                 <button
-                  onClick={fetchAnalytics}
+                  onClick={() => { fetchAnalytics(); fetchAuditLogs(); fetchIntegrity(); }}
                   disabled={loading}
                   className="flex items-center gap-2 px-6 py-4 bg-[#6C5DD3] text-white rounded-2xl text-xs font-black hover:bg-[#5a4db3] shadow-xl shadow-indigo-100 transition-all active:scale-95 disabled:opacity-60"
                 >
@@ -238,13 +268,13 @@ const AnalyticsPage = () => {
                   </span>
                 </div>
                 <div className="flex items-end gap-2 h-32 mb-6">
-                  {[35, 45, 60, 40, 85, 50, 40, 35, 60, activePercent].map((h, i) => (
+                  {(analytics?.focusHistory ?? [35, 45, 60, 40, 85, 50, 40, 35, 60, activePercent]).map((h, i) => (
                     <div
                       key={i}
                       className={`flex-1 rounded-lg transition-all duration-500 ${
                         h > 70 ? "bg-[#6C5DD3]" : "bg-[#E3E0F7] hover:bg-[#d0ccf0]"
                       }`}
-                      style={{ height: `${Math.min(h, 100)}%` }}
+                      style={{ height: `${Math.max(Math.min(h, 100), 4)}%` }}
                     />
                   ))}
                 </div>
@@ -263,7 +293,7 @@ const AnalyticsPage = () => {
                   </p>
                   <div className="flex items-baseline gap-1 mt-6">
                     <h3 className="text-6xl font-black text-[#111827] tracking-tighter">
-                      3.2
+                      {loading ? "—" : (analytics?.distractionsPerHour ?? 0)}
                     </h3>
                     <span className="text-gray-300 text-xl font-bold uppercase">/hr</span>
                   </div>
@@ -271,7 +301,7 @@ const AnalyticsPage = () => {
                 <div className="flex items-center gap-3 text-red-500 mt-10">
                   <Activity size={24} />
                   <p className="text-[11px] font-black leading-tight uppercase tracking-widest">
-                    Decreasing Trend
+                    {loading ? "—" : (analytics?.distractionTrend ?? "—")}
                   </p>
                 </div>
               </div>
@@ -281,12 +311,17 @@ const AnalyticsPage = () => {
                 <p className="text-[12px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                   System Load
                 </p>
-                <h3 className="text-6xl font-black mt-6 tracking-tighter text-[#111827]">12%</h3>
+                <h3 className="text-6xl font-black mt-6 tracking-tighter text-[#111827]">
+                  {integrityLoading ? "—" : `${integrity?.systemLoad ?? 0}%`}
+                </h3>
                 <div className="mt-10 h-3 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: "12%" }} />
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    style={{ width: `${integrity?.systemLoad ?? 0}%` }}
+                  />
                 </div>
                 <p className="text-[11px] text-gray-400 mt-6 font-black uppercase tracking-[0.2em]">
-                  All Nodes Healthy
+                  {integrityLoading ? "Checking..." : (integrity?.nodeStatus ?? "All Nodes Healthy")}
                 </p>
               </div>
             </div>
@@ -312,18 +347,28 @@ const AnalyticsPage = () => {
                       </tr>
                     </thead>
                     <tbody className="text-sm font-bold text-gray-600">
-                      {[
-                        { time: "14:23:01", user: "u_88219", event: "Session Init", status: "SUCCESS", color: "bg-emerald-500" },
-                        { time: "14:22:58", user: "u_sarah_d", event: "Auth Failure", status: "BLOCKED", color: "bg-red-500" },
-                        { time: "14:21:44", user: "u_intel_04", event: "Focus Log", status: "LOGGED", color: "bg-gray-400" },
-                        { time: "14:19:30", user: "u_k8s_92", event: "Threshold", status: "SUCCESS", color: "bg-emerald-500" },
-                      ].map((row, i) => (
+                      {auditLoading ? (
+                        <tr>
+                          <td colSpan={4} className="px-8 py-8 text-center text-sm font-bold text-gray-400">
+                            Loading audit logs...
+                          </td>
+                        </tr>
+                      ) : auditLogs.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="px-8 py-8 text-center text-sm font-bold text-gray-400">
+                            No session logs available.
+                          </td>
+                        </tr>
+                      ) : auditLogs.map((row, i) => (
                         <tr key={i} className="border-t border-gray-50 hover:bg-gray-50/50 transition-colors">
-                          <td className="px-8 py-6 text-gray-400 font-mono">{row.time}</td>
-                          <td className="px-8 py-6 text-[#111827] font-black">{row.user}</td>
-                          <td className="px-8 py-6">{row.event}</td>
-                          <td className="px-8 py-6 text-right">
-                            <span className={`${row.color} text-white text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest`}>
+                          <td className="px-8 py-5 text-gray-400 font-mono text-xs">{row.timestamp}</td>
+                          <td className="px-8 py-5 text-[#111827] font-black text-xs">{row.userId}</td>
+                          <td className="px-8 py-5 text-xs">{row.event}</td>
+                          <td className="px-8 py-5 text-right">
+                            <span className={`text-white text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest ${
+                              row.status === "COMPLETED"   ? "bg-emerald-500" :
+                              row.status === "IN_PROGRESS" ? "bg-amber-500"   : "bg-gray-400"
+                            }`}>
                               {row.status}
                             </span>
                           </td>
@@ -343,14 +388,40 @@ const AnalyticsPage = () => {
                       <ShieldCheck size={28} className="text-emerald-500" />
                     </div>
                     <h4 className="text-3xl font-black leading-tight text-[#111827]">
-                      System Integrity 100%
+                      System Integrity{" "}
+                      {integrityLoading ? "—" : `${integrity?.integrityScore ?? 100}%`}
                     </h4>
                     <p className="text-sm text-gray-400 mt-4 font-bold leading-relaxed">
-                      All cognitive edge nodes are synchronized. No latency
-                      detected in adaptive quiz engines.
+                      {integrityLoading
+                        ? "Running diagnostics..."
+                        : (integrity?.nodeStatus ?? "All systems operational")}
                     </p>
-                    <button className="mt-10 w-full py-5 bg-[#6C5DD3] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#5a4db3] transition-all shadow-lg shadow-indigo-100">
-                      Execute Diagnostics
+                    <div className="mt-6 space-y-3">
+                      <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-tight">
+                        <span>Active Sessions</span>
+                        <span className="text-emerald-500">
+                          {integrity?.concurrentSessions ?? 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-tight">
+                        <span>Quiz Completion</span>
+                        <span className="text-blue-500">
+                          {integrity?.quizCompletionRate ?? 100}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-tight">
+                        <span>Active Users</span>
+                        <span className="text-[#6C5DD3]">
+                          {integrity ? `${integrity.activeUsers}/${integrity.totalUsers}` : "—"}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={fetchIntegrity}
+                      disabled={integrityLoading}
+                      className="mt-8 w-full py-5 bg-[#6C5DD3] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#5a4db3] transition-all shadow-lg shadow-indigo-100 disabled:opacity-60"
+                    >
+                      {integrityLoading ? "Scanning..." : "Execute Diagnostics"}
                     </button>
                   </div>
                   <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[#6C5DD3]/5 rounded-full blur-3xl group-hover:scale-125 transition-transform" />
@@ -362,20 +433,20 @@ const AnalyticsPage = () => {
                     Distraction Sources
                   </h4>
                   <div className="space-y-6">
-                    {[
-                      { label: "Social Media", value: 42 },
-                      { label: "Ambient Noise", value: 28 },
-                      { label: "Notifications", value: 15 },
-                    ].map((item) => (
+                    {(analytics?.distractionSources ?? [
+                      { label: "Social Media", percentage: 42 },
+                      { label: "Notifications", percentage: 28 },
+                      { label: "Physical Breaks", percentage: 15 },
+                    ]).map((item) => (
                       <div key={item.label}>
                         <div className="flex justify-between text-xs font-black mb-3 uppercase tracking-tighter">
                           <span className="text-gray-600">{item.label}</span>
-                          <span className="text-[#6C5DD3]">{item.value}%</span>
+                          <span className="text-[#6C5DD3]">{item.percentage}%</span>
                         </div>
                         <div className="h-2 w-full bg-gray-50 rounded-full border border-gray-100">
                           <div
                             className="h-full bg-[#6C5DD3] rounded-full"
-                            style={{ width: `${item.value}%` }}
+                            style={{ width: `${item.percentage}%` }}
                           />
                         </div>
                       </div>
