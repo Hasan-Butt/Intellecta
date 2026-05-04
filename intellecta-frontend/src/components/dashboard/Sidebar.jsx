@@ -7,7 +7,6 @@ import {
   BarChart3,
   TrendingUp,
   Settings,
-  LifeBuoy,
   LogOut
 } from 'lucide-react';
 
@@ -31,7 +30,6 @@ const Sidebar = () => {
     { name: 'Analytics', icon: BarChart3, path: '/analytics' },
     { name: 'Trends', icon: TrendingUp, path: '/trends' },
     { name: 'Configuration', icon: Settings, path: '/configuration' },
-    { name: 'Support', icon: LifeBuoy, path: '/support' },
   ];
 
   return (

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data @Builder @AllArgsConstructor @NoArgsConstructor
 public class AnalyticsDto {
     private long totalUsers;
@@ -14,10 +16,14 @@ public class AnalyticsDto {
     private long adminCount;
     private double activeUserPercentage;
 
-    // Quiz stats (populated when quiz module is built)
     private long totalQuizzesTaken;
     private double averageQuizScore;
     private long totalQuestions;
+
+    private List<Double> focusHistory;
+    private double distractionsPerHour;
+    private String distractionTrend;
+    private List<DistractionSourceDto> distractionSources;
 
     private String dateFrom;
     private String dateTo;
