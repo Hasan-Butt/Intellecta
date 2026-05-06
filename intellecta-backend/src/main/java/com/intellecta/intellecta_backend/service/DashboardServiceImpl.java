@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 public class DashboardServiceImpl implements DashboardService {
 
     private static final double DAILY_GOAL_HOURS = 6.0;
-    private static final long   XP_PER_LEVEL     = 500L;
 
     private final UserRepository         userRepository;
     private final StudySessionRepository sessionRepository;
@@ -54,10 +53,11 @@ public class DashboardServiceImpl implements DashboardService {
         // ── XP / Level ────────────────────────────────────────────────────────
         long currentXp    = user.getXp();
         int  level        = user.getLevel();
-        long nextLevelXp  = level * XP_PER_LEVEL;
-        long prevLevelXp  = (level - 1) * XP_PER_LEVEL;
+        // Exponential curve: level N requires 100 * N^1.5 total XP
+        long nextLevelXp  = (long)(100.0 * Math.pow(level + 1, 1.5));
+        long prevLevelXp  = (long)(100.0 * Math.pow(level, 1.5));
         int  xpPct        = (int) Math.min(100,
-            ((currentXp - prevLevelXp) * 100.0) / (nextLevelXp - prevLevelXp));
+            ((currentXp - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
         String levelTitle = resolveLevelTitle(level);
 
         // ── Recent badges ─────────────────────────────────────────────────────
