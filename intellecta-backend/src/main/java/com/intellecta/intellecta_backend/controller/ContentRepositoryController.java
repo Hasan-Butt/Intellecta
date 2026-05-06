@@ -24,6 +24,11 @@ public class ContentRepositoryController {
         return ResponseEntity.ok(contentRepositoryService.getAllCategories());
     }
 
+    @GetMapping("/adaptive-stats")
+    public ResponseEntity<List<com.intellecta.intellecta_backend.dto.response.AdaptiveCategoryDto>> getAdaptiveStats() {
+        return ResponseEntity.ok(contentRepositoryService.getAdaptiveStats());
+    }
+
     @PostMapping("/categories")
     public ResponseEntity<SubjectCategory> createCategory(@RequestBody SubjectCategory category) {
         return ResponseEntity.ok(contentRepositoryService.createCategory(category));
