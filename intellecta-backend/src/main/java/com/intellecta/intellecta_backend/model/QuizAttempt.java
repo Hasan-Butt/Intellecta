@@ -39,5 +39,6 @@ public class QuizAttempt {
     @CollectionTable(name = "quiz_attempt_answers", joinColumns = @JoinColumn(name = "attempt_id"))
     @MapKeyColumn(name = "question_id")
     @Column(name = "selected_option_index")
+    @Builder.Default
     private java.util.Map<Long, Integer> userAnswers = new java.util.HashMap<>();
 }

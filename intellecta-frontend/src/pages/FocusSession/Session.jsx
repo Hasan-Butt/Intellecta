@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
+import api from "../../services/api";
 import {
   Play,
   Pause,
@@ -72,7 +73,21 @@ const SessionItem = ({ icon: Icon, title, subtitle, time, xp, type }) => (
 const StudeySessionDashboard = () => {
   const [isActive, setIsActive] = useState(true);
   const [isBlocked, setIsBlocked] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(1498); // 24:58 in seconds
+  const [timeLeft, setTimeLeft] = useState(1498);
+  const [level, setLevel] = useState(1);
+  const [currentXp, setCurrentXp] = useState(0);
+  const [nextLevelXp, setNextLevelXp] = useState(141); // 100 * 2^1.5 ≈ 141
+
+  useEffect(() => {
+    const userId = localStorage.getItem('userId') || '2';
+    api.get(`/dashboard/${userId}`)
+      .then(res => {
+        setLevel(res.data.level ?? 1);
+        setCurrentXp(res.data.currentXp ?? 0);
+        setNextLevelXp(res.data.nextLevelXp ?? 141);
+      })
+      .catch(() => {});
+  }, []);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -339,21 +354,24 @@ const StudeySessionDashboard = () => {
             <footer className="mt-8 bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-3xl p-6 flex items-center gap-8 border border-white">
               <div className="flex items-center gap-4 min-w-[120px]">
                 <div className="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-slate-200 flex items-center justify-center text-sm font-black italic">
-                  Lvl 24
+                  Lvl {level}
                 </div>
                 <div>
-                  <p className="text-sm font-bold">Progress to Level 25</p>
+                  <p className="text-sm font-bold">Progress to Level {level + 1}</p>
                   <p className="text-[10px] text-slate-500 font-medium">
                     Collect{" "}
                     <span className="text-indigo-600 font-bold">
-                      450 more XP
+                      {Math.max(0, nextLevelXp - currentXp).toLocaleString()} more XP
                     </span>{" "}
-                    to unlock the 'Deep Thinker' badge.
+                    to reach the next level.
                   </p>
                 </div>
               </div>
               <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                <div className="w-3/4 h-full bg-indigo-600 rounded-full shadow-[0_0_10px_rgba(79,70,229,0.4)]" />
+                <div
+                  className="h-full bg-indigo-600 rounded-full shadow-[0_0_10px_rgba(79,70,229,0.4)] transition-all duration-700"
+                  style={{ width: `${Math.min(100, nextLevelXp > 0 ? (currentXp / nextLevelXp) * 100 : 0)}%` }}
+                />
               </div>
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-amber-500 shadow-sm cursor-pointer">

@@ -4,7 +4,6 @@ package com.intellecta.intellecta_backend.config;
 
 import com.intellecta.intellecta_backend.model.User;
 import com.intellecta.intellecta_backend.repository.UserRepository;
-import com.intellecta.intellecta_backend.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;

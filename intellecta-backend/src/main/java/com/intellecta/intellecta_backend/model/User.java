@@ -102,6 +102,15 @@ public class User {
 
     public void setXp(long xp){
         this.xp = xp;
+        this.level = calculateLevel(xp);
+    }
+
+    private int calculateLevel(long totalXp) {
+        int lvl = 1;
+        while (100.0 * Math.pow(lvl + 1, 1.5) <= totalXp) {
+            lvl++;
+        }
+        return lvl;
     }
 
     public int getLevel(){

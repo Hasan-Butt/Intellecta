@@ -4,14 +4,8 @@ import {
   ArrowRight,
   Zap,
   Search,
-  ListFilter,
-  CalendarDays,
   Clock,
   BookOpen,
-  CheckCircle2,
-  Lock,
-  Star,
-  Layers,
   Microscope,
   Sigma,
 } from "lucide-react";
@@ -30,8 +24,11 @@ const QuizPlatform = () => {
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
-        const response = await api.get("/quizzes");
-        setQuizzes(response.data);
+        const userId = localStorage.getItem("userId") || "2";
+        const response = await api.get(`/quizzes?userId=${userId}`);
+        // Filter out quizzes that have already been attempted
+        const availableQuizzes = response.data.filter(q => !q.attempted);
+        setQuizzes(availableQuizzes);
       } catch (error) {
         console.error("Error fetching quizzes:", error);
       } finally {
