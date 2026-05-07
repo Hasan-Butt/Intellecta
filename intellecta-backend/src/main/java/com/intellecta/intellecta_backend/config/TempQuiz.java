@@ -4,7 +4,6 @@ package com.intellecta.intellecta_backend.config;
 
 import com.intellecta.intellecta_backend.model.User;
 import com.intellecta.intellecta_backend.repository.UserRepository;
-import com.intellecta.intellecta_backend.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +18,7 @@ public class TempQuiz implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (userRepository.count() == 24) {
+        if (userRepository.count() == 0) {
             User defaultUser = new User();
             defaultUser.setUsername("Hasan Butt");
             defaultUser.setEmail("hasan@intellecta.com");

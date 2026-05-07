@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 import { 
   Home, 
   Calendar, 
@@ -18,6 +19,18 @@ import {
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [userLevel, setUserLevel] = useState(1);
+  const [levelTitle, setLevelTitle] = useState('Beginner');
+
+  useEffect(() => {
+    const userId = localStorage.getItem('userId') || '2';
+    api.get(`/dashboard/${userId}`)
+      .then(res => {
+        setUserLevel(res.data.level ?? 1);
+        setLevelTitle(res.data.levelTitle ?? 'Beginner');
+      })
+      .catch(() => {});
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token'); 
@@ -45,7 +58,7 @@ const Sidebar = () => {
           Cognitive Sanctuary
         </h1>
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-          Level 12 Scholar
+          Level {userLevel} {levelTitle}
         </p>
       </div>
 
