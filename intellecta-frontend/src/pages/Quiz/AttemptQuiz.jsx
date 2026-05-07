@@ -71,8 +71,9 @@ const FullAssessmentInterface = () => {
 
   const handleSubmit = async () => {
     try {
+      const userId = localStorage.getItem("userId") || "2";
       const response = await api.post('/quizzes/submit', {
-        userId: 1, // Assuming hardcoded for now
+        userId: parseInt(userId),
         quizId: quiz.id,
         answers: answersRef.current // Use ref for guaranteed fresh answers
       });

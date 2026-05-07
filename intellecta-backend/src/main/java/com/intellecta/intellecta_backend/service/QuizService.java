@@ -22,8 +22,21 @@ public class QuizService {
     private final UserRepository userRepository;
     private final SectionalXPRepository sectionalXPRepository;
 
-    public List<Quiz> getAllQuizzes() {
-        return quizRepository.findAll();
+    public List<Quiz> getAllQuizzes(Long userId) {
+        List<Quiz> quizzes = new java.util.ArrayList<>(quizRepository.findAllWithQuestions());
+        if (userId != null) {
+            System.out.println("Filtering quizzes for userId: " + userId + ". Initial count: " + quizzes.size());
+            // Remove quizzes already attempted by this user
+            quizzes.removeIf(quiz -> {
+                boolean attempted = quizAttemptRepository.existsByUserIdAndQuizId(userId, quiz.getId());
+                if (attempted) {
+                    System.out.println("Removing quiz: " + quiz.getTopic() + " (attempted)");
+                }
+                return attempted;
+            });
+            System.out.println("Final count: " + quizzes.size());
+        }
+        return quizzes;
     }
 
     @org.springframework.transaction.annotation.Transactional
@@ -45,6 +58,9 @@ public class QuizService {
 
     @org.springframework.transaction.annotation.Transactional
     public QuizAttempt submitQuiz(QuizSubmissionRequest request) {
+        if (quizAttemptRepository.existsByUserIdAndQuizId(request.getUserId(), request.getQuizId())) {
+            throw new RuntimeException("Quiz already attempted by this user.");
+        }
         try {
             Quiz quiz = getQuizById(request.getQuizId());
             User user = userRepository.findById(request.getUserId()).orElseGet(() -> {
