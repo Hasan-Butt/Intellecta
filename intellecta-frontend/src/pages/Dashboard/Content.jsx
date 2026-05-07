@@ -15,6 +15,7 @@ import api from "../../services/api";
 const ContentPage = () => {
   const [activeTab, setActiveTab] = useState("Content");
   const [subjects, setSubjects] = useState([]);
+  const [adaptiveStats, setAdaptiveStats] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Modal States
@@ -44,7 +45,17 @@ const ContentPage = () => {
 
   useEffect(() => {
     fetchContent();
+    fetchAdaptiveStats();
   }, []);
+
+  const fetchAdaptiveStats = async () => {
+    try {
+      const response = await api.get("/content/adaptive-stats");
+      setAdaptiveStats(response.data);
+    } catch (error) {
+      console.error("Error fetching adaptive stats:", error);
+    }
+  };
 
   const fetchContent = async () => {
     try {
@@ -195,6 +206,10 @@ const ContentPage = () => {
                             <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">
                               {subject.topics?.length || 0} Total Titles
                             </span>
+                            <span className="text-gray-300">•</span>
+                            <span className="text-gray-400 font-bold text-xs uppercase tracking-widest">
+                              {subject.quizCount || 0} Total Quizzes
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -283,10 +298,24 @@ const ContentPage = () => {
                   </p>
 
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                      <span className="text-xs font-black text-gray-500 uppercase">Avg. Failure Rate</span>
-                      <span className="text-lg font-black text-[#111827]">12.4%</span>
-                    </div>
+                    {adaptiveStats.length > 0 ? (
+                      adaptiveStats.map((stat, idx) => (
+                        <div key={idx} className="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-red-100 transition-colors">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-black text-[#111827] uppercase tracking-wider">{stat.categoryName}</span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase">{stat.totalAttempts} Attempts</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-lg font-black text-red-500">{stat.failureRate}%</span>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase">Failure</p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6">
+                        <p className="text-xs font-bold text-gray-400 uppercase italic">No failure data available</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

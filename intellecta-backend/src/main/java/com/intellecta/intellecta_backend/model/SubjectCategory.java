@@ -28,4 +28,7 @@ public class SubjectCategory {
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SubjectTopic> topics;
+
+    @Transient
+    private Long quizCount;
 }

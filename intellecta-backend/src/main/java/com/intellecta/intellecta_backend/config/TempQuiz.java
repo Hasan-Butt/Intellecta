@@ -19,7 +19,7 @@ public class TempQuiz implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (userRepository.count() == 0) {
+        if (userRepository.count() == 24) {
             User defaultUser = new User();
             defaultUser.setUsername("Hasan Butt");
             defaultUser.setEmail("hasan@intellecta.com");
