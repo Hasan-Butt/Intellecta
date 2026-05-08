@@ -7,6 +7,6 @@ import com.intellecta.intellecta_backend.dto.response.StudySessionResponse;
 
 public interface StudySessionService {
     StudySessionResponse startSession(Long userId, StudySessionRequest request);
-    StudySessionResponse endSession(Long sessionId);
+    StudySessionResponse endSession(Long sessionId, StudySessionRequest request);
     List<StudySessionResponse> getUserSessions(Long userId);
 }

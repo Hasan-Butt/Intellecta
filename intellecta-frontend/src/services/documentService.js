@@ -1,6 +1,6 @@
 import api from "./api";
 
-const USER_ID = 1; // temporary — replace with JWT later
+const USER_ID = 2; // temporary — replace with JWT later
 
 // Subjects
 export const getSubjects = () =>

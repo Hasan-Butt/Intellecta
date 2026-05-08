@@ -23,15 +23,15 @@ public interface StudySessionRepository extends JpaRepository<StudySession, Long
     Integer sumPomodorosByUserId(Long userId);
 
     // Per-day focus minutes for the last 7 days (used by the bar chart)
-    @Query("""
-        SELECT CAST(s.startTime AS date) as day,
-               SUM(DATEDIFF(minute, s.startTime, s.endTime)) as minutes
-        FROM StudySession s
-        WHERE s.user.id = :userId
-          AND s.startTime >= :from
-          AND s.endTime IS NOT NULL
-        GROUP BY CAST(s.startTime AS date)
-        ORDER BY CAST(s.startTime AS date)
-        """)
-    List<Object[]> dailyFocusMinutes(Long userId, LocalDateTime from);
+    @Query(value = """
+    SELECT CAST(s.start_time AS date) AS day,
+           SUM(DATEDIFF(minute, s.start_time, s.end_time)) AS minutes
+    FROM study_sessions s
+    WHERE s.user_id = :userId
+      AND s.start_time >= :from
+      AND s.end_time IS NOT NULL
+    GROUP BY CAST(s.start_time AS date)
+    ORDER BY CAST(s.start_time AS date)
+    """, nativeQuery = true)
+List<Object[]> dailyFocusMinutes(Long userId, LocalDateTime from);
 }

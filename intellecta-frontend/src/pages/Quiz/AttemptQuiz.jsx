@@ -57,6 +57,7 @@ const FullAssessmentInterface = () => {
     }, 1000);
 
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, quiz, timeLeft]);
 
   const formatTime = (seconds) => {

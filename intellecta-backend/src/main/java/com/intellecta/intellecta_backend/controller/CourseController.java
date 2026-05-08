@@ -6,6 +6,7 @@ import com.intellecta.intellecta_backend.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -15,30 +16,24 @@ public class CourseController {
 
     private final CourseService courseService;
 
-    @PostMapping("/user/{userId}")
-    public ResponseEntity<CourseResponse> create(
-        @PathVariable Long userId,
-        @RequestBody CourseRequest request
-    ) {
-        return ResponseEntity.ok(courseService.createCourse(userId, request));
-    }
-
+    // GET /api/courses/user/{userId}
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CourseResponse>> getAll(@PathVariable Long userId) {
+    public ResponseEntity<List<CourseResponse>> getCourses(@PathVariable Long userId) {
         return ResponseEntity.ok(courseService.getCourses(userId));
     }
 
-    @PutMapping("/user/{userId}/{courseId}")
-    public ResponseEntity<CourseResponse> update(
+    // POST /api/courses/user/{userId}
+    @PostMapping("/user/{userId}")
+    public ResponseEntity<CourseResponse> addCourse(
         @PathVariable Long userId,
-        @PathVariable Long courseId,
         @RequestBody CourseRequest request
     ) {
-        return ResponseEntity.ok(courseService.updateCourse(userId, courseId, request));
+        return ResponseEntity.ok(courseService.addCourse(userId, request));
     }
 
+    // DELETE /api/courses/user/{userId}/{courseId}
     @DeleteMapping("/user/{userId}/{courseId}")
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<Void> deleteCourse(
         @PathVariable Long userId,
         @PathVariable Long courseId
     ) {
