@@ -1,17 +1,43 @@
 package com.intellecta.intellecta_backend.service;
 
-import com.intellecta.intellecta_backend.dto.response.*;
-import com.intellecta.intellecta_backend.enums.BadgeType;
-import com.intellecta.intellecta_backend.model.*;
-import com.intellecta.intellecta_backend.repository.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.intellecta.intellecta_backend.dto.response.DashboardResponse;
+import com.intellecta.intellecta_backend.dto.response.DistractionSummaryDTO;
+import com.intellecta.intellecta_backend.dto.response.FocusDayDTO;
+import com.intellecta.intellecta_backend.dto.response.LeaderboardEntryDTO;
+import com.intellecta.intellecta_backend.dto.response.ReviewItemDTO;
+import com.intellecta.intellecta_backend.dto.response.ScheduleBlockDTO;
+import com.intellecta.intellecta_backend.enums.BadgeType;
+import com.intellecta.intellecta_backend.model.Achievement;
+import com.intellecta.intellecta_backend.model.Course;
+import com.intellecta.intellecta_backend.model.DistractionEntry;
+import com.intellecta.intellecta_backend.model.StudySession;
+import com.intellecta.intellecta_backend.model.User;
+import com.intellecta.intellecta_backend.repository.AchievementRepository;
+import com.intellecta.intellecta_backend.repository.CourseRepository;
+import com.intellecta.intellecta_backend.repository.DistractionRepository;
+import com.intellecta.intellecta_backend.repository.DocumentRepository;
+import com.intellecta.intellecta_backend.repository.NotesRepository;
+import com.intellecta.intellecta_backend.repository.StudySessionRepository;
+import com.intellecta.intellecta_backend.repository.SubjectRepository;
+import com.intellecta.intellecta_backend.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -130,10 +156,15 @@ public class DashboardServiceImpl implements DashboardService {
         // Build a map of date → minutes from DB
         List<Object[]> rows = sessionRepository.dailyFocusMinutes(userId, from);
         Map<LocalDate, Long> minuteMap = new LinkedHashMap<>();
-        for (Object[] row : rows) {
-            LocalDate date = ((java.sql.Date) row[0]).toLocalDate();
-            minuteMap.put(date, ((Number) row[1]).longValue());
+       for (Object[] row : rows) {
+        LocalDate date;
+        if (row[0] instanceof java.sql.Date) {
+            date = ((java.sql.Date) row[0]).toLocalDate();
+        } else {
+            date = (LocalDate) row[0];
         }
+        minuteMap.put(date, ((Number) row[1]).longValue());
+    }
 
         // Distraction dates
         List<DistractionEntry> recentDistractions =
@@ -169,14 +200,14 @@ public class DashboardServiceImpl implements DashboardService {
         for (int i = 0; i < upcoming.size(); i++) {
         Course c = upcoming.get(i);
             long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), c.getExamDate());
-            blocks.add(ScheduleBlockDTO.builder()
-                .id(c.getId())
-                .subject(c.getCourseName())
-                .topic("Exam in " + daysLeft + " day" + (daysLeft == 1 ? "" : "s"))
-                .color(colors[i % colors.length])
-                .badge(daysLeft <= 3 ? "Urgent" : null)
-                .duration(daysLeft > 3 ? c.getExamDate().toString() : null)
-                .build());
+           blocks.add(ScheduleBlockDTO.builder()  // was ScheduleBlockResponse.builder()
+        .id(c.getId())
+        .subject(c.getCourseName())
+        .topic("Exam in " + daysLeft + " day" + (daysLeft == 1 ? "" : "s"))
+        .color(colors[i % colors.length])
+        .badge(daysLeft <= 3 ? "Urgent" : null)
+        .duration(daysLeft > 3 ? c.getExamDate().toString() : null)
+        .build());
         }
         return blocks;
     }
@@ -192,7 +223,9 @@ public class DashboardServiceImpl implements DashboardService {
         List<Object[]> rows = distractionRepository.dailyDistractionCounts(userId, from);
         Map<LocalDate, Long> countMap = new LinkedHashMap<>();
         for (Object[] row : rows) {
-            LocalDate d = ((java.sql.Date) row[0]).toLocalDate();
+            LocalDate d = (row[0] instanceof java.sql.Date)
+            ? ((java.sql.Date) row[0]).toLocalDate()
+            : (LocalDate) row[0];
             countMap.put(d, ((Number) row[1]).longValue());
         }
         List<Long> dailyCounts = new ArrayList<>();

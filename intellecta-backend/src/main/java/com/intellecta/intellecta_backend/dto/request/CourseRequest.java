@@ -1,4 +1,3 @@
-
 package com.intellecta.intellecta_backend.dto.request;
 
 import com.intellecta.intellecta_backend.enums.CourseDifficulty;

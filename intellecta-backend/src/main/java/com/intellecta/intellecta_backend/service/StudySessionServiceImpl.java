@@ -40,10 +40,32 @@ public class StudySessionServiceImpl implements StudySessionService {
     }
 
     @Override
-    public StudySessionResponse endSession(Long sessionId) {
+    public StudySessionResponse endSession(Long sessionId, StudySessionRequest request) {
         StudySession session = sessionRepository.findById(sessionId)
             .orElseThrow(() -> new RuntimeException("Session not found"));
         session.setEndTime(LocalDateTime.now());
+        
+        if (request != null) {
+            session.setPomodorosCompleted(request.getPomodorosCompleted());
+            
+            // 50 XP per completed pomodoro
+            int xpGained = request.getPomodorosCompleted() * 50;
+            
+            // If they didn't finish a full pomodoro but spent time, give partial XP
+            if (xpGained == 0 && session.getStartTime() != null) {
+                long durationMinutes = java.time.Duration.between(session.getStartTime(), session.getEndTime()).toMinutes();
+                if (durationMinutes > 0) {
+                    xpGained = (int) (durationMinutes * 2); // 2 XP per minute
+                }
+            }
+            
+            if (xpGained > 0) {
+                User user = session.getUser();
+                user.setXp(user.getXp() + xpGained);
+                userRepository.save(user);
+            }
+        }
+        
         return toResponse(sessionRepository.save(session));
     }
 

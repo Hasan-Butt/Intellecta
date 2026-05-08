@@ -33,8 +33,11 @@ public class StudySessionController {
     }
 
     @PatchMapping("/{sessionId}/end")
-    public ResponseEntity<StudySessionResponse> end(@PathVariable Long sessionId) {
-        return ResponseEntity.ok(sessionService.endSession(sessionId));
+    public ResponseEntity<StudySessionResponse> end(
+        @PathVariable Long sessionId,
+        @RequestBody(required = false) StudySessionRequest req
+    ) {
+        return ResponseEntity.ok(sessionService.endSession(sessionId, req));
     }
 
     @GetMapping("/user/{userId}")

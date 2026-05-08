@@ -1,6 +1,6 @@
 import api from "./api";
 
-const USER_ID = 1; // replace with JWT-decoded userId later
+const USER_ID = 2; // replace with JWT-decoded userId later
 
 export const getDashboard = () =>
   api.get(`/dashboard/user/${USER_ID}`);
@@ -11,5 +11,5 @@ export const logDistraction = (reason) =>
 export const startSession = (subject, deepWork = false) =>
   api.post(`/sessions/user/${USER_ID}/start`, { subject, deepWork });
 
-export const endSession = (sessionId) =>
-  api.patch(`/sessions/${sessionId}/end`);
+export const endSession = (sessionId, pomodorosCompleted) =>
+  api.patch(`/sessions/${sessionId}/end`, { pomodorosCompleted });
