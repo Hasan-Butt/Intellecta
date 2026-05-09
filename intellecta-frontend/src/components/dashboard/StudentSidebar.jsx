@@ -22,6 +22,8 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [userLevel, setUserLevel] = useState(1);
   const [levelTitle, setLevelTitle] = useState('Beginner');
+  const [userName, setUserName] = useState('');
+  const [xpProgressPct, setXpProgressPct] = useState(0);
 
   useEffect(() => {
     const userId = localStorage.getItem('userId') || '2';
@@ -29,6 +31,8 @@ const Sidebar = () => {
       .then(res => {
         setUserLevel(res.data.level ?? 1);
         setLevelTitle(res.data.levelTitle ?? 'Beginner');
+        setUserName(res.data.username ?? 'Scholar');
+        setXpProgressPct(res.data.xpProgressPct ?? 0);
       })
       .catch(() => {});
   }, []);
@@ -59,9 +63,16 @@ const Sidebar = () => {
         <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
           Cognitive Sanctuary
         </h1>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-          Level {userLevel} {levelTitle}
-        </p>
+        <div className="flex flex-col gap-2 mt-1">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            Level {userLevel} {levelTitle}
+          </p>
+          <div className="flex items-center gap-2 w-3/4">
+            <div className="flex-1 bg-gray-100 h-1.5 rounded-full overflow-hidden">
+              <div className="h-full bg-[#451ebb] transition-all" style={{width: `${xpProgressPct}%`}} />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Main Navigation */}
@@ -153,7 +164,7 @@ const Sidebar = () => {
             </div>
             
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-bold text-zinc-900 truncate">Muhammad Hasan</span>
+              <span className="text-sm font-bold text-zinc-900 truncate">{userName || 'Scholar'}</span>
               <button 
                 onClick={handleLogout}
                 className="flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider whitespace-nowrap"

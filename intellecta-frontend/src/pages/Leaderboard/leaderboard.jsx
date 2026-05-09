@@ -1,36 +1,126 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Filter, Download, BarChart3, TrendingUp, MoreHorizontal, Award, Lightbulb, Globe, Zap, Target } from 'lucide-react';
 
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
+import api from '../../services/api';
 
 const GlobalLeaderboard = () => {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [viewMode, setViewMode] = useState('global');
   const navigate = useNavigate();
 
-  // ALL ORIGINAL DATA PRESERVED
-  const globalData = [
-    { rank: '01', name: 'David Park', univ: 'Stanford Hub', tag: 'Quantum Phys', progress: 98, color: 'bg-amber-500', initial: 'D' },
-    { rank: '04', name: 'Marcus Thorne', univ: 'LSE London', tag: 'Linguistics', progress: 90, color: 'bg-cyan-950', initial: 'M' },
-    { rank: '05', name: 'Anya Petrova', univ: 'St. Petersburg', tag: 'Algorithms', progress: 80, color: 'bg-slate-800', initial: 'A' },
-    { rank: '09', name: 'James Wilson', univ: 'MIT Boston', tag: 'Architecture', progress: 78, color: 'bg-rose-600', initial: 'J' },
-    { rank: '14', name: 'Alex Chen', univ: 'Sophomore', tag: 'Neuroscience', progress: 75, color: 'bg-indigo-600', isYou: true, initial: 'YOU' },
-    { rank: '15', name: 'Sofia G.', univ: 'UCL London', tag: 'Fine Arts', progress: 72, color: 'bg-emerald-600', initial: 'S' },
-    { rank: '22', name: 'Kenji Sato', univ: 'Tokyo Uni', tag: 'Robotics', progress: 65, color: 'bg-orange-500', initial: 'K' },
-    { rank: '28', name: 'Liam Neeson', univ: 'Dublin Tech', tag: 'History', progress: 58, color: 'bg-blue-900', initial: 'L' },
-    { rank: '31', name: 'Chloe Simard', univ: 'Sorbonne', tag: 'Economics', progress: 52, color: 'bg-pink-700', initial: 'C' },
-  ];
+  const [globalData, setGlobalData] = useState([]);
+  const [sectionalData, setSectionalData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [selectedPeerUserId, setSelectedPeerUserId] = useState(null);
+  const [showPeerDropdown, setShowPeerDropdown] = useState(false);
+  const PAGE_SIZE = 8;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  const sectionalData = [
-    { rank: '04', name: 'Lina Miller', univ: 'Sophomore', tag: 'Artificial Intelligence', progress: 85, color: 'bg-slate-800', initial: 'L' },
-    { rank: '14', name: 'Alex RiverP', univ: 'Junior', tag: 'Software Engineering', progress: 70, color: 'bg-indigo-600', isYou: true, initial: 'YOU' },
-    { rank: '15', name: 'Thomas Chen', univ: 'Junior', tag: 'Data Science', progress: 65, color: 'bg-slate-800', initial: 'T' },
-    { rank: '16', name: 'Sarah White', univ: 'Senior', tag: 'Cybersecurity', progress: 60, color: 'bg-slate-800', initial: 'S' },
-  ];
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get('/content/categories');
+        const names = (res.data || []).map(c => c.name).filter(Boolean);
+        setCategories(names);
+        if (names.length > 0) setSelectedCategory(names[0]);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setCategories(["Computer Science"]);
+        setSelectedCategory("Computer Science");
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchGlobal = async () => {
+      try {
+        const userId = parseInt(localStorage.getItem("userId") ?? "2");
+        const globalRes = await api.get(`/leaderboards/global/${userId}`);
+        setGlobalData(globalRes.data || []);
+      } catch (err) {
+        console.error('Error fetching global leaderboard:', err);
+      }
+    };
+    fetchGlobal();
+  }, []);
+
+  useEffect(() => {
+    const fetchSectional = async () => {
+      if (!selectedCategory) return;
+      setLoading(true);
+      try {
+        const userId = parseInt(localStorage.getItem("userId") ?? "2");
+        const sectionalRes = await api.get(`/leaderboards/sectional/${userId}?category=${encodeURIComponent(selectedCategory)}`);
+        setSectionalData(sectionalRes.data || []);
+      } catch (err) {
+        console.error('Error fetching sectional leaderboard:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSectional();
+  }, [selectedCategory]);
+
+  // Reset visible count whenever the board or category changes
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [viewMode, selectedCategory]);
 
   const currentLeaderboard = viewMode === 'global' ? globalData : sectionalData;
+  const visibleLeaderboard = currentLeaderboard.slice(0, visibleCount);
+  const hasMore = visibleCount < currentLeaderboard.length;
+
+  const top1 = currentLeaderboard[0] || { username: 'TBD', level: 1, xp: 0, discipline: 'General' };
+  const top2 = currentLeaderboard[1] || { username: 'TBD', level: 1, xp: 0, discipline: 'General' };
+  const top3 = currentLeaderboard[2] || { username: 'TBD', level: 1, xp: 0, discipline: 'General' };
+
+  const getDisplayName = (row) => (isAnonymous && row.currentUser) ? "Anonymous" : (row.username || 'TBD');
+
+  const resolveLevelTitle = (level) => {
+    const l = level || 1;
+    if (l <= 3) return "Beginner";
+    if (l <= 6) return "Apprentice";
+    if (l <= 10) return "Scholar";
+    if (l <= 15) return "Expert";
+    return "Master";
+  };
+
+  // Always use globalData for the current user's authoritative rank & XP
+  const globalCurrentUser = globalData.find(r => r.currentUser);
+
+  // Compute level fully on the frontend from XP — never trust the stale DB field
+  const computeLevel = (xp) => {
+    let lvl = 1;
+    while (100.0 * Math.pow(lvl + 1, 1.5) <= xp) lvl++;
+    return lvl;
+  };
+  const myLevel = computeLevel(globalCurrentUser?.xp ?? 0);
+
+  // Sidebar comparison data (view-specific)
+  const currentUser = currentLeaderboard.find(r => r.currentUser);
+  const peers = currentLeaderboard.filter(r => !r.currentUser);
+  const selectedPeer = peers.find(r => r.userId === selectedPeerUserId) || peers[0] || null;
+  const xpGap = (selectedPeer && currentUser) ? Math.max(0, selectedPeer.xp - currentUser.xp) : 0;
+
+  // Next competitor directly above current user in this board
+  const competitorAbove = currentUser
+    ? currentLeaderboard
+        .filter(r => r.rank < currentUser.rank)
+        .sort((a, b) => b.rank - a.rank)[0] || null
+    : null;
+  const xpToOvertake = competitorAbove ? Math.max(0, competitorAbove.xp - currentUser.xp + 1) : 0;
+  const rankBelowCompetitor = currentLeaderboard
+    .filter(r => competitorAbove && r.rank > competitorAbove.rank)
+    .sort((a, b) => a.rank - b.rank)[0];
+  const baseXp = rankBelowCompetitor ? rankBelowCompetitor.xp : 0;
+  const overtakeRange = competitorAbove ? Math.max(1, competitorAbove.xp - baseXp) : 1;
+  const overtakePct = currentUser && competitorAbove
+    ? Math.min(100, Math.round(((currentUser.xp - baseXp) / overtakeRange) * 100))
+    : 100;
 
   return (
     <div className="min-h-screen bg-[#f8fafc] font-['Inter',_sans-serif] text-slate-900 antialiased flex flex-col">
@@ -51,7 +141,7 @@ const GlobalLeaderboard = () => {
                 <p className="text-slate-500 font-medium text-sm md:text-base">
                   {viewMode === 'global' 
                     ? 'Academic performance rankings across the Intellecta network.' 
-                    : <span>You're in the <span className="text-indigo-600 font-bold">Top 5%</span> of Computer Science.</span>
+                    : <span>You're in the <span className="text-indigo-600 font-bold">Top 5%</span> of {selectedCategory}.</span>
                   }
                 </p>
               </div>
@@ -88,47 +178,31 @@ const GlobalLeaderboard = () => {
               <div className="space-y-12 min-w-0">
                 {/* PODIUM */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-2 items-end">
-                    <PodiumCard rank="2" name={viewMode === 'global' ? "Sarah J." : "Julian D."} univ={viewMode === 'global' ? "Oxford" : "CS Junior"} pts={viewMode === 'global' ? "4,892" : "12,450"} img={viewMode === 'global' ? "https://i.pravatar.cc/150?u=sarah" : "https://i.pravatar.cc/150?u=celia"}/>
-                    <PodiumCard rank="1" name={viewMode === 'global' ? "David Park" : "AmPrPS."} univ={viewMode === 'global' ? "Stanford" : "CS Senior"} pts={viewMode === 'global' ? "5,102" : "15,890"} active img={viewMode === 'global' ? "https://i.pravatar.cc/150?u=david" : "https://i.pravatar.cc/150?u=katie"}/>
-                    <PodiumCard rank="3" name={viewMode === 'global' ? "Elena Rossi" : "Ray K."} univ={viewMode === 'global' ? "Bocconi" : "CS Freshman"} pts={viewMode === 'global' ? "4,750" : "11,200"} img={viewMode === 'global' ? "https://i.pravatar.cc/150?u=elena" : "https://i.pravatar.cc/150?u=ray"}/>
-                </div>
-
-                {/* STATS STRIP */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white p-6 rounded-[28px] border border-slate-200/60 shadow-lg flex items-center gap-4">
-                        <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center"><TrendingUp size={20}/></div>
-                        <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avg Growth</p>
-                            <p className="text-xl font-black text-slate-900 tracking-tight">+12.4%</p>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-[28px] border border-slate-200/60 shadow-lg flex items-center gap-4">
-                        <div className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center"><Globe size={20}/></div>
-                        <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{viewMode === 'global' ? 'Regions' : 'Class size'}</p>
-                            <p className="text-xl font-black text-slate-900 tracking-tight">{viewMode === 'global' ? '42' : '180'}</p>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-[28px] border border-slate-200/60 shadow-lg flex items-center gap-4">
-                        <div className="w-11 h-11 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center"><Zap size={20}/></div>
-                        <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Now</p>
-                            <p className="text-xl font-black text-slate-900 tracking-tight">1.2k</p>
-                        </div>
-                    </div>
+                    <PodiumCard rank="2" name={getDisplayName(top2)} univ={`Lv.${top2.level} ${resolveLevelTitle(top2.level)} • ${top2.discipline || 'General'}`} pts={top2.xp} img={`https://ui-avatars.com/api/?name=${getDisplayName(top2)}&background=random&color=fff`}/>
+                    <PodiumCard rank="1" name={getDisplayName(top1)} univ={`Lv.${top1.level} ${resolveLevelTitle(top1.level)} • ${top1.discipline || 'General'}`} pts={top1.xp} active img={`https://ui-avatars.com/api/?name=${getDisplayName(top1)}&background=random&color=fff`}/>
+                    <PodiumCard rank="3" name={getDisplayName(top3)} univ={`Lv.${top3.level} ${resolveLevelTitle(top3.level)} • ${top3.discipline || 'General'}`} pts={top3.xp} img={`https://ui-avatars.com/api/?name=${getDisplayName(top3)}&background=random&color=fff`}/>
                 </div>
 
                 {/* TABLE SECTION */}
                 <section className="bg-white rounded-[32px] p-6 md:p-8 shadow-xl border border-slate-200/50">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
-                      <h2 className="text-xl font-black text-slate-900 tracking-tight">{viewMode === 'global' ? 'Community Rankings' : 'Full Leaderboard: CS'}</h2>
+                      <h2 className="text-xl font-black text-slate-900 tracking-tight">{viewMode === 'global' ? 'Community Rankings' : `Full Leaderboard: ${selectedCategory}`}</h2>
                       <p className="text-xs text-slate-400 font-medium">Updated every 15 minutes</p>
                     </div>
-                    <div className="flex gap-2">
-                      <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-[12px] font-bold text-slate-600 hover:bg-slate-50 transition-all"><Filter size={14}/> Filter</button>
-                      <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-[12px] font-bold text-slate-600 hover:bg-slate-50 transition-all"><Download size={14}/> Export</button>
-                    </div>
+                    {viewMode !== 'global' && (
+                      <div className="flex gap-2">
+                        <select
+                          value={selectedCategory}
+                          onChange={(e) => setSelectedCategory(e.target.value)}
+                          className="px-4 py-2 rounded-xl border border-slate-200 text-[12px] font-bold text-slate-600 bg-white hover:bg-slate-50 transition-all cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          {categories.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
 
                   <div className="overflow-x-auto">
@@ -137,100 +211,206 @@ const GlobalLeaderboard = () => {
                         <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">
                           <th className="px-4 py-2">Rank</th>
                           <th className="px-4 py-2">{viewMode === 'global' ? 'Scholar' : 'Student'}</th>
-                          <th className="px-4 py-2">Discipline</th>
-                          <th className="px-4 py-2">Focus Score</th>
+                          {viewMode !== 'global' && <th className="px-4 py-2">Discipline</th>}
+                          <th className="px-4 py-2">Level</th>
                           <th className="px-4 py-2"></th>
                         </tr>
                       </thead>
                       <tbody>
-                        {currentLeaderboard.map((row, i) => (
-                          <tr key={i} className={`group transition-all ${row.isYou ? 'bg-indigo-50/60' : 'hover:bg-slate-50'}`}>
-                            <td className={`px-4 py-4 first:rounded-l-2xl font-mono text-lg font-black ${row.isYou ? 'text-indigo-600' : 'text-slate-300'}`}>{row.rank}</td>
+                        {visibleLeaderboard.map((row, i) => (
+                          <tr key={i} className={`group transition-all ${row.currentUser ? 'bg-indigo-50/60 outline outline-2 outline-indigo-500 rounded-2xl relative z-10 shadow-sm' : 'hover:bg-slate-50'}`}>
+                            <td className={`px-4 py-4 first:rounded-l-2xl font-mono text-lg font-black ${row.currentUser ? 'text-indigo-600' : 'text-slate-300'}`}>{(row.rank || i + 1).toString().padStart(2, '0')}</td>
                             <td className="px-4 py-4">
                               <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-full ${row.color} flex items-center justify-center text-white font-black text-[10px]`}>{row.initial}</div>
+                                <div className={`w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white font-black text-[10px]`}>{getDisplayName(row).charAt(0).toUpperCase()}</div>
                                 <div>
-                                  <p className={`font-black text-sm ${row.isYou ? 'text-indigo-800' : 'text-slate-900'}`}>{row.name}</p>
-                                  <p className="text-[11px] text-slate-400 font-semibold">{row.univ}</p>
+                                  <p className={`font-black text-sm ${row.currentUser ? 'text-indigo-800' : 'text-slate-900'}`}>{getDisplayName(row)}</p>
+                                  <p className="text-[11px] text-slate-400 font-semibold">{row.xp} XP</p>
                                 </div>
                               </div>
                             </td>
                             {/* RE-ADDED DISCIPLINE COLUMN WITH WHITESPACE-NOWRAP */}
-                            <td className="px-4 py-4 whitespace-nowrap">
-                              <span className="text-[10px] font-black px-3 py-1 rounded-full border bg-white text-indigo-600 border-indigo-100 uppercase">
-                                {row.tag}
-                              </span>
-                            </td>
+                            {viewMode !== 'global' && (
+                              <td className="px-4 py-4 whitespace-nowrap">
+                                <span className="text-[10px] font-black px-3 py-1 rounded-full border bg-white text-indigo-600 border-indigo-100 uppercase">
+                                  {row.discipline || 'General'}
+                                </span>
+                              </td>
+                            )}
                             <td className="px-4 py-4 w-40 lg:w-48">
                               <div className="flex items-center gap-3">
                                 <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
-                                    <div className="h-full bg-indigo-500 transition-all" style={{width: `${row.progress}%`}} />
+                                    <div className="h-full bg-indigo-500 transition-all" style={{width: `${row.xpProgressPct || 0}%`}} />
                                 </div>
-                                <span className="text-[11px] font-black text-slate-400">{row.progress}%</span>
+                                <span className="text-[11px] font-black text-slate-400">Lv.{row.level || 1} {resolveLevelTitle(row.level)}</span>
                               </div>
                             </td>
                             <td className="px-4 py-4 last:rounded-r-2xl text-right">
-                                <MoreHorizontal size={18} className="cursor-pointer text-slate-300 hover:text-slate-600" />
+                                {viewMode !== 'global' && <MoreHorizontal size={18} className="cursor-pointer text-slate-300 hover:text-slate-600" />}
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                  <div className="flex justify-center pt-6 border-t border-slate-50">
-                    <button className="px-8 py-3 rounded-full border border-indigo-100 text-indigo-600 font-bold text-[12px] hover:bg-indigo-50 transition-all">Load More Students</button>
+                  <div className="flex flex-col items-center gap-2 pt-6 border-t border-slate-50">
+                    {hasMore ? (
+                      <>
+                        <button
+                          onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
+                          className="px-8 py-3 rounded-full border border-indigo-100 text-indigo-600 font-bold text-[12px] hover:bg-indigo-50 transition-all"
+                        >
+                          Load More Students
+                        </button>
+                        <p className="text-[10px] text-slate-400 font-medium">
+                          Showing {visibleCount} of {currentLeaderboard.length}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-[11px] text-slate-400 font-semibold py-1">
+                        All {currentLeaderboard.length} students shown
+                      </p>
+                    )}
                   </div>
                 </section>
               </div>
 
               {/* RIGHT ASIDE */}
               <aside className="space-y-6 sticky top-6">
+                {/* Peer Comparison */}
                 <section className="bg-white rounded-[24px] p-6 shadow-lg border border-slate-200/60">
                   <div className="flex items-center gap-2 mb-6">
                     <BarChart3 size={18} className="text-indigo-600" />
                     <h3 className="font-black text-[15px] tracking-tight">Peer Comparison</h3>
                   </div>
-                  <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl mb-6 relative border border-slate-100">
-                    <div className="text-center z-10">
-                      <div className="w-11 h-11 bg-slate-900 rounded-full mx-auto mb-2 border-2 border-white shadow-sm overflow-hidden">
-                          <img src="https://i.pravatar.cc/150?u=alex" alt="Alex" />
+                  {currentUser && selectedPeer ? (
+                    <>
+                      <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl mb-4 relative border border-slate-100">
+                        {/* Current user */}
+                        <div className="text-center z-10">
+                          <div className="w-11 h-11 bg-slate-900 rounded-full mx-auto mb-2 border-2 border-white shadow-sm flex items-center justify-center text-white font-black text-xs">
+                            {(isAnonymous ? 'A' : (currentUser.username || 'U').charAt(0).toUpperCase())}
+                          </div>
+                          <p className="text-[9px] font-black uppercase text-slate-400">{isAnonymous ? 'You' : currentUser.username}</p>
+                          <p className="text-[10px] font-black text-indigo-600">{currentUser.xp} XP</p>
+                        </div>
+
+                        <div className="absolute left-1/2 -translate-x-1/2 opacity-20 text-slate-400 font-black italic text-lg">VS</div>
+
+                        {/* Peer — clickable to switch */}
+                        <div className="text-center z-10 relative">
+                          <button
+                            onClick={() => setShowPeerDropdown(v => !v)}
+                            className="group flex flex-col items-center focus:outline-none"
+                            title="Click to change peer"
+                          >
+                            <div className="w-11 h-11 bg-indigo-600 group-hover:bg-indigo-700 rounded-full mx-auto mb-2 border-2 border-white shadow-sm flex items-center justify-center text-white font-black text-xs transition-colors">
+                              {(selectedPeer.username || 'P').charAt(0).toUpperCase()}
+                            </div>
+                            <p className="text-[9px] font-black uppercase text-indigo-600 flex items-center gap-1">
+                              {selectedPeer.username}
+                              <span className="text-[7px] opacity-60">▼</span>
+                            </p>
+                            <p className="text-[10px] font-black text-indigo-600">{selectedPeer.xp} XP</p>
+                          </button>
+
+                          {/* Peer selector dropdown */}
+                          {showPeerDropdown && (
+                            <div className="absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 min-w-[160px] overflow-hidden">
+                              <p className="text-[9px] font-black uppercase text-slate-400 px-3 pt-3 pb-1">Compare with</p>
+                              {peers.map(peer => (
+                                <button
+                                  key={peer.userId}
+                                  onClick={() => { setSelectedPeerUserId(peer.userId); setShowPeerDropdown(false); }}
+                                  className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-indigo-50 transition-colors ${
+                                    peer.userId === selectedPeer.userId ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700'
+                                  }`}
+                                >
+                                  <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white text-[9px] font-black shrink-0">
+                                    {(peer.username || 'P').charAt(0).toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <p className="text-[11px] font-bold leading-none">{peer.username}</p>
+                                    <p className="text-[9px] text-slate-400">Rank #{peer.rank} · {peer.xp} XP</p>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-[9px] font-black uppercase text-slate-400">Alex</p>
-                    </div>
-                    <div className="absolute left-1/2 -translate-x-1/2 opacity-20 text-slate-400 font-black italic text-lg">VS</div>
-                    <div className="text-center z-10">
-                      <div className="w-11 h-11 bg-indigo-600 rounded-full mx-auto mb-2 border-2 border-white shadow-sm overflow-hidden">
-                           <img src="https://i.pravatar.cc/150?u=davidp" alt="David" />
+
+                      <div className="bg-[#512de3] text-white p-4 rounded-xl">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Award size={12} className="text-indigo-200" />
+                          <p className="text-[9px] font-black uppercase opacity-80">Insight</p>
+                        </div>
+                        {currentUser.xp >= selectedPeer.xp
+                          ? <p className="text-[12px] font-semibold leading-snug">You're ahead of {selectedPeer.username} by <strong>{(currentUser.xp - selectedPeer.xp).toLocaleString()} XP</strong>!</p>
+                          : <p className="text-[12px] font-semibold leading-snug">{selectedPeer.username} leads by <strong>{xpGap.toLocaleString()} XP</strong>. Close the gap!</p>
+                        }
                       </div>
-                      <p className="text-[9px] font-black uppercase text-indigo-600">David P.</p>
-                    </div>
-                  </div>
-                  <div className="bg-[#512de3] text-white p-4 rounded-xl">
-                    <div className="flex items-center gap-2 mb-1">
-                       <Award size={12} className="text-indigo-200" />
-                       <p className="text-[9px] font-black uppercase opacity-80">PRO Insight</p>
-                    </div>
-                    <p className="text-[12px] font-semibold leading-snug">David P. spends 2.4 more hours on focus sessions.</p>
-                  </div>
+                    </>
+                  ) : (
+                    <p className="text-[12px] text-slate-400 text-center py-4">No data available</p>
+                  )}
                 </section>
 
-                <section className="bg-slate-900 rounded-[24px] p-6 text-white shadow-xl">
-                    <div className="flex items-center gap-3 mb-4">
-                        <Target size={18} className="text-emerald-400"/>
-                        <h3 className="font-black text-[15px]">Weekly Goal</h3>
+                {/* Your Standing */}
+                {globalCurrentUser && (
+                  <section className="bg-slate-900 rounded-[24px] p-6 text-white shadow-xl">
+                    <div className="flex items-center gap-3 mb-5">
+                      <Target size={18} className="text-emerald-400"/>
+                      <h3 className="font-black text-[15px]">Your Standing</h3>
                     </div>
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-end">
-                            <p className="text-[9px] font-black text-slate-400 uppercase">Mastery</p>
-                            <p className="text-base font-black text-white">Platinum</p>
+                    <div className="space-y-4">
+                      {/* Rank + Level */}
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Global Rank</p>
+                          <p className="text-2xl font-black text-white">#{globalCurrentUser.rank}</p>
+                          <p className="text-[10px] text-slate-500 font-bold">{globalCurrentUser.xp.toLocaleString()} XP</p>
                         </div>
-                        <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                            <div className="w-[75%] h-full bg-emerald-400 rounded-full"></div>
+                        <div className="text-right">
+                          <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Level</p>
+                          <p className="text-base font-black text-emerald-400">{resolveLevelTitle(myLevel)}</p>
+                          <p className="text-[10px] text-slate-500 font-bold">Lv. {myLevel}</p>
                         </div>
-                    </div>
-                </section>
+                      </div>
 
-                <div 
+                      {/* Progress toward overtaking competitor above */}
+                      {competitorAbove ? (
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <p className="text-[9px] font-black text-slate-400 uppercase">Progress to Rank #{competitorAbove.rank}</p>
+                            <p className="text-[9px] font-black text-emerald-400">{overtakePct}%</p>
+                          </div>
+                          <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-emerald-400 rounded-full transition-all"
+                              style={{width: `${overtakePct}%`}}
+                            />
+                          </div>
+                          <p className="text-[10px] text-slate-500 font-semibold mt-2">
+                            {xpToOvertake > 0
+                              ? <><span className="text-white font-black">{xpToOvertake.toLocaleString()} XP</span> needed to beat {competitorAbove.username}</>
+                              : <span className="text-emerald-400 font-black">You've overtaken {competitorAbove.username}!</span>
+                            }
+                          </p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-[10px] text-emerald-400 font-black">🏆 You're at the top! No one to beat.</p>
+                          <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden mt-2">
+                            <div className="h-full bg-emerald-400 rounded-full w-full" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                )}
+
+                <div
                   onClick={() => navigate('/peers')}
                   className="bg-white rounded-[24px] p-6 border border-slate-200 text-center cursor-pointer hover:border-indigo-400 transition-all group"
                 >
@@ -245,15 +425,17 @@ const GlobalLeaderboard = () => {
                   <div className="mb-4 bg-white/40 w-8 h-8 rounded-lg flex items-center justify-center">
                     <Lightbulb size={16} className="text-[#d97706]" />
                   </div>
-                  <h3 className="text-lg font-black leading-tight mb-2 tracking-tight">Next: 'Global Scholar'</h3>
-                  <p className="text-[11px] font-medium opacity-80 mb-4">Maintain Top 50 for 2 more weeks.</p>
+                  <h3 className="text-lg font-black leading-tight mb-2 tracking-tight">Next: '{resolveLevelTitle((currentUser?.level || 1) + 1)}'</h3>
+                  <p className="text-[11px] font-medium opacity-80 mb-4">Keep earning XP to reach the next tier.</p>
                   <div className="flex items-center justify-between">
                     <div className="flex -space-x-2">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="w-7 h-7 rounded-full border-2 border-[#fee2d5] bg-slate-400" />
+                      {currentLeaderboard.filter(r => !r.currentUser).slice(0, 3).map((peer, i) => (
+                        <div key={i} className="w-7 h-7 rounded-full border-2 border-[#fee2d5] bg-slate-400 flex items-center justify-center text-white text-[8px] font-black">
+                          {(peer.username || 'U').charAt(0)}
+                        </div>
                       ))}
                     </div>
-                    <p className="text-[8px] font-black uppercase opacity-60">12 others earned this</p>
+                    <p className="text-[8px] font-black uppercase opacity-60">{currentLeaderboard.length - 1} others competing</p>
                   </div>
                 </section>
               </aside>
