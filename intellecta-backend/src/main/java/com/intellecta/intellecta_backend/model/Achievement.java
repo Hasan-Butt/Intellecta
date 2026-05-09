@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.intellecta.intellecta_backend.enums.BadgeType;
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,11 +21,9 @@ public class Achievement {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Badge names match the dashboard icons:
-    // STREAK_FIRE, STAR_SCHOLAR, LEAF_BALANCED, MARATHON, EARLY_BIRD etc.
-    @Enumerated(EnumType.STRING)
+    // Stores the badgeKey string (enum name for system badges, custom slug for admin badges)
     @Column(nullable = false)
-    private BadgeType badgeName;
+    private String badgeName;
 
     @Column
     private String description;
