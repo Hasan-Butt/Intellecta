@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Filter, Download, BarChart3, TrendingUp, MoreHorizontal, Award, Lightbulb, Globe, Zap, Target } from 'lucide-react';
+import { Filter, Download, BarChart3, TrendingUp, Award, Lightbulb, Globe, Zap, Target, Trophy, ChevronRight } from 'lucide-react';
 
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
@@ -18,8 +18,23 @@ const GlobalLeaderboard = () => {
   const [categories, setCategories] = useState([]);
   const [selectedPeerUserId, setSelectedPeerUserId] = useState(null);
   const [showPeerDropdown, setShowPeerDropdown] = useState(false);
-  const PAGE_SIZE = 8;
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [nextAchievement, setNextAchievement] = useState(null);
+
+  useEffect(() => {
+    const fetchAchievements = async () => {
+      try {
+        const userId = localStorage.getItem("userId") || "2";
+        const res = await api.get(`/achievements/user/${userId}/all`);
+        // Find the first unearned achievement
+        const unearned = res.data.find(a => !a.earned);
+        setNextAchievement(unearned);
+      } catch (err) {
+        console.error("Error fetching next achievement:", err);
+      }
+    };
+    fetchAchievements();
+  }, []);
+
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -68,11 +83,10 @@ const GlobalLeaderboard = () => {
   }, [selectedCategory]);
 
   // Reset visible count whenever the board or category changes
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [viewMode, selectedCategory]);
+  // (no longer needed — scroll is used instead)
 
   const currentLeaderboard = viewMode === 'global' ? globalData : sectionalData;
-  const visibleLeaderboard = currentLeaderboard.slice(0, visibleCount);
-  const hasMore = visibleCount < currentLeaderboard.length;
+  const visibleLeaderboard = currentLeaderboard;
 
   const top1 = currentLeaderboard[0] || { username: 'TBD', level: 1, xp: 0, discipline: 'General' };
   const top2 = currentLeaderboard[1] || { username: 'TBD', level: 1, xp: 0, discipline: 'General' };
@@ -141,7 +155,18 @@ const GlobalLeaderboard = () => {
                 <p className="text-slate-500 font-medium text-sm md:text-base">
                   {viewMode === 'global' 
                     ? 'Academic performance rankings across the Intellecta network.' 
-                    : <span>You're in the <span className="text-indigo-600 font-bold">Top 5%</span> of {selectedCategory}.</span>
+                    : (() => {
+                        const total = currentLeaderboard.length;
+                        const myRank = currentUser?.rank;
+                        return (
+                          <span>
+                            {myRank && currentUser
+                              ? <>You are <span className="text-indigo-600 font-bold">Rank {myRank}/{total}</span> in {selectedCategory}.</>
+                              : <>Sectional ranking for <span className="text-indigo-600 font-bold">{selectedCategory}</span>.</>
+                            }
+                          </span>
+                        );
+                      })()
                   }
                 </p>
               </div>
@@ -188,7 +213,6 @@ const GlobalLeaderboard = () => {
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
                       <h2 className="text-xl font-black text-slate-900 tracking-tight">{viewMode === 'global' ? 'Community Rankings' : `Full Leaderboard: ${selectedCategory}`}</h2>
-                      <p className="text-xs text-slate-400 font-medium">Updated every 15 minutes</p>
                     </div>
                     {viewMode !== 'global' && (
                       <div className="flex gap-2">
@@ -205,7 +229,7 @@ const GlobalLeaderboard = () => {
                     )}
                   </div>
 
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto overflow-y-auto max-h-[480px] custom-scrollbar pr-1">
                     <table className="w-full text-left border-separate border-spacing-y-3">
                       <thead>
                         <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">
@@ -213,7 +237,6 @@ const GlobalLeaderboard = () => {
                           <th className="px-4 py-2">{viewMode === 'global' ? 'Scholar' : 'Student'}</th>
                           {viewMode !== 'global' && <th className="px-4 py-2">Discipline</th>}
                           <th className="px-4 py-2">Level</th>
-                          <th className="px-4 py-2"></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -245,32 +268,10 @@ const GlobalLeaderboard = () => {
                                 <span className="text-[11px] font-black text-slate-400">Lv.{row.level || 1} {resolveLevelTitle(row.level)}</span>
                               </div>
                             </td>
-                            <td className="px-4 py-4 last:rounded-r-2xl text-right">
-                                {viewMode !== 'global' && <MoreHorizontal size={18} className="cursor-pointer text-slate-300 hover:text-slate-600" />}
-                            </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  </div>
-                  <div className="flex flex-col items-center gap-2 pt-6 border-t border-slate-50">
-                    {hasMore ? (
-                      <>
-                        <button
-                          onClick={() => setVisibleCount(v => v + PAGE_SIZE)}
-                          className="px-8 py-3 rounded-full border border-indigo-100 text-indigo-600 font-bold text-[12px] hover:bg-indigo-50 transition-all"
-                        >
-                          Load More Students
-                        </button>
-                        <p className="text-[10px] text-slate-400 font-medium">
-                          Showing {visibleCount} of {currentLeaderboard.length}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-[11px] text-slate-400 font-semibold py-1">
-                        All {currentLeaderboard.length} students shown
-                      </p>
-                    )}
                   </div>
                 </section>
               </div>
@@ -316,7 +317,7 @@ const GlobalLeaderboard = () => {
 
                           {/* Peer selector dropdown */}
                           {showPeerDropdown && (
-                            <div className="absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 min-w-[160px] overflow-hidden">
+                            <div className="absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 min-w-[160px] overflow-hidden max-h-[240px] overflow-y-auto custom-scrollbar">
                               <p className="text-[9px] font-black uppercase text-slate-400 px-3 pt-3 pb-1">Compare with</p>
                               {peers.map(peer => (
                                 <button
@@ -428,21 +429,31 @@ const GlobalLeaderboard = () => {
                     <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">Export Metrics</p>
                 </div>
 
-                <section className="bg-[#fee2d5] rounded-[30px] p-6 text-[#5c3d2e] relative overflow-hidden">
-                  <div className="mb-4 bg-white/40 w-8 h-8 rounded-lg flex items-center justify-center">
-                    <Lightbulb size={16} className="text-[#d97706]" />
+                <section 
+                  onClick={() => navigate('/achievements')}
+                  className="bg-[#fee2d5] rounded-[30px] p-6 text-[#5c3d2e] relative overflow-hidden cursor-pointer hover:bg-[#fdd8c7] transition-all group"
+                >
+                  <div className="mb-4 bg-white/40 w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-white/60 transition-colors">
+                    <Trophy size={16} className="text-[#d97706]" />
                   </div>
-                  <h3 className="text-lg font-black leading-tight mb-2 tracking-tight">Next: '{resolveLevelTitle((currentUser?.level || 1) + 1)}'</h3>
-                  <p className="text-[11px] font-medium opacity-80 mb-4">Keep earning XP to reach the next tier.</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex -space-x-2">
-                      {currentLeaderboard.filter(r => !r.currentUser).slice(0, 3).map((peer, i) => (
-                        <div key={i} className="w-7 h-7 rounded-full border-2 border-[#fee2d5] bg-slate-400 flex items-center justify-center text-white text-[8px] font-black">
-                          {(peer.username || 'U').charAt(0)}
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-[8px] font-black uppercase opacity-60">{currentLeaderboard.length - 1} others competing</p>
+                  
+                  {nextAchievement ? (
+                    <>
+                      <h3 className="text-lg font-black leading-tight mb-1 tracking-tight">Next Achievement</h3>
+                      <p className="text-[10px] font-black text-[#d97706] uppercase tracking-wider mb-2">{nextAchievement.displayName}</p>
+                      <p className="text-[11px] font-medium opacity-80 mb-6">{nextAchievement.description}</p>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-lg font-black leading-tight mb-1 tracking-tight">Champion Status</h3>
+                      <p className="text-[10px] font-black text-[#d97706] uppercase tracking-wider mb-2">All Unlocked</p>
+                      <p className="text-[11px] font-medium opacity-80 mb-6">You've unlocked every achievement. Truly a master scholar!</p>
+                    </>
+                  )}
+                  
+                  <div className="flex items-center justify-between pt-2 border-t border-[#5c3d2e]/10">
+                    <p className="text-[9px] font-black uppercase opacity-60">View Achievement Gallery</p>
+                    <ChevronRight size={14} className="opacity-60 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </section>
               </aside>

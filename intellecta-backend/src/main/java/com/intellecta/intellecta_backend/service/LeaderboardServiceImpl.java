@@ -3,6 +3,7 @@ package com.intellecta.intellecta_backend.service;
 import com.intellecta.intellecta_backend.dto.response.LeaderboardEntryDTO;
 import com.intellecta.intellecta_backend.dto.response.PeerComparisonDTO;
 import com.intellecta.intellecta_backend.dto.response.PeerComparisonDTO.PeerStatsDTO;
+import com.intellecta.intellecta_backend.enums.UserRoles;
 import com.intellecta.intellecta_backend.model.SectionalXP;
 import com.intellecta.intellecta_backend.model.StudySession;
 import com.intellecta.intellecta_backend.model.User;
@@ -34,7 +35,9 @@ public class LeaderboardServiceImpl implements LeaderboardService {
 
     @Override
     public List<LeaderboardEntryDTO> getGlobalLeaderboard(Long userId) {
-        List<User> allUsers = userRepository.findAll();
+        List<User> allUsers = userRepository.findAll().stream()
+            .filter(u -> u.getRole() != UserRoles.ADMIN)
+            .collect(java.util.stream.Collectors.toList());
         allUsers.sort(Comparator.comparingLong(User::getXp).reversed());
 
         List<LeaderboardEntryDTO> board = new ArrayList<>();
@@ -77,6 +80,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         List<SectionalXP> allSectionalXP = sectionalXPRepository.findAll();
         List<SectionalXP> filtered = allSectionalXP.stream()
                 .filter(s -> s.getCategory().equalsIgnoreCase(category))
+                .filter(s -> s.getUser() != null && s.getUser().getRole() != UserRoles.ADMIN)
                 .sorted(Comparator.comparingLong(SectionalXP::getXp).reversed())
                 .toList();
 
@@ -115,7 +119,9 @@ public class LeaderboardServiceImpl implements LeaderboardService {
     @Override
     public PeerComparisonDTO comparePeers(Long userId, Long peerId) {
         // Build global rank map
-        List<User> allUsers = userRepository.findAll();
+        List<User> allUsers = userRepository.findAll().stream()
+            .filter(u -> u.getRole() != UserRoles.ADMIN)
+            .collect(java.util.stream.Collectors.toList());
         allUsers.sort(Comparator.comparingLong(User::getXp).reversed());
 
         Map<Long, Integer> rankMap = new LinkedHashMap<>();
