@@ -411,7 +411,14 @@ const GlobalLeaderboard = () => {
                 )}
 
                 <div
-                  onClick={() => navigate('/peers')}
+                  onClick={() => {
+                    const userId = localStorage.getItem('userId') ?? '2';
+                    if (selectedPeer && selectedPeer.userId) {
+                      navigate(`/peers?userId=${userId}&peerId=${selectedPeer.userId}`);
+                    } else {
+                      navigate('/peers');
+                    }
+                  }}
                   className="bg-white rounded-[24px] p-6 border border-slate-200 text-center cursor-pointer hover:border-indigo-400 transition-all group"
                 >
                     <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-all">
