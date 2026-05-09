@@ -10,11 +10,12 @@ import Sidebar from "../../components/dashboard/StudentSidebar";
 import { useLocation } from "react-router-dom";
 import {
   getSubjects, createSubject, deleteSubject,
-  getDocumentsBySubject, uploadDocument, updateDocumentTags,  // ← FIXED
+  getDocumentsBySubject, uploadDocument, updateDocumentTags,
   deleteDocument, searchDocuments,
 } from "../../services/documentService";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
-// ── Helpers ─────────────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 const sortFiles = (files, activeSort) => {
   return [...files].sort((a, b) => {
@@ -78,7 +79,7 @@ const suggestTagFromFilename = (filename) => {
     .join(" ");
 };
 
-// ── Sub Components ──────────────────────────────────────────────────────────────
+// ── Sub Components ────────────────────────────────────────────────────────────
 
 const FileIcon = ({ type, size = 16 }) => {
   if (type === "pdf")
@@ -169,23 +170,31 @@ const DropZone = ({ onFileSelect }) => {
       onClick={() => inputRef.current?.click()}
       className={cn(
         "border-2 border-dashed rounded-3xl py-10 flex flex-col items-center justify-center cursor-pointer transition-all",
-        isDragging ? "border-[#7c3aed] bg-[#f5f3ff]" : "border-gray-200 bg-gray-50/50 hover:border-[#c4b5fd] hover:bg-[#faf9ff]"
+        isDragging
+          ? "border-[#7c3aed] bg-[#f5f3ff]"
+          : "border-gray-200 bg-gray-50/50 hover:border-[#c4b5fd] hover:bg-[#faf9ff]"
       )}
     >
-      <input ref={inputRef} type="file" className="hidden" multiple
+      <input
+        ref={inputRef}
+        type="file"
+        className="hidden"
+        multiple
         accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
         onChange={(e) => onFileSelect(Array.from(e.target.files))}
       />
       <div className="w-12 h-12 bg-white border border-gray-100 rounded-2xl shadow-sm flex items-center justify-center mb-4">
         <Upload size={22} className="text-[#7c3aed]" />
       </div>
-      <p className="text-sm font-semibold text-gray-700 mb-1">Drag &amp; drop files here or click to browse</p>
+      <p className="text-sm font-semibold text-gray-700 mb-1">
+        Drag &amp; drop files here or click to browse
+      </p>
       <p className="text-[11px] text-gray-400">PDF, DOCX, PNG up to 50MB</p>
     </div>
   );
 };
 
-const FileRow = ({ file, onTagAdded, onDeleted }) => {
+const FileRow = ({ file, onTagAdded, onDeleted, openConfirm }) => {
   const [showTagInput, setShowTagInput] = useState(false);
   const [tagVal, setTagVal] = useState("");
 
@@ -206,15 +215,20 @@ const FileRow = ({ file, onTagAdded, onDeleted }) => {
     }
   };
 
-  const handleDelete = async (e) => {
+  const handleDeleteClick = (e) => {
     e.stopPropagation();
-    if (!window.confirm(`Delete "${file.fileName || file.name}"?`)) return;
-    try {
-      await deleteDocument(file.id);
-      onDeleted();
-    } catch (err) {
-      console.error("Failed to delete:", err);
-    }
+    openConfirm(
+      `Delete "${file.fileName || file.name}"?`,
+      "This file will be permanently removed and cannot be recovered.",
+      async () => {
+        try {
+          await deleteDocument(file.id);
+          onDeleted();
+        } catch (err) {
+          console.error("Failed to delete:", err);
+        }
+      }
+    );
   };
 
   const handleClick = () => {
@@ -224,7 +238,11 @@ const FileRow = ({ file, onTagAdded, onDeleted }) => {
 
   const displayName = file.fileName || file.name;
   const displayDate = file.uploadDate
-    ? new Date(file.uploadDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    ? new Date(file.uploadDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
     : file.date;
   const displayType = file.fileType || file.type;
   const displayTags = file.tags || [];
@@ -236,7 +254,9 @@ const FileRow = ({ file, onTagAdded, onDeleted }) => {
     >
       <div className="flex items-center gap-3 min-w-0">
         <FileIcon type={displayType} />
-        <span className="text-sm font-semibold text-gray-800 truncate">{displayName}</span>
+        <span className="text-sm font-semibold text-gray-800 truncate">
+          {displayName}
+        </span>
       </div>
       <div className="flex items-center gap-1.5 flex-wrap justify-end">
         {displayTags.map((t) => (
@@ -244,7 +264,8 @@ const FileRow = ({ file, onTagAdded, onDeleted }) => {
         ))}
         {showTagInput ? (
           <input
-            autoFocus value={tagVal}
+            autoFocus
+            value={tagVal}
             onChange={(e) => setTagVal(e.target.value)}
             onKeyDown={handleAddTag}
             onBlur={() => setShowTagInput(false)}
@@ -254,14 +275,17 @@ const FileRow = ({ file, onTagAdded, onDeleted }) => {
           />
         ) : (
           <button
-            onClick={(e) => { e.stopPropagation(); setShowTagInput(true); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowTagInput(true);
+            }}
             className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 rounded-full bg-[#f0eeff] flex items-center justify-center text-[#7c3aed] hover:bg-[#ddd6fe]"
           >
             <Plus size={10} />
           </button>
         )}
         <button
-          onClick={handleDelete}
+          onClick={handleDeleteClick}
           className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 rounded-full bg-red-50 flex items-center justify-center text-red-400 hover:bg-red-100 ml-1"
         >
           <X size={10} />
@@ -276,12 +300,17 @@ const FileRow = ({ file, onTagAdded, onDeleted }) => {
 
 const RecentCard = ({ item }) => (
   <div
-    onClick={() => { saveRecentFile(item); openFile(item); }}
+    onClick={() => {
+      saveRecentFile(item);
+      openFile(item);
+    }}
     className="rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer group flex items-center gap-4 p-4"
   >
     <FileIcon type={item.fileType || item.type} size={20} />
     <div className="min-w-0">
-      <p className="text-sm font-bold text-gray-800 truncate">{item.fileName || item.name}</p>
+      <p className="text-sm font-bold text-gray-800 truncate">
+        {item.fileName || item.name}
+      </p>
       <div className="flex items-center gap-1.5 mt-1 text-gray-400">
         <Clock size={11} />
         <span className="text-[11px]">{relativeTime(item.viewedAt)}</span>
@@ -296,7 +325,10 @@ const NewFolderModal = ({ isOpen, onClose, onCreate }) => {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    if (isOpen) { setSubjectName(""); setSemester("Semester 1"); }
+    if (isOpen) {
+      setSubjectName("");
+      setSemester("Semester 1");
+    }
   }, [isOpen]);
 
   const handleCreate = async () => {
@@ -325,10 +357,17 @@ const NewFolderModal = ({ isOpen, onClose, onCreate }) => {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">New Subject Folder</h2>
-            <p className="text-xs text-gray-400 mt-1">Add a subject under a semester</p>
+            <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+              New Subject Folder
+            </h2>
+            <p className="text-xs text-gray-400 mt-1">
+              Add a subject under a semester
+            </p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+          >
             <X size={20} />
           </button>
         </div>
@@ -338,7 +377,9 @@ const NewFolderModal = ({ isOpen, onClose, onCreate }) => {
             Subject Name <span className="text-red-400">*</span>
           </label>
           <input
-            autoFocus type="text" value={subjectName}
+            autoFocus
+            type="text"
+            value={subjectName}
             onChange={(e) => setSubjectName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
             placeholder="e.g. Physics, Mathematics..."
@@ -365,12 +406,18 @@ const NewFolderModal = ({ isOpen, onClose, onCreate }) => {
               <option value="Semester 7">Semester 7</option>
               <option value="Semester 8">Semester 8</option>
             </select>
-            <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <ChevronDown
+              size={16}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            />
           </div>
         </div>
 
         <div className="flex items-center gap-3 pt-2">
-          <button onClick={onClose} className="flex-1 py-3.5 rounded-2xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3.5 rounded-2xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+          >
             Cancel
           </button>
           <button
@@ -386,7 +433,7 @@ const NewFolderModal = ({ isOpen, onClose, onCreate }) => {
   );
 };
 
-// ── Main Page ───────────────────────────────────────────────────────────────────
+// ── Main Page ─────────────────────────────────────────────────────────────────
 
 const SubjectFolderpage = () => {
   const [subjects, setSubjects] = useState([]);
@@ -403,14 +450,27 @@ const SubjectFolderpage = () => {
   const [activeSemester, setActiveSemester] = useState("Semester 1");
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [recentFiles, setRecentFiles] = useState(getRecentFiles());
-  const location = useLocation();
   const [showTree, setShowTree] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+  });
+  const location = useLocation();
+
+  const openConfirm = (title, message, onConfirm) =>
+    setConfirmDialog({ open: true, title, message, onConfirm });
+  const closeConfirm = () =>
+    setConfirmDialog({ open: false, title: "", message: "", onConfirm: null });
 
   useEffect(() => {
     if (location.state?.showTree) setShowTree(true);
   }, [location]);
 
-  useEffect(() => { fetchSubjects(); }, []);
+  useEffect(() => {
+    fetchSubjects();
+  }, []);
 
   useEffect(() => {
     if (activeSubject) fetchFiles();
@@ -501,19 +561,24 @@ const SubjectFolderpage = () => {
     );
   };
 
-  const handleDeleteSubject = async (e, subject) => {
+  const handleDeleteSubject = (e, subject) => {
     e.stopPropagation();
-    if (!window.confirm(`Are you sure you want to delete "${subject.name}" and all its files?`)) return;
-    try {
-      await deleteSubject(subject.id);
-      if (activeSubject === subject.name) {
-        setActiveSubject(null);
-        setFiles([]);
+    openConfirm(
+      `Delete "${subject.name}"?`,
+      "This will permanently delete the subject folder and all its files.",
+      async () => {
+        try {
+          await deleteSubject(subject.id);
+          if (activeSubject === subject.name) {
+            setActiveSubject(null);
+            setFiles([]);
+          }
+          await fetchSubjects();
+        } catch (err) {
+          console.error("Failed to delete subject:", err);
+        }
       }
-      await fetchSubjects();
-    } catch (err) {
-      console.error("Failed to delete subject:", err);
-    }
+    );
   };
 
   const toggleSemester = (semesterName) =>
@@ -543,13 +608,20 @@ const SubjectFolderpage = () => {
         {/* Folder Tree Panel */}
         {showTree && (
           <div className="w-52 bg-white border-r border-gray-100 flex-shrink-0 flex flex-col py-6 px-3 sticky top-0 h-screen overflow-y-auto relative">
-            <button onClick={() => setShowTree(false)} className="absolute top-4 right-4 p-1 rounded-lg hover:bg-gray-100 transition-colors z-10">
+            <button
+              onClick={() => setShowTree(false)}
+              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-gray-100 transition-colors z-10"
+            >
               <X size={16} className="text-gray-400" />
             </button>
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 mb-4">Study Folders</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 mb-4">
+              Study Folders
+            </p>
             <div className="space-y-1">
               {semesters.length === 0 ? (
-                <p className="text-[10px] text-gray-400 italic px-3">No folders yet. Create one!</p>
+                <p className="text-[10px] text-gray-400 italic px-3">
+                  No folders yet. Create one!
+                </p>
               ) : (
                 semesters.map((semester) => {
                   const isOpen = openSemesters.includes(semester);
@@ -560,21 +632,42 @@ const SubjectFolderpage = () => {
                         className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors group"
                       >
                         <div className="flex items-center gap-2">
-                          {isOpen ? <FolderOpen size={15} className="text-[#7c3aed]" /> : <Folder size={15} className="text-gray-400 group-hover:text-[#7c3aed]" />}
-                          <span className={cn("text-xs font-bold transition-colors", isOpen ? "text-[#7c3aed]" : "text-gray-600 group-hover:text-gray-800")}>
+                          {isOpen ? (
+                            <FolderOpen size={15} className="text-[#7c3aed]" />
+                          ) : (
+                            <Folder size={15} className="text-gray-400 group-hover:text-[#7c3aed]" />
+                          )}
+                          <span
+                            className={cn(
+                              "text-xs font-bold transition-colors",
+                              isOpen
+                                ? "text-[#7c3aed]"
+                                : "text-gray-600 group-hover:text-gray-800"
+                            )}
+                          >
                             {semester}
                           </span>
                         </div>
-                        <ChevronDown size={13} className={cn("text-gray-400 transition-transform duration-200", isOpen && "rotate-180")} />
+                        <ChevronDown
+                          size={13}
+                          className={cn(
+                            "text-gray-400 transition-transform duration-200",
+                            isOpen && "rotate-180"
+                          )}
+                        />
                       </button>
 
                       {isOpen && (
                         <div className="ml-4 mt-0.5 space-y-0.5 border-l border-gray-100 pl-3">
                           {subjectsBySemester[semester].length === 0 ? (
-                            <p className="text-[10px] text-gray-400 italic py-2 px-2">No subjects yet</p>
+                            <p className="text-[10px] text-gray-400 italic py-2 px-2">
+                              No subjects yet
+                            </p>
                           ) : (
                             subjectsBySemester[semester].map((sub) => {
-                              const isActive = activeSubject?.toLowerCase() === sub.name?.toLowerCase();
+                              const isActive =
+                                activeSubject?.toLowerCase() ===
+                                sub.name?.toLowerCase();
                               return (
                                 <div key={sub.id} className="group/subject relative">
                                   <button
@@ -584,15 +677,27 @@ const SubjectFolderpage = () => {
                                     }}
                                     className={cn(
                                       "w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all pr-8",
-                                      isActive ? "bg-[#f5f3ff] text-[#7c3aed]" : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                                      isActive
+                                        ? "bg-[#f5f3ff] text-[#7c3aed]"
+                                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
                                     )}
                                   >
-                                    <span className={cn("text-xs font-bold", isActive ? "text-[#7c3aed]" : "")}>
+                                    <span
+                                      className={cn(
+                                        "text-xs font-bold",
+                                        isActive ? "text-[#7c3aed]" : ""
+                                      )}
+                                    >
                                       {sub.name}
                                     </span>
-                                    <span className={cn("text-[10px] font-black px-1.5 py-0.5 rounded-md",
-                                      isActive ? "bg-[#ede9fe] text-[#7c3aed]" : "bg-gray-100 text-gray-400"
-                                    )}>
+                                    <span
+                                      className={cn(
+                                        "text-[10px] font-black px-1.5 py-0.5 rounded-md",
+                                        isActive
+                                          ? "bg-[#ede9fe] text-[#7c3aed]"
+                                          : "bg-gray-100 text-gray-400"
+                                      )}
+                                    >
                                       {sub.documentCount || 0}
                                     </span>
                                   </button>
@@ -619,11 +724,13 @@ const SubjectFolderpage = () => {
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto">
           <div className="px-10 py-10 max-w-4xl">
-
             <div className="mb-8">
-              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Sanctuary Files</h1>
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                My Sanctuary Files
+              </h1>
               <p className="text-gray-500 text-sm mt-1 max-w-md">
-                Organize your academic journey through semantic tagging and hierarchical clarity.
+                Organize your academic journey through semantic tagging and
+                hierarchical clarity.
               </p>
             </div>
 
@@ -635,12 +742,18 @@ const SubjectFolderpage = () => {
                 <FolderPlus size={14} /> New Folder
               </button>
               <button
-                onClick={() => document.getElementById("file-input-hidden")?.click()}
+                onClick={() =>
+                  document.getElementById("file-input-hidden")?.click()
+                }
                 className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#7c3aed] text-white text-xs font-bold hover:bg-[#6d28d9] transition-colors shadow-lg shadow-indigo-200"
               >
                 <Upload size={14} /> Upload
               </button>
-              <input id="file-input-hidden" type="file" className="hidden" multiple
+              <input
+                id="file-input-hidden"
+                type="file"
+                className="hidden"
+                multiple
                 onChange={(e) => handleFileSelect(Array.from(e.target.files))}
               />
             </div>
@@ -660,7 +773,10 @@ const SubjectFolderpage = () => {
                         const file = files.find((f) => f.id === lastUploadedId);
                         const existingTags = file?.tags || [];
                         if (!existingTags.includes(bannerSuggestion)) {
-                          await updateDocumentTags(lastUploadedId, [...existingTags, bannerSuggestion]);
+                          await updateDocumentTags(lastUploadedId, [
+                            ...existingTags,
+                            bannerSuggestion,
+                          ]);
                           fetchFiles();
                         }
                       } catch (err) {
@@ -675,7 +791,10 @@ const SubjectFolderpage = () => {
 
             <div className="flex items-center gap-3 mb-4">
               <div className="relative flex-1">
-                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search
+                  size={15}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                />
                 <input
                   type="text"
                   placeholder="Search by Filename or tag..."
@@ -691,16 +810,28 @@ const SubjectFolderpage = () => {
                 >
                   <Filter size={13} />
                   {activeSort}
-                  <ChevronDown size={13} className={cn("transition-transform", sortOpen && "rotate-180")} />
+                  <ChevronDown
+                    size={13}
+                    className={cn(
+                      "transition-transform",
+                      sortOpen && "rotate-180"
+                    )}
+                  />
                 </button>
                 {sortOpen && (
                   <div className="absolute right-0 mt-2 w-32 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 z-20">
                     {["Date", "Name", "Size"].map((opt) => (
                       <button
                         key={opt}
-                        onClick={() => { setActiveSort(opt); setSortOpen(false); }}
-                        className={cn("w-full text-left px-4 py-2 text-xs font-bold transition-colors",
-                          activeSort === opt ? "text-[#7c3aed] bg-[#f5f3ff]" : "text-gray-600 hover:bg-gray-50"
+                        onClick={() => {
+                          setActiveSort(opt);
+                          setSortOpen(false);
+                        }}
+                        className={cn(
+                          "w-full text-left px-4 py-2 text-xs font-bold transition-colors",
+                          activeSort === opt
+                            ? "text-[#7c3aed] bg-[#f5f3ff]"
+                            : "text-gray-600 hover:bg-gray-50"
                         )}
                       >
                         {opt}
@@ -715,30 +846,51 @@ const SubjectFolderpage = () => {
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm mb-10 overflow-hidden">
               <div className="px-6 pt-5 pb-2 flex items-center gap-2">
                 <FolderOpen size={16} className="text-[#7c3aed]" />
-                <span className="text-sm font-black text-[#7c3aed]">{activeSubject || "Select a folder"}</span>
+                <span className="text-sm font-black text-[#7c3aed]">
+                  {activeSubject || "Select a folder"}
+                </span>
                 <span className="text-[10px] text-gray-400 font-bold">
-                  — {sortedFiles.length} file{sortedFiles.length !== 1 ? "s" : ""}
+                  — {sortedFiles.length} file
+                  {sortedFiles.length !== 1 ? "s" : ""}
                 </span>
               </div>
               <div className="grid grid-cols-[1fr_auto_auto] gap-4 items-center px-4 py-3 border-b border-gray-50">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-11">Filenames</span>
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tags</span>
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest w-24 text-right">Date Added</span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-11">
+                  Filenames
+                </span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  Tags
+                </span>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest w-24 text-right">
+                  Date Added
+                </span>
               </div>
               <div className="px-3 py-2 divide-y divide-gray-50">
                 {loading ? (
-                  <p className="text-center text-gray-400 text-sm py-10">Loading...</p>
+                  <p className="text-center text-gray-400 text-sm py-10">
+                    Loading...
+                  </p>
                 ) : sortedFiles.length === 0 ? (
                   <p className="text-center text-gray-400 text-sm py-10">
-                    {activeSubject ? `No files in ${activeSubject} yet. Upload your first document!` : "Create a folder first, then upload files."}
+                    {activeSubject
+                      ? `No files in ${activeSubject} yet. Upload your first document!`
+                      : "Create a folder first, then upload files."}
                   </p>
                 ) : (
                   sortedFiles.map((f) => (
                     <FileRow
                       key={f.id}
                       file={f}
-                      onTagAdded={() => { fetchFiles(); setRecentFiles(getRecentFiles()); }}
-                      onDeleted={() => { fetchFiles(); fetchSubjects(); setRecentFiles(getRecentFiles()); }}
+                      openConfirm={openConfirm}
+                      onTagAdded={() => {
+                        fetchFiles();
+                        setRecentFiles(getRecentFiles());
+                      }}
+                      onDeleted={() => {
+                        fetchFiles();
+                        fetchSubjects();
+                        setRecentFiles(getRecentFiles());
+                      }}
                     />
                   ))
                 )}
@@ -747,9 +899,13 @@ const SubjectFolderpage = () => {
 
             {/* Recently Viewed */}
             <div>
-              <h2 className="text-base font-extrabold text-gray-900 mb-4">Recently Viewed</h2>
+              <h2 className="text-base font-extrabold text-gray-900 mb-4">
+                Recently Viewed
+              </h2>
               {recentFiles.length === 0 ? (
-                <p className="text-[11px] text-gray-400">No recently viewed files yet.</p>
+                <p className="text-[11px] text-gray-400">
+                  No recently viewed files yet.
+                </p>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   {recentFiles.map((item) => (
@@ -758,7 +914,6 @@ const SubjectFolderpage = () => {
                 </div>
               )}
             </div>
-
           </div>
         </main>
       </div>
@@ -767,6 +922,14 @@ const SubjectFolderpage = () => {
         isOpen={showFolderModal}
         onClose={() => setShowFolderModal(false)}
         onCreate={handleCreateFolder}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDialog.open}
+        onClose={closeConfirm}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
       />
     </div>
   );

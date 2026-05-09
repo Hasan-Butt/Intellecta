@@ -37,7 +37,7 @@ public class DashboardResponse {
     private int  totalPomodoros;
 
     // Recent achievements (up to 3 badge names)
-    private List<BadgeType> recentBadges;
+    private List<String> recentBadges;
 
     // Focus chart — 7 entries Mon→Sun
     private List<FocusDayDTO> focusWeek;

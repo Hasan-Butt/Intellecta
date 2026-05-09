@@ -33,7 +33,7 @@ const EditNote = ({ isOpen, onClose, note, onSaved }) => {
   const [tagInput, setTagInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+
   const [activeFormats, setActiveFormats] = useState({ bold: false, italic: false });
 
   const editorRef = useRef(null);
@@ -46,10 +46,11 @@ const EditNote = ({ isOpen, onClose, note, onSaved }) => {
       setCategory(reverseCategoryMap[note.category] || "Select Category");
       setTags(note.tags || []);
       setSavedAt(note.updatedAt || null);
-      setImagePreview(null);
+
       setTimeout(() => {
         if (editorRef.current) {
           editorRef.current.innerHTML = note.content || "";
+          setupImageDeletion();
         }
       }, 0);
     }
@@ -96,14 +97,76 @@ const EditNote = ({ isOpen, onClose, note, onSaved }) => {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setImagePreview(ev.target.result);
       restoreSelection();
       editorRef.current?.focus();
-      document.execCommand(
-        "insertHTML",
-        false,
-        `<img src="${ev.target.result}" style="max-width:100%;border-radius:12px;margin:8px 0;" />`,
-      );
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "image-wrapper";
+      wrapper.style.cssText = `
+        position: relative;
+        display: block;
+        width: fit-content;
+        margin: 8px 0;
+      `;
+
+      const img = document.createElement("img");
+      img.src = ev.target.result;
+      img.style.cssText = `max-width: 100%; border-radius: 12px; display: block;`;
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.innerHTML = "✕";
+      deleteBtn.className = "image-delete-btn";
+      deleteBtn.style.cssText = `
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        background-color: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        line-height: 1;
+      `;
+
+      wrapper.addEventListener("mouseenter", () => {
+        deleteBtn.style.opacity = "1";
+      });
+      wrapper.addEventListener("mouseleave", () => {
+        deleteBtn.style.opacity = "0";
+      });
+
+      deleteBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        wrapper.remove();
+      };
+
+      wrapper.appendChild(img);
+      wrapper.appendChild(deleteBtn);
+
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        range.collapse(false);
+        range.insertNode(wrapper);
+        range.setStartAfter(wrapper);
+        range.setEndAfter(wrapper);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } else {
+        editorRef.current?.appendChild(wrapper);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -125,7 +188,17 @@ const EditNote = ({ isOpen, onClose, note, onSaved }) => {
   const handleSave = async () => {
     if (!title.trim()) return;
     setSaving(true);
-    const htmlContent = editorRef.current?.innerHTML || "";
+
+    // Clone and strip delete buttons + unwrap image-wrappers before saving
+    const clone = editorRef.current?.cloneNode(true);
+    clone.querySelectorAll(".image-delete-btn").forEach((btn) => btn.remove());
+    clone.querySelectorAll(".image-wrapper").forEach((wrapper) => {
+      const img = wrapper.querySelector("img");
+      if (img) wrapper.replaceWith(img);
+    });
+
+    const htmlContent = clone.innerHTML || "";
+
     try {
       await updateNote(note.id, {
         title,
@@ -145,6 +218,68 @@ const EditNote = ({ isOpen, onClose, note, onSaved }) => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const setupImageDeletion = () => {
+    if (!editorRef.current) return;
+
+    const images = editorRef.current.querySelectorAll("img");
+    images.forEach((img) => {
+      if (img.parentElement?.classList.contains("image-wrapper")) return;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "image-wrapper";
+      wrapper.style.cssText = `
+        position: relative;
+        display: block;
+        width: fit-content;
+        margin: 8px 0;
+      `;
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.innerHTML = "✕";
+      deleteBtn.className = "image-delete-btn";
+      deleteBtn.style.cssText = `
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 24px;
+        height: 24px;
+        background-color: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        line-height: 1;
+      `;
+
+      wrapper.addEventListener("mouseenter", () => {
+        deleteBtn.style.opacity = "1";
+      });
+      wrapper.addEventListener("mouseleave", () => {
+        deleteBtn.style.opacity = "0";
+      });
+
+      deleteBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        wrapper.remove();
+      };
+
+      img.style.cssText = `max-width: 100%; border-radius: 12px; display: block;`;
+      img.parentNode?.insertBefore(wrapper, img);
+      wrapper.appendChild(img);
+      wrapper.appendChild(deleteBtn);
+    });
   };
 
   if (!isOpen) return null;
@@ -324,23 +459,6 @@ const EditNote = ({ isOpen, onClose, note, onSaved }) => {
             />
           </div>
 
-          {/* Image preview */}
-          {imagePreview && (
-            <div className="relative w-fit">
-              <img
-                src={imagePreview}
-                alt="Uploaded"
-                className="max-h-64 rounded-2xl border border-zinc-200 shadow-sm"
-              />
-              <button
-                onClick={() => setImagePreview(null)}
-                className="absolute top-2 right-2 bg-white rounded-full p-1 shadow text-zinc-400 hover:text-red-500"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          )}
-
           {/* Rich text editor */}
           <div
             ref={editorRef}
@@ -349,6 +467,7 @@ const EditNote = ({ isOpen, onClose, note, onSaved }) => {
             onMouseUp={() => { saveSelection(); updateActiveFormats(); }}
             onKeyUp={() => { saveSelection(); updateActiveFormats(); }}
             onSelect={() => { saveSelection(); updateActiveFormats(); }}
+            onInput={() => setTimeout(() => setupImageDeletion(), 10)}
             className="w-full min-h-[50vh] text-zinc-600 text-lg leading-relaxed outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-zinc-300"
             style={{ whiteSpace: "pre-wrap" }}
             data-placeholder="Start typing your thoughts..."

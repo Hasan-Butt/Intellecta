@@ -13,7 +13,8 @@ import {
   BarChart3, 
   Settings, 
   HelpCircle, 
-  LogOut 
+  LogOut,
+  Trophy
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -51,6 +52,7 @@ const Sidebar = () => {
     { name: 'Attempt Quiz', icon: ClipboardCheck, path: '/quiz' },
     { name: 'Distraction Log', icon: AlertCircle, path: '/distractions' },
     { name: 'Leaderboard', icon: BarChart3, path: '/leaderboard' },
+    { name: 'Achievements', icon: Trophy, path: '/achievements' },
     { name: 'Settings', icon: Settings, path: '/settings' },
   ];
 
