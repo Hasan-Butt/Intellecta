@@ -38,4 +38,8 @@ public class QuizController {
         System.out.println("Received quiz submission request for quizId: " + request.getQuizId());
         return ResponseEntity.ok(quizService.submitQuiz(request));
     }
+    @GetMapping("/attempts/user/{userId}")
+    public ResponseEntity<List<QuizAttempt>> getAttemptsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(quizService.getAttemptsByUserId(userId));
+    }
 }

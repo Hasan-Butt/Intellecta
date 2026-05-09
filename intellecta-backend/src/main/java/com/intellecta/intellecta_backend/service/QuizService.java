@@ -128,4 +128,7 @@ public class QuizService {
         }
     }
 
+    public List<QuizAttempt> getAttemptsByUserId(Long userId) {
+        return quizAttemptRepository.findByUserId(userId);
+    }
 }
