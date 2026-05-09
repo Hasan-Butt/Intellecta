@@ -1,5 +1,6 @@
 package com.intellecta.intellecta_backend.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.intellecta.intellecta_backend.dto.request.StudySessionRequest;
+import com.intellecta.intellecta_backend.dto.response.BadgeDefinitionResponse;
 import com.intellecta.intellecta_backend.dto.response.StudySessionResponse;
 import com.intellecta.intellecta_backend.model.StudySession;
 import com.intellecta.intellecta_backend.model.User;
@@ -21,6 +23,7 @@ public class StudySessionServiceImpl implements StudySessionService {
 
     private final StudySessionRepository sessionRepository;
     private final UserRepository userRepository;
+    private final GamificationService gamificationService;
 
     @Override
     public StudySessionResponse startSession(Long userId, StudySessionRequest req) {
@@ -62,11 +65,43 @@ public class StudySessionServiceImpl implements StudySessionService {
             if (xpGained > 0) {
                 User user = session.getUser();
                 user.setXp(user.getXp() + xpGained);
+                
+                // ── Streak Logic ──
+                LocalDate today = LocalDate.now();
+                LocalDate lastStudy = user.getLastStudyDate();
+                
+                if (lastStudy == null) {
+                    user.setStreakDays(1);
+                    user.setLastStudyDate(today);
+                } else if (lastStudy.isBefore(today)) {
+                    if (lastStudy.plusDays(1).equals(today)) {
+                        // Consecutive day
+                        user.setStreakDays(user.getStreakDays() + 1);
+                    } else {
+                        // Streak broken
+                        user.setStreakDays(1);
+                    }
+                    user.setLastStudyDate(today);
+                }
+                // If lastStudy is today, do nothing (streak already counted)
+                
                 userRepository.save(user);
             }
         }
         
-        return toResponse(sessionRepository.save(session));
+        StudySession saved = sessionRepository.save(session);
+
+        // Check & award badges after session ends
+        List<BadgeDefinitionResponse> newBadges = new java.util.ArrayList<>();
+        try {
+            newBadges = gamificationService.checkAndAwardBadges(saved.getUser().getId());
+        } catch (Exception e) {
+            // Non-fatal — badge check failure should not break session end
+        }
+
+        StudySessionResponse res = toResponse(saved);
+        res.setNewBadges(newBadges);
+        return res;
     }
 
     @Override

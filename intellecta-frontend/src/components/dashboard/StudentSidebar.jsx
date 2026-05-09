@@ -13,7 +13,8 @@ import {
   BarChart3, 
   Settings, 
   HelpCircle, 
-  LogOut 
+  LogOut,
+  Trophy
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -24,7 +25,7 @@ const Sidebar = () => {
 
   useEffect(() => {
     const userId = localStorage.getItem('userId') || '2';
-    api.get(`/dashboard/${userId}`)
+    api.get(`/dashboard/user/${userId}`)
       .then(res => {
         setUserLevel(res.data.level ?? 1);
         setLevelTitle(res.data.levelTitle ?? 'Beginner');
@@ -47,6 +48,7 @@ const Sidebar = () => {
     { name: 'Attempt Quiz', icon: ClipboardCheck, path: '/quiz' },
     { name: 'Distraction Log', icon: AlertCircle, path: '/distractions' },
     { name: 'Leaderboard', icon: BarChart3, path: '/leaderboard' },
+    { name: 'Achievements', icon: Trophy, path: '/achievements' },
     { name: 'Settings', icon: Settings, path: '/settings' },
   ];
 
