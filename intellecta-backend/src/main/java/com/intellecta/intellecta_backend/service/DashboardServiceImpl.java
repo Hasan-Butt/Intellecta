@@ -123,7 +123,49 @@ public class DashboardServiceImpl implements DashboardService {
         DistractionSummaryDTO distractionSummary = buildDistractionSummary(userId, sevenDaysAgo);
 
         // ── Leaderboard ───────────────────────────────────────────────────────
-        List<LeaderboardEntryDTO> leaderboard = buildLeaderboard(userId, allSessions);
+        List<User> allUsers = userRepository.findAll();
+        allUsers.sort(Comparator.comparingLong(User::getXp).reversed());
+
+        List<LeaderboardEntryDTO> leaderboard = new ArrayList<>();
+        int currentUserRank = 1;
+        int currentRank = 1;
+        int displayRank = 1;
+        long prevXp = -1;
+
+        for (User u : allUsers) {
+            if (u.getXp() != prevXp) {
+                displayRank = currentRank;
+                prevXp = u.getXp();
+            }
+            if (u.getId().equals(userId)) {
+                currentUserRank = displayRank;
+            }
+
+            if (leaderboard.size() < 5) {
+                long focusHours = sessionRepository
+                    .findByUserIdOrderByStartTimeDesc(u.getId())
+                    .stream().mapToLong(StudySession::getDurationMinutes).sum() / 60;
+
+                int uLevel = u.getLevel();
+                long uNextLevelXp = (long)(100.0 * Math.pow(uLevel + 1, 1.5));
+                long uPrevLevelXp = (long)(100.0 * Math.pow(uLevel, 1.5));
+                int uXpPct = (int) Math.min(100,
+                    ((u.getXp() - uPrevLevelXp) * 100.0) / Math.max(1, uNextLevelXp - uPrevLevelXp));
+
+                leaderboard.add(LeaderboardEntryDTO.builder()
+                    .rank(displayRank)
+                    .userId(u.getId())
+                    .username(u.getUsername())
+                    .focusHours(focusHours)
+                    .xp(u.getXp())
+                    .level(uLevel)
+                    .xpProgressPct(uXpPct)
+                    .discipline("General")
+                    .isCurrentUser(u.getId().equals(userId))
+                    .build());
+            }
+            currentRank++;
+        }
 
         // ── Quick counts ──────────────────────────────────────────────────────
         long noteCount    = notesRepository.countByUserId(userId);
@@ -156,6 +198,7 @@ public class DashboardServiceImpl implements DashboardService {
             .reviewQueue(reviewQueue)
             .distractionSummary(distractionSummary)
             .leaderboard(leaderboard)
+            .currentUserRank(currentUserRank)
             .subjectFocus(buildSubjectFocus(allSessions))
             .build();
     }
@@ -250,31 +293,6 @@ public class DashboardServiceImpl implements DashboardService {
             .build();
     }
 
-    private List<LeaderboardEntryDTO> buildLeaderboard(Long userId,
-                                                        List<StudySession> mySessions) {
-        // Fetch all users, rank by XP descending
-        List<User> allUsers = userRepository.findAll();
-        allUsers.sort(Comparator.comparingLong(User::getXp).reversed());
-
-        List<LeaderboardEntryDTO> board = new ArrayList<>();
-        int rank = 1;
-        for (User u : allUsers) {
-            long focusHours = sessionRepository
-                .findByUserIdOrderByStartTimeDesc(u.getId())
-                .stream().mapToLong(StudySession::getDurationMinutes).sum() / 60;
-
-            board.add(LeaderboardEntryDTO.builder()
-                .rank(rank)
-                .userId(u.getId())
-                .username(u.getUsername())
-                .focusHours(focusHours)
-                .xp(u.getXp())
-                .isCurrentUser(u.getId().equals(userId))
-                .build());
-            rank++;
-        }
-        return board.stream().limit(5).collect(Collectors.toList());
-    }
 
     private String resolveLevelTitle(int level) {
         if (level <= 3)  return "Beginner";

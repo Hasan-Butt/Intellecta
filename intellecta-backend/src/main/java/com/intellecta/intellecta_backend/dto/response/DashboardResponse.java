@@ -54,4 +54,15 @@ public class DashboardResponse {
     // Leaderboard top 5
     private List<LeaderboardEntryDTO> leaderboard;
     private int currentUserRank;
+
+    // Subject focus distribution
+    private List<SubjectFocusDTO> subjectFocus;
+
+    @Data @Builder
+    public static class SubjectFocusDTO {
+        private String subject;
+        private double hours;
+        private int    percentage;
+        private String color;
+    }
 }
