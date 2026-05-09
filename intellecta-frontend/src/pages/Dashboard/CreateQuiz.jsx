@@ -24,6 +24,7 @@ const CreateQuiz = () => {
   const [activeTab, setActiveTab] = useState("Create Quiz");
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   
   const [categories, setCategories] = useState([]);
   const [topics, setTopics] = useState([]);
@@ -35,7 +36,7 @@ const CreateQuiz = () => {
     topic: "",
     difficulty: "Beginner",
     timeLimit: 30,
-    imageUrl: "",
+    imageUrl: "https://plus.unsplash.com/premium_vector-1721296175273-327b6a8f4c42?q=80&w=580&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     questions: [
       {
         text: "",
@@ -78,6 +79,38 @@ const CreateQuiz = () => {
   const handleTopicChange = (e) => {
     const topicName = e.target.value;
     setQuizData(prev => ({ ...prev, topic: topicName }));
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await api.post("/upload/image", formData);
+      setQuizData(prev => ({ ...prev, imageUrl: response.data.url }));
+      Swal.fire({
+        title: 'Uploaded!',
+        text: 'Image successfully uploaded.',
+        icon: 'success',
+        confirmButtonColor: '#6C5DD3',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      Swal.fire({
+        title: 'Upload Failed',
+        text: 'Could not upload the image. Please try again or use a URL.',
+        icon: 'error',
+        confirmButtonColor: '#6C5DD3'
+      });
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleQuizChange = (e) => {
@@ -288,6 +321,23 @@ const CreateQuiz = () => {
                       placeholder="https://images.unsplash.com/photo-..."
                       className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-[#6C5DD3]/20 focus:border-[#6C5DD3] outline-none transition-all font-bold text-sm"
                     />
+                    
+                    <div className="flex items-center gap-4 my-6">
+                      <div className="h-px flex-1 bg-gray-200"></div>
+                      <span className="text-xs font-black text-gray-400 uppercase tracking-widest">OR</span>
+                      <div className="h-px flex-1 bg-gray-200"></div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Upload from Computer</label>
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-[#6C5DD3]/20 focus:border-[#6C5DD3] outline-none transition-all font-bold text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-[#6C5DD3] file:text-white hover:file:bg-[#5a4ebd]"
+                      />
+                      {uploadingImage && <p className="text-sm text-[#6C5DD3] font-bold animate-pulse mt-2 ml-1">Uploading image...</p>}
+                    </div>
                     
                     {quizData.imageUrl && (
                       <div className="mt-8 rounded-[30px] overflow-hidden border-4 border-white shadow-2xl aspect-[16/9] bg-gray-100 relative group">
