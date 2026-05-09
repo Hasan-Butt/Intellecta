@@ -29,9 +29,29 @@ public class DistractionController {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
+        String calculatedImpact = "MODERATE";
+        if (request.getDuration() != null) {
+            String numericString = request.getDuration().replaceAll("[^0-9]", "");
+            if (!numericString.isEmpty()) {
+                try {
+                    int mins = Integer.parseInt(numericString);
+                    if (mins <= 1) {
+                        calculatedImpact = "LOW";
+                    } else if (mins <= 3) {
+                        calculatedImpact = "MODERATE";
+                    } else {
+                        calculatedImpact = "HIGH";
+                    }
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+
         DistractionEntry entry = DistractionEntry.builder()
             .user(user)
             .reason(request.getReason())
+            .duration(request.getDuration())
+            .impact(calculatedImpact)
             .build();
 
         return ResponseEntity.ok(distractionRepository.save(entry));
@@ -68,6 +88,8 @@ public class DistractionController {
             .map(e -> com.intellecta.intellecta_backend.dto.response.DistractionLogDTO.builder()
                 .id(e.getId())
                 .reason(e.getReason())
+                .duration(e.getDuration())
+                .impact(e.getImpact())
                 .loggedAt(e.getLoggedAt())
                 .build())
             .toList();

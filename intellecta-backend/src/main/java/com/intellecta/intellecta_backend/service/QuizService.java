@@ -86,7 +86,7 @@ public class QuizService {
                 }
             }
 
-            int xpGained = score * 50;
+            int xpGained = score * 5;
             user.setXp(user.getXp() + xpGained);
             userRepository.save(user);
 

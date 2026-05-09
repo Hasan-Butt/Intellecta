@@ -329,13 +329,26 @@ public class DataSeeder implements CommandLineRunner {
     // ── Distractions ──────────────────────────────────────────────────────────
 
     private void seedDistractions(List<User> students) {
+        Random rng = new Random(555L);
         List<DistractionEntry> batch = new ArrayList<>();
         for (int i = 0; i < students.size(); i++) {
             User u    = students.get(i);
             int count = 8 + (i % 5);
             for (int j = 0; j < count; j++) {
+                int durationMins = 1 + rng.nextInt(15);
+                String impact = "MODERATE";
+                if (durationMins <= 1) {
+                    impact = "LOW";
+                } else if (durationMins <= 3) {
+                    impact = "MODERATE";
+                } else {
+                    impact = "HIGH";
+                }
+
                 batch.add(DistractionEntry.builder()
                     .user(u).reason(DISTRACTIONS[(i + j) % DISTRACTIONS.length])
+                    .duration(durationMins + " min")
+                    .impact(impact)
                     .build());
             }
         }

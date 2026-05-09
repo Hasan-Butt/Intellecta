@@ -13,5 +13,7 @@ import lombok.NoArgsConstructor;
 public class DistractionLogDTO {
     private Long id;
     private String reason;
+    private String duration;
+    private String impact;
     private LocalDateTime loggedAt;
 }

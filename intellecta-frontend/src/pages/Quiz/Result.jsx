@@ -70,7 +70,7 @@ const ProficiencyDashboard = ({ score, total }) => {
           <div className="p-4 bg-black/10 text-[#0F172A] rounded-2xl"><Zap size={28} fill="currentColor" /></div>
           <div>
             <p className="text-[#0F172A]/50 font-black uppercase tracking-widest text-[10px] mb-1">Experience</p>
-            <h2 className="text-2xl font-extrabold text-[#0F172A]">+{score * 50} XP</h2>
+            <h2 className="text-2xl font-extrabold text-[#0F172A]">+{score * 5} XP</h2>
           </div>
         </div>
       </div>

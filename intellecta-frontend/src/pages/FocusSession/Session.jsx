@@ -93,6 +93,7 @@ const StudySessionDashboard = () => {
 
   const [showDistractionDialog, setShowDistractionDialog] = useState(false);
   const [distractionReason, setDistractionReason] = useState("");
+  const [pauseStartTime, setPauseStartTime] = useState(null);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
@@ -213,23 +214,34 @@ const StudySessionDashboard = () => {
 
   const handlePause = () => {
     setIsActive(false);
+    setPauseStartTime(Date.now());
     setShowDistractionDialog(true);
   };
 
   const submitDistraction = async () => {
     try {
+      let durationMinutes = 1;
+      if (pauseStartTime) {
+         durationMinutes = Math.max(1, Math.round((Date.now() - pauseStartTime) / 60000));
+      }
+
       const userId = localStorage.getItem("userId") || "2";
       await api.post(`/distractions/user/${userId}`, {
         reason: distractionReason || "Paused Session",
+        duration: `${durationMinutes} min`
       });
     } catch (err) {}
     setShowDistractionDialog(false);
     setDistractionReason("");
+    setPauseStartTime(null);
+    setIsActive(true); // Resume session immediately
   };
 
   const skipDistraction = () => {
     setShowDistractionDialog(false);
     setDistractionReason("");
+    setPauseStartTime(null);
+    setIsActive(true); // Resume session
   };
 
   const handleStop = async () => {
@@ -408,7 +420,7 @@ const StudySessionDashboard = () => {
                   onClick={submitDistraction}
                   className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 transition-colors"
                 >
-                  Log Distraction
+                  Log & Resume Session
                 </button>
               </div>
             </div>
