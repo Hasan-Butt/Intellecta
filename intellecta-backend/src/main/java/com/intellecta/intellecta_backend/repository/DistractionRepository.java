@@ -13,6 +13,9 @@ public interface DistractionRepository extends JpaRepository<DistractionEntry, L
     // Most recent entry
     DistractionEntry findTopByUserIdOrderByLoggedAtDesc(Long userId);
 
+    // All entries for a user
+    List<DistractionEntry> findByUserIdOrderByLoggedAtDesc(Long userId);
+
     // All entries in last 7 days
     List<DistractionEntry> findByUserIdAndLoggedAtAfterOrderByLoggedAtDesc(
         Long userId, LocalDateTime after);
@@ -26,4 +29,7 @@ public interface DistractionRepository extends JpaRepository<DistractionEntry, L
         ORDER BY CAST(d.loggedAt AS date)
         """)
     List<Object[]> dailyDistractionCounts(Long userId, LocalDateTime from);
+
+    @Query("SELECT d.reason as reason, COUNT(d.id) as cnt FROM DistractionEntry d WHERE d.user.id = :userId GROUP BY d.reason ORDER BY cnt DESC")
+    List<Object[]> findTriggerCountsByUserId(Long userId);
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar, 
   ChevronDown, 
@@ -21,6 +21,7 @@ import {
 
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
+import api from '../../services/api';
 
 // --- Components ---
 
@@ -87,18 +88,92 @@ const WeeklyBarChart = ({ data }) => {
 const AnalyticsDashboard = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
-  const logData = [
-    { time: "09:42 AM", duration: "12 min", category: { label: "Social Media", icon: Globe, color: "text-[#4F27B8]" }, description: "Checking Instagram notifications.", context: "NEURO-ARCHITECTURE", impact: { label: "SEVERE", color: "bg-red-50 text-red-600 border-red-100" } },
-    { time: "11:15 AM", duration: "05 min", category: { label: "Notifications", icon: Mail, color: "text-blue-500" }, description: "Clicked on Slack DM.", context: "GRANT WRITING", impact: { label: "MODERATE", color: "bg-orange-50 text-orange-600 border-orange-100" } },
-    { time: "04:10 PM", duration: "18 min", category: { label: "Phone Call", icon: Phone, color: "text-emerald-500" }, description: "Unexpected delivery call.", context: "BRAINSTORMING", impact: { label: "SEVERE", color: "bg-red-50 text-red-600 border-red-100" } }
-  ];
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const triggerData = [
-    { icon: Globe, label: 'Social Media', percentage: 42, colorClass: 'bg-[#4F27B8]' },
-    { icon: Users, label: 'Family', percentage: 28, colorClass: 'bg-[#7C3AED]' },
-    { icon: Utensils, label: 'Physical Hunger', percentage: 18, colorClass: 'bg-[#F97316]' },
-    { icon: Bell, label: 'Notifications', percentage: 12, colorClass: 'bg-[#3B82F6]' },
-  ];
+  const [logData, setLogData] = useState([]);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const userId = localStorage.getItem('userId') || '2';
+        const res = await api.get(`/distractions/user/${userId}/logs`);
+        const formattedLogs = res.data.map((item) => {
+           const label = item.reason || "Unknown";
+           const lowerLabel = label.toLowerCase();
+           let icon = Zap, color = 'text-[#4F27B8]';
+
+           if (lowerLabel.includes('social')) {
+              icon = Globe; color = 'text-[#4F27B8]';
+           } else if (lowerLabel.includes('family') || lowerLabel.includes('friend')) {
+              icon = Users; color = 'text-[#7C3AED]';
+           } else if (lowerLabel.includes('hunger') || lowerLabel.includes('food')) {
+              icon = Utensils; color = 'text-[#F97316]';
+           } else if (lowerLabel.includes('notification') || lowerLabel.includes('phone')) {
+              icon = Bell; color = 'text-[#3B82F6]';
+           } else if (lowerLabel === 'others') {
+              icon = MoreVertical; color = 'text-[#9CA3AF]';
+           }
+
+           const dateObj = new Date(item.loggedAt);
+           const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+           return {
+             id: item.id,
+             time: timeStr,
+             duration: "5 min",
+             category: { label, icon, color },
+             impact: { label: "MODERATE", color: "bg-orange-50 text-orange-600 border-orange-100" }
+           };
+        });
+        setLogData(formattedLogs);
+      } catch (err) {
+        console.error("Error fetching logs:", err);
+      }
+    };
+    fetchLogs();
+  }, []);
+
+  const filteredLogData = selectedCategory === 'All' 
+    ? logData 
+    : logData.filter(row => row.category.label === selectedCategory);
+
+  const [triggerData, setTriggerData] = useState([]);
+
+  useEffect(() => {
+    const fetchTriggers = async () => {
+      try {
+        const userId = localStorage.getItem('userId') || '2';
+        const res = await api.get(`/distractions/user/${userId}/triggers`);
+        const formattedData = res.data.map((item, index) => {
+           let icon, colorClass;
+           const label = item.label;
+           const lowerLabel = label.toLowerCase();
+           
+           if (lowerLabel.includes('social')) {
+              icon = Globe; colorClass = 'bg-[#4F27B8]';
+           } else if (lowerLabel.includes('family') || lowerLabel.includes('friend')) {
+              icon = Users; colorClass = 'bg-[#7C3AED]';
+           } else if (lowerLabel.includes('hunger') || lowerLabel.includes('food')) {
+              icon = Utensils; colorClass = 'bg-[#F97316]';
+           } else if (lowerLabel.includes('notification') || lowerLabel.includes('phone')) {
+              icon = Bell; colorClass = 'bg-[#3B82F6]';
+           } else if (lowerLabel === 'others') {
+              icon = MoreVertical; colorClass = 'bg-[#9CA3AF]';
+           } else {
+              const colors = ['bg-[#4F27B8]', 'bg-[#7C3AED]', 'bg-[#F97316]', 'bg-[#3B82F6]'];
+              icon = Zap; colorClass = colors[index % colors.length];
+           }
+
+           return { icon, label, percentage: item.percentage, colorClass, count: item.count };
+        });
+        setTriggerData(formattedData);
+      } catch (err) {
+        console.error("Error fetching trigger data:", err);
+      }
+    };
+    fetchTriggers();
+  }, []);
 
   const weeklyTrend = [
     { day: 'Mon', value: 65 }, { day: 'Tue', value: 45 }, { day: 'Wed', value: 95 },
@@ -131,7 +206,7 @@ const AnalyticsDashboard = () => {
               <p className="text-[#6F767E] text-xl font-medium tracking-tight">Deep-dive into your cognitive leaks and focus sessions.</p>
             </div>
 
-            <div className="flex items-center gap-3 mb-1.5">
+            <div className="flex items-center mb-1.5">
               <button 
                 onClick={() => setIsDatePickerOpen(!isDatePickerOpen)} 
                 className="flex items-center gap-3 bg-white hover:border-purple-200 transition-all px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm group"
@@ -140,10 +215,6 @@ const AnalyticsDashboard = () => {
                 <span className="text-sm font-semibold text-[#1A1D1F] tabular-nums">Oct 12 - 19, 2023</span>
                 <ChevronDown size={14} className={`text-[#6F767E] transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
               </button>
-              <button className="bg-[#1A1D1F] hover:bg-black text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-xl shadow-gray-200 transition-all flex items-center gap-2 tracking-wide">
-                <ExternalLink size={16} />
-                Export
-              </button>
             </div>
           </section>
 
@@ -151,7 +222,7 @@ const AnalyticsDashboard = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { label: 'Time Lost Today', value: '1h 42m', sub: '+12% vs last wk', icon: TimerOff, color: 'text-red-500', bg: 'bg-red-50' },
-              { label: 'Prime Trigger', value: 'Instagram', sub: '14 occurrences', icon: Zap, color: 'text-[#4F27B8]', bg: 'bg-purple-50' },
+              { label: 'Prime Trigger', value: triggerData.length > 0 ? triggerData[0].label : '-', sub: `${triggerData.length > 0 ? triggerData[0].count : 0} occurrences`, icon: Zap, color: 'text-[#4F27B8]', bg: 'bg-purple-50' },
               { label: 'Recovery Latency', value: '18.5m', sub: '-4m improvement', icon: History, color: 'text-emerald-500', bg: 'bg-emerald-50' },
             ].map((stat, i) => (
               <div key={i} className="bg-white p-10 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-lg transition-all group">
@@ -168,11 +239,22 @@ const AnalyticsDashboard = () => {
           {/* Main Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-5 bg-white rounded-[32px] p-10 border border-gray-100 shadow-sm">
-              <div className="flex items-center justify-between mb-10">
+              <div className="mb-10">
                   <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight">Triggers</h2>
-                  <button className="text-[#6F767E] hover:text-[#1A1D1F] transition-colors"><MoreVertical size={24}/></button>
               </div>
-              <div className="space-y-9">{triggerData.map((item, idx) => (<TriggerItem key={idx} {...item} />))}</div>
+              <div className="space-y-10 max-h-[360px] overflow-y-auto custom-scrollbar pr-3">
+                {triggerData.length > 0 ? (
+                  triggerData.map((item, idx) => (<TriggerItem key={idx} {...item} />))
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full py-10 text-center">
+                    <div className="bg-purple-50 p-4 rounded-full mb-4">
+                      <Zap size={24} className="text-[#4F27B8] opacity-50" />
+                    </div>
+                    <span className="text-[#1A1D1F] font-bold text-lg mb-1">No Triggers Found</span>
+                    <span className="text-[#6F767E] text-sm font-medium">Log a distraction to start tracking!</span>
+                  </div>
+                )}
+              </div>
             </div>
             
             <div className="lg:col-span-7 bg-white rounded-[32px] p-10 border border-gray-100 shadow-sm">
@@ -194,28 +276,47 @@ const AnalyticsDashboard = () => {
           <section className="bg-white rounded-[32px] overflow-hidden shadow-sm border border-gray-100">
             <div className="px-10 py-8 flex items-center justify-between border-b border-gray-50">
               <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight">Distraction Log</h2>
-              <div className="flex items-center gap-4">
-                <button className="flex items-center gap-2 px-5 py-3 hover:bg-gray-50 rounded-xl transition-colors text-[#6F767E] border border-gray-100 font-bold text-xs uppercase tracking-widest">
+              <div className="flex items-center gap-4 relative">
+                <button 
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="flex items-center gap-2 px-5 py-3 hover:bg-gray-50 rounded-xl transition-colors text-[#6F767E] border border-gray-100 font-bold text-xs uppercase tracking-widest">
                   <Filter size={18} />
-                  Filter Logs
+                  {selectedCategory === 'All' ? 'Filter Logs' : selectedCategory}
                 </button>
+
+                {isFilterOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden">
+                    <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                      {['All', ...new Set(logData.map(item => item.category.label))].map((cat, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setSelectedCategory(cat);
+                            setIsFilterOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-3 text-sm font-semibold hover:bg-gray-50 transition-colors ${selectedCategory === cat ? 'text-[#4F27B8] bg-purple-50/50' : 'text-[#1A1D1F]'}`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="w-full overflow-x-auto">
+            <div className="w-full overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar">
             <table className="w-full text-left border-collapse table-fixed lg:table-auto">
-              <thead>
-                <tr className="bg-[#F9FAFB] text-[10px] font-bold text-[#6F767E] uppercase tracking-[0.12em]">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-[#F9FAFB] text-[10px] font-bold text-[#6F767E] uppercase tracking-[0.12em] shadow-sm">
                   <th className="px-4 lg:px-6 py-4 w-[100px]">Time</th>
                   <th className="px-4 lg:px-6 py-4 w-[90px]">Duration</th>
                   <th className="px-4 lg:px-6 py-4 w-[140px]">Category</th>
-                  <th className="px-4 lg:px-6 py-4">Description</th>
-                  <th className="px-4 lg:px-6 py-4 w-[160px]">Context</th>
                   <th className="px-4 lg:px-6 py-4 text-right w-[110px]">Impact</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {logData.map((row, idx) => (
+                {filteredLogData.map((row, idx) => (
                   <tr key={idx} className="hover:bg-gray-50/50 transition-all">
                     <td className="px-4 lg:px-6 py-5 text-[14px] font-bold text-[#1A1D1F] tabular-nums whitespace-nowrap">
                       {row.time.split(' ')[0]} <span className="text-[10px] font-medium text-[#9CA3AF]">{row.time.split(' ')[1]}</span>
@@ -227,14 +328,6 @@ const AnalyticsDashboard = () => {
                         <span className="text-[14px] font-semibold text-[#1A1D1F]">{row.category.label}</span>
                       </div>
                     </td>
-                    <td className="px-4 lg:px-6 py-5 text-[13px] text-[#6F767E] italic leading-snug truncate max-w-[200px] lg:max-w-none hover:whitespace-normal">
-                      "{row.description}"
-                    </td>
-                    <td className="px-4 lg:px-6 py-5 whitespace-nowrap">
-                      <span className="bg-[#F0F2FF] text-[#4F27B8] text-[10px] font-bold px-3 py-1 rounded-full border border-purple-100 uppercase">
-                        {row.context}
-                      </span>
-                    </td>
                     <td className="px-4 lg:px-6 py-5 text-right">
                       <span className={`${row.impact.color} border text-[10px] font-bold px-3 py-1 rounded-lg uppercase`}>
                         {row.impact.label}
@@ -244,11 +337,6 @@ const AnalyticsDashboard = () => {
                 ))}
               </tbody>
             </table>
-            </div>
-            <div className="bg-[#F9FAFB] py-8 text-center border-t border-gray-50">
-              <button className="inline-flex items-center gap-3 text-[15px] font-bold text-[#4F27B8] hover:gap-5 transition-all tracking-wide">
-                View Extended History <ArrowRight size={20} />
-              </button>
             </div>
           </section>
         </main>
