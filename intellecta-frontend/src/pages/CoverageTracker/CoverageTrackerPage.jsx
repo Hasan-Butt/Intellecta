@@ -582,29 +582,50 @@ const CoverageTrackerPage = () => {
   // ── Exam handlers ───────────────────────────────────────────────────────────
 
   const handleCreateExam = async () => {
-    if (!examForm.name.trim() || !examForm.examDate) return;
-    setModalLoading(true);
-    try {
-      await createExam({ name: examForm.name.trim(), examDate: examForm.examDate, subjectId: activeSubject.id });
-      await fetchExams(activeSubject.id);
-      setExamModal(false);
-      setExamForm({ name: "", examDate: "" });
-    } catch (err) {
-      console.error("Failed to create exam:", err);
-    } finally {
-      setModalLoading(false);
-    }
-  };
+  if (!examForm.name.trim() || !examForm.examDate) return;
+  
+  // Check if date is in the past
+  const selectedDate = new Date(examForm.examDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (selectedDate < today) {
+    alert("❌ Cannot create exam with a past date. Please select today or a future date.");
+    return;
+  }
+  
+  setModalLoading(true);
+  try {
+    await createExam({ name: examForm.name.trim(), examDate: examForm.examDate, subjectId: activeSubject.id });
+    await fetchExams(activeSubject.id);
+    setExamModal(false);
+    setExamForm({ name: "", examDate: "" });
+  } catch (err) {
+    console.error("Failed to create exam:", err);
+    alert("Failed to create exam. Please try again.");
+  } finally {
+    setModalLoading(false);
+  }
+};
 
-  const handleUpdateExamDate = async (examId, newDate) => {
-    try {
-      await updateExamDate(examId, newDate);
-      await fetchExams(activeSubject.id);
-      setExamDetailModal(null);
-    } catch (err) {
-      console.error("Failed to update exam date:", err);
-    }
-  };
+ const handleUpdateExamDate = async (examId, newDate) => {
+  // Check if date is in the past
+  const selectedDate = new Date(newDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (selectedDate < today) {
+    alert("❌ Cannot set exam date to a past date. Please select today or a future date.");
+    return;
+  }
+  
+  try {
+    await updateExamDate(examId, newDate);
+    await fetchExams(activeSubject.id);
+    setExamDetailModal(null);
+  } catch (err) {
+    console.error("Failed to update exam date:", err);
+    alert("Failed to update exam date. Please try again.");
+  }
+};
 
   const handleDeleteExam = async (examId) => {
     if (!window.confirm("Delete this exam?")) return;
@@ -1037,11 +1058,12 @@ const CoverageTrackerPage = () => {
           onChange={(e) => setExamForm((p) => ({ ...p, name: e.target.value }))}
         />
         <InputField
-          label="Exam Date" required
-          type="date"
-          value={examForm.examDate}
-          onChange={(e) => setExamForm((p) => ({ ...p, examDate: e.target.value }))}
-        />
+  label="Exam Date" required
+  type="date"
+  value={examForm.examDate}
+  onChange={(e) => setExamForm((p) => ({ ...p, examDate: e.target.value }))}
+  min={new Date().toISOString().split('T')[0]}
+/>
         <p className="text-[10px] text-gray-400">Subject: <strong>{activeSubject?.name || "—"}</strong></p>
         <div className="flex gap-3">
           <ModalBtn variant="secondary" onClick={() => setExamModal(false)}>Cancel</ModalBtn>
