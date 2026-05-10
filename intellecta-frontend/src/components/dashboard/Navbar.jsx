@@ -14,7 +14,8 @@ const Navbar = () => {
     username: 'Hasan Butt',
     email: 'hasan@intellecta.com',
     bio: 'Focus. Learn. Achieve.',
-    avatarUrl: ''
+    avatarUrl: '',
+    streakDays: 0
   });
   
   const menuRef = useRef(null);
@@ -40,7 +41,8 @@ const Navbar = () => {
         username: res.data.username || 'Hasan Butt',
         email: res.data.email || 'hasan@intellecta.com',
         bio: res.data.bio || 'Focus. Learn. Achieve.',
-        avatarUrl: res.data.avatarUrl || ''
+        avatarUrl: res.data.avatarUrl || '',
+        streakDays: res.data.streakDays || 0
       });
     } catch (err) {
       console.error("Failed to fetch navbar user data", err);
@@ -52,7 +54,7 @@ const Navbar = () => {
       <div className="max-w-[1920px] mx-auto px-4 h-14 flex items-center ">
         
         {/* Left Section: Logo & Branding */}
-        <div className="flex items-center gap-2 cursor-pointer group" onClick={() => navigate('/dashboard')}>
+        <div className="flex items-center gap-2 group">
           <div className="relative w-14 h-16 flex items-center justify-center">
             <img 
               src={intellectaLogo} 
@@ -94,12 +96,25 @@ const Navbar = () => {
 
         {/* Right Section: Actions & Profile */}
         <div className="flex items-center gap-2 ml-auto">
-          <button className="p-2.5 rounded-full hover:bg-indigo-50 transition-all text-[#6366F1] relative group border border-transparent hover:border-indigo-100">
-            <Flame size={24} className="group-hover:fill-current transition-all" />
-            <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-600"></span>
-            </span>
+          <button className={`p-2.5 rounded-full bg-transparent transition-all relative group border border-transparent ${
+            userData.streakDays > 0 
+              ? 'text-orange-500 hover:bg-orange-50/50 hover:border-orange-100' 
+              : 'text-gray-400 hover:bg-gray-50/50 hover:border-gray-200'
+          }`}>
+            <Flame 
+              size={24} 
+              className={`transition-all ${
+                userData.streakDays > 0 
+                  ? 'fill-orange-500 animate-fire' 
+                  : 'grayscale opacity-50'
+              }`} 
+            />
+            {userData.streakDays > 0 && (
+              <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-600"></span>
+              </span>
+            )}
           </button>
 
           <button className="p-2.5 rounded-full hover:bg-gray-100 transition-all text-[#6B7280] border border-transparent hover:border-gray-200">

@@ -17,7 +17,8 @@ import {
   Settings, 
   HelpCircle, 
   LogOut,
-  Trophy
+  Trophy,
+  Target
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -64,6 +65,7 @@ const Sidebar = () => {
     { name: 'All Notes', icon: FileText, path: '/notes' },
     { name: 'Subject Folders', icon: Folder, path: '/folders' },
     { name: 'Attempt Quiz', icon: ClipboardCheck, path: '/quiz' },
+    { name: 'Coverage Tracker', icon: Target, path: '/coverage' },
     { 
       name: 'Analytics', 
       icon: Activity, 
