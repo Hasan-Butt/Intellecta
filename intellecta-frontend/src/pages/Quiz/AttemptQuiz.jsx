@@ -5,6 +5,7 @@ import { Timer, Info, ArrowLeft, ArrowRight, Bookmark, CheckCircle2, XCircle } f
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
 import api from '../../services/api';
+import Swal from 'sweetalert2';
 
 const FullAssessmentInterface = () => {
   const [searchParams] = useSearchParams();
@@ -47,7 +48,13 @@ const FullAssessmentInterface = () => {
     if (loading || !quiz) return;
 
     if (timeLeft <= 0) {
-      alert("Time is up! Auto-submitting your quiz...");
+      Swal.fire({
+        title: 'Time is up!',
+        text: 'Auto-submitting your quiz...',
+        iconHtml: '⏰',
+        timer: 2000,
+        showConfirmButton: false
+      });
       handleSubmit();
       return;
     }
@@ -81,7 +88,66 @@ const FullAssessmentInterface = () => {
       navigate(`/Result`, { state: { attempt: response.data, quiz: quiz } });
     } catch (error) {
       console.error("Error submitting quiz:", error);
-      alert("There was an error submitting your quiz. Please try again.");
+      Swal.fire({
+        title: 'Submission Error',
+        text: 'There was an error submitting your quiz. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#6C5DD3'
+      });
+    }
+  };
+
+  const handleSubmitRef = React.useRef(handleSubmit);
+  useEffect(() => {
+    handleSubmitRef.current = handleSubmit;
+  }, [handleSubmit]);
+
+  useEffect(() => {
+    window.history.pushState(null, "", window.location.href);
+
+    const handlePopState = (e) => {
+      window.history.pushState(null, "", window.location.href);
+
+      Swal.fire({
+        title: 'Exit Quiz?',
+        text: 'Are you sure you want to exit? Your current progress will be automatically submitted.',
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#10B981',
+        cancelButtonColor: '#EF4444',
+        confirmButtonText: 'Yes, exit and submit'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          handleSubmitRef.current();
+        }
+      });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
+  const handleNavigationAttempt = (e) => {
+    const target = e.target.closest('a') || e.target.closest('button');
+    if (target) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      Swal.fire({
+        title: 'Exit Quiz?',
+        text: 'Are you sure you want to exit? Your current progress will be automatically submitted.',
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#10B981',
+        cancelButtonColor: '#EF4444',
+        confirmButtonText: 'Yes, exit and submit'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          handleSubmitRef.current();
+        }
+      });
     }
   };
 
@@ -92,10 +158,12 @@ const FullAssessmentInterface = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] font-sans text-slate-900 antialiased flex flex-col ">
-      <Navbar />
+      <div onClickCapture={handleNavigationAttempt}>
+        <Navbar />
+      </div>
 
       <div className="flex flex-1 relative items-start">
-        <aside className="h-full flex-shrink-0 sticky top-0">
+        <aside className="h-full flex-shrink-0 sticky top-0" onClickCapture={handleNavigationAttempt}>
            <Sidebar />
         </aside>
       
