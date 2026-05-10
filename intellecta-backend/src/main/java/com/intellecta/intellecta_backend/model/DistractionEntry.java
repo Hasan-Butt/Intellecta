@@ -23,6 +23,12 @@ public class DistractionEntry {
     @Column(nullable = false)
     private String reason;   // free text or tag label
 
+    @Column(nullable = true)
+    private String duration;
+
+    @Column(nullable = true)
+    private String impact;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime loggedAt;

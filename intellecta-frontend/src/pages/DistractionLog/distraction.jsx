@@ -56,29 +56,46 @@ const WeeklyBarChart = ({ data }) => {
     window.location.href = '/focusSession';
   };
 
+  const yTicks = 5;
+  const safeMax = maxVal || 1;
+
   return (
-    <div className="relative h-80 w-full flex items-end justify-between gap-4 px-4 mt-10">
-      <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-12">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="w-full border-t border-gray-100 border-dashed" />
+    <div className="relative h-80 w-full mt-10 flex gap-2">
+      {/* Y-axis labels */}
+      <div className="flex flex-col justify-between items-end pb-12 pr-2 shrink-0">
+        {[...Array(yTicks)].map((_, i) => {
+          const val = Math.round((safeMax / (yTicks - 1)) * (yTicks - 1 - i));
+          return (
+            <span key={i} className="text-[10px] font-bold text-[#9CA3AF] tabular-nums whitespace-nowrap">
+              {val}m
+            </span>
+          );
+        })}
+      </div>
+
+      {/* Chart area */}
+      <div className="relative flex-1 flex items-end justify-between gap-4 px-2">
+        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-12">
+          {[...Array(yTicks)].map((_, i) => (
+            <div key={i} className="w-full border-t border-gray-100 border-dashed" />
+          ))}
+        </div>
+        {data.map((item, index) => (
+          <div key={index} className="flex-1 flex flex-col items-center gap-5 group relative z-10 h-full justify-end">
+            <div className="relative w-full flex flex-col items-center justify-end h-full">
+              <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-all bg-[#1A1D1F] text-white text-[10px] font-bold uppercase tracking-widest py-1.5 px-3 rounded-lg mb-2 shadow-2xl translate-y-1 group-hover:translate-y-0 whitespace-nowrap">
+                {item.value}m — Analyze {item.day}
+              </div>
+              <div
+                onClick={() => handleBarClick(item)}
+                className="w-full max-w-[48px] bg-[#4F27B8] rounded-t-xl transition-all duration-300 hover:bg-[#3b1d8a] cursor-pointer hover:scale-x-105 active:scale-95 shadow-sm"
+                style={{ height: `${(item.value / safeMax) * 100}%`, minHeight: '6px' }}
+              />
+            </div>
+            <span className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-[0.1em]">{item.day}</span>
+          </div>
         ))}
       </div>
-      {data.map((item, index) => (
-        <div key={index} className="flex-1 flex flex-col items-center gap-5 group relative z-10 h-full justify-end">
-          <div className="relative w-full flex flex-col items-center justify-end h-full">
-            {/* Tooltip hint for desktop users */}
-            <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-all bg-[#1A1D1F] text-white text-[10px] font-bold uppercase tracking-widest py-1.5 px-3 rounded-lg mb-2 shadow-2xl translate-y-1 group-hover:translate-y-0 whitespace-nowrap">
-                Analyze {item.day}
-            </div>
-            <div 
-              onClick={() => handleBarClick(item)}
-              className="w-full max-w-[48px] bg-[#4F27B8] rounded-t-xl transition-all duration-300 hover:bg-[#3b1d8a] cursor-pointer hover:scale-x-105 active:scale-95 shadow-sm"
-              style={{ height: `${(item.value / maxVal) * 100}%`, minHeight: '6px' }}
-            />
-          </div>
-          <span className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-[0.1em]">{item.day}</span>
-        </div>
-      ))}
     </div>
   );
 };
@@ -87,6 +104,12 @@ const WeeklyBarChart = ({ data }) => {
 
 const AnalyticsDashboard = () => {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [dateRange, setDateRange] = useState(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 6);
+    return { start, end, label: 'Last 7 Days' };
+  });
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -118,15 +141,37 @@ const AnalyticsDashboard = () => {
            const dateObj = new Date(item.loggedAt);
            const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
+           const rawImpact = item.impact || "MODERATE";
+           const impactLabel = rawImpact.toUpperCase();
+           let impactColor = "bg-gray-50 text-gray-600 border-gray-100";
+           
+           if (impactLabel === "SEVERE" || impactLabel === "HIGH") {
+               impactColor = "bg-red-50 text-red-600 border-red-100";
+           } else if (impactLabel === "MODERATE") {
+               impactColor = "bg-orange-50 text-orange-600 border-orange-100";
+           } else if (impactLabel === "LOW" || impactLabel === "MINOR") {
+               impactColor = "bg-emerald-50 text-emerald-600 border-emerald-100";
+           }
+
+           const durationStr = item.duration 
+             ? (item.duration.includes("min") ? item.duration : `${item.duration} min`) 
+             : "5 min";
+
+           const dateObj2 = new Date(item.loggedAt);
+           const dateStr = dateObj2.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
            return {
              id: item.id,
              time: timeStr,
-             duration: "5 min",
+             date: dateStr,
+             rawDate: item.loggedAt,
+             duration: durationStr,
              category: { label, icon, color },
-             impact: { label: "MODERATE", color: "bg-orange-50 text-orange-600 border-orange-100" }
+             impact: { label: impactLabel, color: impactColor }
            };
         });
-        setLogData(formattedLogs);
+        const sorted = formattedLogs.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+        setLogData(sorted);
       } catch (err) {
         console.error("Error fetching logs:", err);
       }
@@ -134,51 +179,123 @@ const AnalyticsDashboard = () => {
     fetchLogs();
   }, []);
 
+  const filteredByDateLogs = React.useMemo(() => {
+    return logData.filter(row => {
+      if (!row.rawDate) return false;
+      const d = new Date(row.rawDate);
+      const start = new Date(dateRange.start);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(dateRange.end);
+      end.setHours(23, 59, 59, 999);
+      return d >= start && d <= end;
+    });
+  }, [logData, dateRange]);
+
   const filteredLogData = selectedCategory === 'All' 
-    ? logData 
-    : logData.filter(row => row.category.label === selectedCategory);
+    ? filteredByDateLogs 
+    : filteredByDateLogs.filter(row => row.category.label === selectedCategory);
 
-  const [triggerData, setTriggerData] = useState([]);
+  // Compute total minutes lost today from log entries
+  const timeLostToday = React.useMemo(() => {
+    const todayStr = new Date().toDateString();
+    const totalMins = logData
+      .filter(row => {
+        // Always compute 'Today' card from raw logData for 'Today' specifically
+        return row.rawDate && new Date(row.rawDate).toDateString() === todayStr;
+      })
+      .reduce((sum, row) => {
+        const match = row.duration?.match(/(\d+)/);
+        return sum + (match ? parseInt(match[1]) : 0);
+      }, 0);
+    if (totalMins === 0) return '0m';
+    const h = Math.floor(totalMins / 60);
+    const m = totalMins % 60;
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  }, [logData]);
 
-  useEffect(() => {
-    const fetchTriggers = async () => {
-      try {
-        const userId = localStorage.getItem('userId') || '2';
-        const res = await api.get(`/distractions/user/${userId}/triggers`);
-        const formattedData = res.data.map((item, index) => {
-           let icon, colorClass;
-           const label = item.label;
-           const lowerLabel = label.toLowerCase();
-           
-           if (lowerLabel.includes('social')) {
-              icon = Globe; colorClass = 'bg-[#4F27B8]';
-           } else if (lowerLabel.includes('family') || lowerLabel.includes('friend')) {
-              icon = Users; colorClass = 'bg-[#7C3AED]';
-           } else if (lowerLabel.includes('hunger') || lowerLabel.includes('food')) {
-              icon = Utensils; colorClass = 'bg-[#F97316]';
-           } else if (lowerLabel.includes('notification') || lowerLabel.includes('phone')) {
-              icon = Bell; colorClass = 'bg-[#3B82F6]';
-           } else if (lowerLabel === 'others') {
-              icon = MoreVertical; colorClass = 'bg-[#9CA3AF]';
-           } else {
-              const colors = ['bg-[#4F27B8]', 'bg-[#7C3AED]', 'bg-[#F97316]', 'bg-[#3B82F6]'];
-              icon = Zap; colorClass = colors[index % colors.length];
-           }
+  const distractionsToday = React.useMemo(() => {
+    const todayStr = new Date().toDateString();
+    return logData.filter(row => row.rawDate && new Date(row.rawDate).toDateString() === todayStr).length;
+  }, [logData]);
 
-           return { icon, label, percentage: item.percentage, colorClass, count: item.count };
-        });
-        setTriggerData(formattedData);
-      } catch (err) {
-        console.error("Error fetching trigger data:", err);
+  const avgDistractionTime = React.useMemo(() => {
+    // Use filteredByDateLogs for Average to match the selected range
+    if (filteredByDateLogs.length === 0) return '0m';
+    const totalMins = filteredByDateLogs.reduce((sum, row) => {
+      const match = row.duration?.match(/(\d+)/);
+      return sum + (match ? parseInt(match[1]) : 0);
+    }, 0);
+    const avg = Math.round(totalMins / filteredByDateLogs.length);
+    if (avg === 0) return '< 1m';
+    const h = Math.floor(avg / 60);
+    const m = avg % 60;
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  }, [filteredByDateLogs]);
+
+
+  const triggerData = React.useMemo(() => {
+    if (filteredByDateLogs.length === 0) return [];
+    
+    // Group by reason
+    const counts = filteredByDateLogs.reduce((acc, row) => {
+      const label = row.category.label;
+      acc[label] = (acc[label] || 0) + 1;
+      return acc;
+    }, {});
+
+    const totalCount = filteredByDateLogs.length;
+
+    return Object.entries(counts)
+      .map(([label, count], index) => {
+        let icon, colorClass;
+        const lowerLabel = label.toLowerCase();
+        
+        if (lowerLabel.includes('social')) {
+           icon = Globe; colorClass = 'bg-[#4F27B8]';
+        } else if (lowerLabel.includes('family') || lowerLabel.includes('friend')) {
+           icon = Users; colorClass = 'bg-[#7C3AED]';
+        } else if (lowerLabel.includes('hunger') || lowerLabel.includes('food')) {
+           icon = Utensils; colorClass = 'bg-[#F97316]';
+        } else if (lowerLabel.includes('notification') || lowerLabel.includes('phone')) {
+           icon = Bell; colorClass = 'bg-[#3B82F6]';
+        } else if (lowerLabel === 'others') {
+           icon = MoreVertical; colorClass = 'bg-[#9CA3AF]';
+        } else {
+           const colors = ['bg-[#4F27B8]', 'bg-[#7C3AED]', 'bg-[#F97316]', 'bg-[#3B82F6]'];
+           icon = Zap; colorClass = colors[index % colors.length];
+        }
+
+        return { 
+          icon, 
+          label, 
+          percentage: Math.round((count / totalCount) * 100), 
+          colorClass, 
+          count 
+        };
+      })
+      .sort((a, b) => b.count - a.count); // Most frequent first
+  }, [filteredByDateLogs]);
+
+  const weeklyTrend = React.useMemo(() => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const result = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return { day: days[d.getDay()], dateStr: d.toDateString(), value: 0 };
+    });
+
+    logData.forEach(row => {
+      if (!row.rawDate) return;
+      const entryDateStr = new Date(row.rawDate).toDateString();
+      const slot = result.find(r => r.dateStr === entryDateStr);
+      if (slot) {
+        const match = row.duration?.match(/(\d+)/);
+        slot.value += match ? parseInt(match[1]) : 0;
       }
-    };
-    fetchTriggers();
-  }, []);
+    });
 
-  const weeklyTrend = [
-    { day: 'Mon', value: 65 }, { day: 'Tue', value: 45 }, { day: 'Wed', value: 95 },
-    { day: 'Thu', value: 75 }, { day: 'Fri', value: 90 }, { day: 'Sat', value: 35 }, { day: 'Sun', value: 25 },
-  ];
+    return result;
+  }, [logData]);
 
   return (
     <div className="bg-[#F8F9FB] min-h-screen font-sans selection:bg-purple-100 antialiased text-[#1A1D1F]">
@@ -206,43 +323,105 @@ const AnalyticsDashboard = () => {
               <p className="text-[#6F767E] text-xl font-medium tracking-tight">Deep-dive into your cognitive leaks and focus sessions.</p>
             </div>
 
-            <div className="flex items-center mb-1.5">
+            <div className="flex items-center mb-1.5 relative">
               <button 
                 onClick={() => setIsDatePickerOpen(!isDatePickerOpen)} 
                 className="flex items-center gap-3 bg-white hover:border-purple-200 transition-all px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm group"
               >
                 <Calendar size={18} className="text-[#4F27B8] group-hover:scale-110 transition-transform" />
-                <span className="text-sm font-semibold text-[#1A1D1F] tabular-nums">Oct 12 - 19, 2023</span>
+                <span className="text-sm font-semibold text-[#1A1D1F] tabular-nums">
+                  {dateRange.label || `${dateRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${dateRange.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                </span>
                 <ChevronDown size={14} className={`text-[#6F767E] transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
               </button>
+
+              {isDatePickerOpen && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 p-4 space-y-4">
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      { label: 'Today', days: 0 },
+                      { label: 'Last 7 Days', days: 6 },
+                      { label: 'Last 30 Days', days: 29 }
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        onClick={() => {
+                          const end = new Date();
+                          const start = new Date();
+                          start.setDate(end.getDate() - preset.days);
+                          setDateRange({ start, end, label: preset.label });
+                          setIsDatePickerOpen(false);
+                        }}
+                        className={`text-left px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${dateRange.label === preset.label ? 'bg-purple-50 text-[#4F27B8]' : 'text-[#1A1D1F] hover:bg-gray-50'}`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="pt-4 border-t border-gray-50 space-y-3">
+                    <span className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">Custom Range</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-[#6F767E] ml-1">Start</label>
+                        <input 
+                          type="date" 
+                          className="w-full text-[12px] p-2 rounded-lg border border-gray-100"
+                          value={dateRange.start.toISOString().split('T')[0]}
+                          onChange={(e) => setDateRange(prev => ({ ...prev, start: new Date(e.target.value), label: null }))}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-[#6F767E] ml-1">End</label>
+                        <input 
+                          type="date" 
+                          className="w-full text-[12px] p-2 rounded-lg border border-gray-100"
+                          value={dateRange.end.toISOString().split('T')[0]}
+                          onChange={(e) => setDateRange(prev => ({ ...prev, end: new Date(e.target.value), label: null }))}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
           {/* Top Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { label: 'Time Lost Today', value: '1h 42m', sub: '+12% vs last wk', icon: TimerOff, color: 'text-red-500', bg: 'bg-red-50' },
+              { label: 'Time Lost Today', value: timeLostToday, sub: `${distractionsToday} distraction${distractionsToday !== 1 ? 's' : ''} today`, icon: TimerOff, color: 'text-red-500', bg: 'bg-red-50' },
               { label: 'Prime Trigger', value: triggerData.length > 0 ? triggerData[0].label : '-', sub: `${triggerData.length > 0 ? triggerData[0].count : 0} occurrences`, icon: Zap, color: 'text-[#4F27B8]', bg: 'bg-purple-50' },
-              { label: 'Recovery Latency', value: '18.5m', sub: '-4m improvement', icon: History, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+              { label: 'Avg. Distraction', value: avgDistractionTime, sub: (() => {
+                  if (filteredByDateLogs.length === 0) return 'no data yet';
+                  const counts = filteredByDateLogs.reduce((acc, row) => {
+                    const k = row.impact?.label || 'MODERATE';
+                    acc[k] = (acc[k] || 0) + 1;
+                    return acc;
+                  }, {});
+                  const dominant = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'MODERATE';
+                  return `mostly ${dominant.toLowerCase()} impact`;
+                })(), icon: History, color: 'text-emerald-500', bg: 'bg-emerald-50' },
             ].map((stat, i) => (
-              <div key={i} className="bg-white p-10 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-lg transition-all group">
-                <div className="flex justify-between items-start mb-8">
-                  <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}><stat.icon size={28} /></div>
-                  <span className={`text-[11px] font-bold px-3.5 py-1.5 rounded-xl uppercase tracking-wider ${stat.color} ${stat.bg} border border-current border-opacity-10`}>{stat.sub}</span>
+              <div key={i} className="bg-white p-7 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-lg transition-all group min-h-[180px] flex flex-col justify-between">
+                <div className="flex justify-between items-start gap-4 mb-4">
+                  <div className={`p-4 rounded-2xl shrink-0 ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}><stat.icon size={28} /></div>
+                  <span className={`text-[11px] font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider ml-auto whitespace-nowrap ${stat.color} ${stat.bg} border border-current border-opacity-10`}>{stat.sub}</span>
                 </div>
-                <h3 className="text-[11px] font-bold text-[#6F767E] uppercase tracking-[0.12em] mb-2">{stat.label}</h3>
-                <p className="text-4xl font-[800] text-[#1A1D1F] tracking-tight tabular-nums">{stat.value}</p>
+                <div>
+                  <h3 className="text-[11px] font-bold text-[#6F767E] uppercase tracking-[0.12em] mb-2">{stat.label}</h3>
+                  <p className="text-4xl font-[800] text-[#1A1D1F] tracking-tight tabular-nums">{stat.value}</p>
+                </div>
               </div>
             ))}
           </div>
 
           {/* Main Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-5 bg-white rounded-[32px] p-10 border border-gray-100 shadow-sm">
+            <div className="lg:col-span-5 bg-white rounded-[32px] p-10 border border-gray-100 shadow-sm min-h-[580px] flex flex-col">
               <div className="mb-10">
                   <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight">Triggers</h2>
               </div>
-              <div className="space-y-10 max-h-[360px] overflow-y-auto custom-scrollbar pr-3">
+              <div className="space-y-10 flex-1 overflow-y-auto custom-scrollbar pr-3">
                 {triggerData.length > 0 ? (
                   triggerData.map((item, idx) => (<TriggerItem key={idx} {...item} />))
                 ) : (
@@ -257,10 +436,10 @@ const AnalyticsDashboard = () => {
               </div>
             </div>
             
-            <div className="lg:col-span-7 bg-white rounded-[32px] p-10 border border-gray-100 shadow-sm">
+            <div className="lg:col-span-7 bg-white rounded-[32px] p-10 border border-gray-100 shadow-sm min-h-[580px] flex flex-col">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight">Focus Leaks Trend</h2>
+                  <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight">Focus Leaks Trend <span className="text-[#6F767E] text-sm font-medium ml-2">(Last 7 Days)</span></h2>
                   <p className="text-xs text-[#9CA3AF] font-bold uppercase tracking-widest mt-1">Click a bar to explore data</p>
                 </div>
                 <div className="flex items-center gap-6">
@@ -268,7 +447,9 @@ const AnalyticsDashboard = () => {
                   <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-gray-200" /><span className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">Baseline</span></div>
                 </div>
               </div>
-              <WeeklyBarChart data={weeklyTrend} />
+              <div className="flex-1 flex flex-col justify-center">
+                <WeeklyBarChart data={weeklyTrend} />
+              </div>
             </div>
           </div>
 
@@ -305,10 +486,11 @@ const AnalyticsDashboard = () => {
               </div>
             </div>
 
-            <div className="w-full overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar">
+            <div className="w-full overflow-x-auto min-h-[400px] max-h-[400px] overflow-y-auto custom-scrollbar">
             <table className="w-full text-left border-collapse table-fixed lg:table-auto">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-[#F9FAFB] text-[10px] font-bold text-[#6F767E] uppercase tracking-[0.12em] shadow-sm">
+                  <th className="px-4 lg:px-6 py-4 w-[120px]">Date</th>
                   <th className="px-4 lg:px-6 py-4 w-[100px]">Time</th>
                   <th className="px-4 lg:px-6 py-4 w-[90px]">Duration</th>
                   <th className="px-4 lg:px-6 py-4 w-[140px]">Category</th>
@@ -318,6 +500,7 @@ const AnalyticsDashboard = () => {
               <tbody className="divide-y divide-gray-50">
                 {filteredLogData.map((row, idx) => (
                   <tr key={idx} className="hover:bg-gray-50/50 transition-all">
+                    <td className="px-4 lg:px-6 py-5 text-[13px] font-semibold text-[#6F767E] whitespace-nowrap">{row.date}</td>
                     <td className="px-4 lg:px-6 py-5 text-[14px] font-bold text-[#1A1D1F] tabular-nums whitespace-nowrap">
                       {row.time.split(' ')[0]} <span className="text-[10px] font-medium text-[#9CA3AF]">{row.time.split(' ')[1]}</span>
                     </td>
