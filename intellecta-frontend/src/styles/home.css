@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+
+:root {
+  --hp-bg:          #EEF0FB;
+  --hp-bg-deep:     #E4E7F8;
+  --hp-bg-card:     #FFFFFF;
+  --hp-bg-soft:     #F4F5FD;
+  --hp-cyan:        #53D2E0;
+  --hp-cyan-mid:    #3EC8D8;
+  --hp-cyan-dark:   #1DA8B8;
+  --hp-cyan-soft:   #E6F9FB;
+  --hp-cyan-tag:    #B8EEF4;
+  --hp-ink:         #1A2340;
+  --hp-ink-mid:     #2E3F6E;
+  --hp-ink-light:   #5A6A8E;
+  --hp-muted:       #8E9BBD;
+  --hp-border:      #CBD3EC;
+  --hp-border-soft: #DDE3F4;
+  --hp-shadow-card: 0 2px 14px rgba(83,210,224,0.08);
+  --hp-shadow-hover:0 10px 40px rgba(83,210,224,0.18);
+  --hp-page-grad: linear-gradient(
+    180deg,
+    #F5EFE6 0%,
+    #EAE4F5 18%,
+    #D8D4F0 34%,
+    #C8D8F0 50%,
+    #B8DFF2 65%,
+    #A8E8F4 80%,
+    #9EEAF6 100%
+  );
+}
+
+.hp-body {
+  background: var(--hp-page-grad);
+  background-attachment: fixed;
+  color: var(--hp-ink);
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+.serif { font-family: 'Instrument Serif', serif; }
+.syne  { font-family: 'Syne', sans-serif; }
+
+.cyan-text {
+  background: linear-gradient(135deg, #1DA8B8 0%, #53D2E0 60%, #7EEAF4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(83,210,224,0.13) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 4px 20px rgba(83,210,224,0.4), 0 0 0 0 rgba(83,210,224,0.3); }
+  70%  { box-shadow: 0 4px 20px rgba(83,210,224,0.4), 0 0 0 14px rgba(83,210,224,0); }
+  100% { box-shadow: 0 4px 20px rgba(83,210,224,0.4), 0 0 0 0 rgba(83,210,224,0); }
+}
+
+.glass-card {
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(255,255,255,0.6);
+}
+
+.nav-link-top {
+  color: var(--hp-ink-light);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 6px 2px;
+  transition: color 0.22s;
+  position: relative;
+  white-space: nowrap;
+}
+
+.nav-link-top::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 0; height: 2px;
+  background: var(--hp-cyan-dark);
+  border-radius: 2px;
+  transition: width 0.22s ease;
+}
+
+.nav-link-top:hover { color: var(--hp-cyan-dark); }
+.nav-link-top:hover::after { width: 100%; }
+
+.nav-login-btn {
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  border: 1.5px solid var(--hp-border);
+  border-radius: 50px;
+  color: var(--hp-ink-mid);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 9px 22px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: color 0.35s ease, border-color 0.35s ease;
+  z-index: 0;
+}
+
+.nav-login-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--hp-cyan-dark), var(--hp-cyan));
+  transform: translateX(-101%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+  border-radius: 50px;
+}
+
+.nav-login-btn:hover { color: white; border-color: transparent; }
+.nav-login-btn:hover::before { transform: translateX(0); }
+
+.nav-wave-wrap {
+  position: absolute;
+  bottom: -19px; left: 0;
+  width: 100%; height: 20px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nav-wave-wrap svg { display: block; width: 100%; height: 100%; }
+
+@media(max-width: 768px) {
+  .nav-center-links { display: none !important; }
+  .mob-toggle       { display: flex !important; }
+}
+
+/* ─── NAVBAR STYLES ────────────────────────────────────── */
+
+/* Outer fixed wrapper — full width, no background */
+.hp-navbar-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+/* Full-width top bar — Sign In, Logo, Get Started. No pill. */
+.hp-navbar-topbar {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  pointer-events: auto;
+  padding: 0 2rem;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6), 0 2px 16px rgba(83, 210, 224, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+  transition: background 0.5s ease, box-shadow 0.5s ease;
+  position: relative;
+  z-index: 1000; /* Sit above the dropdown pill */
+}
+
+/* On scroll, deepen the background slightly */
+.hp-navbar-topbar.scrolled {
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 2px 24px rgba(83, 210, 224, 0.1), 0 1px 0 rgba(255,255,255,0.8);
+}
+
+/* Row inside topbar */
+.hp-navbar-top-row {
+  width: 100%;
+  max-width: 1400px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+/* Logo centered inside the top row */
+.hp-navbar-center-logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: all 0.5s ease;
+}
+
+/* Hide the logo when scrolled (links take center stage inline) */
+.hp-navbar-topbar.scrolled .hp-navbar-center-logo {
+  opacity: 0;
+  transform: translateX(-50%) scale(0.8);
+  pointer-events: none;
+}
+
+/* ── Links pill — tight around just "Features · How It Works · About" ── */
+.hp-navbar-links-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2.2rem;
+  margin-top: -1px;            /* pull up 1px to cover the border exactly */
+  padding: 0.55rem 2rem;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-top: none; /* Remove top border so it blends */
+  border-radius: 0 0 24px 24px; /* Flat on top, rounded on bottom */
+  box-shadow: 0 10px 24px rgba(83, 210, 224, 0.08); /* Only shadow downwards */
+  pointer-events: auto;
+  position: relative;
+  z-index: 999; /* Just below the topbar */
+}
+
+/* ── CTA button ── */
+.hp-nav-btn-started {
+  background: linear-gradient(135deg, #1DA8B8, #53D2E0);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.8rem;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 18px rgba(83, 210, 224, 0.35);
+}
+
+.hp-nav-btn-started:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 26px rgba(83, 210, 224, 0.5);
+}
