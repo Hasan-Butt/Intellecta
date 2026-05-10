@@ -92,7 +92,7 @@ public class DashboardServiceImpl implements DashboardService {
         int  level        = user.getLevel();
         // Exponential curve: level N requires 100 * N^1.5 total XP
         long nextLevelXp  = (long)(100.0 * Math.pow(level + 1, 1.5));
-        long prevLevelXp  = (long)(100.0 * Math.pow(level, 1.5));
+        long prevLevelXp  = level <= 1 ? 0L : (long)(100.0 * Math.pow(level, 1.5));
         int  xpPct        = (int) Math.min(100,
             ((currentXp - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
         String levelTitle = resolveLevelTitle(level);
@@ -151,7 +151,7 @@ public class DashboardServiceImpl implements DashboardService {
 
                 int uLevel = u.getLevel();
                 long uNextLevelXp = (long)(100.0 * Math.pow(uLevel + 1, 1.5));
-                long uPrevLevelXp = (long)(100.0 * Math.pow(uLevel, 1.5));
+                long uPrevLevelXp = uLevel <= 1 ? 0L : (long)(100.0 * Math.pow(uLevel, 1.5));
                 int uXpPct = (int) Math.min(100,
                     ((u.getXp() - uPrevLevelXp) * 100.0) / Math.max(1, uNextLevelXp - uPrevLevelXp));
 

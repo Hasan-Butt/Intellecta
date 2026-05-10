@@ -61,7 +61,7 @@ const Sidebar = () => {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [location.pathname]); // Re-fetch level/XP on every page navigation
 
   const handleLogout = () => {
     localStorage.removeItem('token'); 

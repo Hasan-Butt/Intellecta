@@ -6,6 +6,7 @@ import loginImage from "../assets/intellectaLogo.jpeg";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { useGoogleLogin } from "@react-oauth/google";
 import Swal from "sweetalert2";
 import { ArrowLeft } from "lucide-react";
 
@@ -45,6 +46,46 @@ export function LoginForm({ className, ...props }) {
       console.error(err);
     }
   };
+
+  const handleGoogleSuccess = async (tokenResponse) => {
+    try {
+      const res = await api.post("/auth/google", {
+        idToken: tokenResponse.access_token,
+      });
+
+      if (res.status === 200 && res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userId", res.data.userId);
+        localStorage.setItem("role", res.data.role);
+
+        if (res.data.role === "ADMIN") {
+          navigate("/dashboard");
+        } else {
+          navigate("/studentDashboard");
+        }
+      }
+    } catch (err) {
+      const errorMsg =
+        typeof err.response?.data === "string"
+          ? err.response.data
+          : err.response?.data?.message || err.message || "Failed to authenticate with Google";
+
+      console.error("Google Login Error:", err);
+      console.error("Backend response:", err.response?.status, err.response?.data);
+
+      Swal.fire({
+        icon: "error",
+        title: "Google Login Failed",
+        text: errorMsg,
+        confirmButtonColor: "#3085d6",
+      });
+    }
+  };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: (error) => console.log("Login Failed", error),
+  });
 
   return (
     <div className={cn("flex min-h-screen w-full", className)} {...props}>
@@ -107,7 +148,7 @@ export function LoginForm({ className, ...props }) {
               </span>
             </div>
 
-            <Button variant="outline" type="button" className="w-full">
+            <Button onClick={() => googleLogin()} variant="outline" type="button" className="w-full">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
