@@ -40,7 +40,6 @@ const Sidebar = () => {
     { name: 'Analytics', icon: BarChart3, path: '/analytics' },
     { name: 'Trends', icon: TrendingUp, path: '/trends' },
     { name: 'Rewards', icon: Award, path: '/rewards' },
-    { name: 'Configuration', icon: Settings, path: '/configuration' },
   ];
 
   return (

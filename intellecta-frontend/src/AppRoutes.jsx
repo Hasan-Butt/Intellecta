@@ -7,7 +7,6 @@ import UsersPage from "./pages/Dashboard/Users";
 import ContentPage from "./pages/Dashboard/Content.jsx";
 import AnalyticsPage from "./pages/Dashboard/Analytics.jsx";
 import PerformanceTrends from "./pages/Dashboard/PerformanceTrends.jsx";
-import ConfigurationPage from "./pages/Dashboard/Configuration.jsx";
 import StudentDashboardPage from "./pages/StudentDashboard/Dashboard";
 import LightReview from "./pages/LightReview/LightReview";
 import CreateQuizPage from "./pages/Dashboard/CreateQuiz.jsx";
@@ -39,7 +38,6 @@ export default function AppRoutes() {
       <Route path="/content" element={<ContentPage />} />
       <Route path="/analytics" element={<AnalyticsPage />} />
       <Route path="/trends" element={<PerformanceTrends />} />
-      <Route path="/configuration" element={<ConfigurationPage />} />
       <Route path="/quiz" element={<QuizList />} />
       <Route path="/AttemptQuiz" element={<AttemptQuiz />} />
       <Route path="/Result" element={<Result />} />
