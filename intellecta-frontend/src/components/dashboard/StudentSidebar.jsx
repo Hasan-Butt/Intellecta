@@ -11,7 +11,9 @@ import {
   ClipboardCheck, 
   AlertCircle, 
   ChevronRight,
+  ChevronDown,
   BarChart3, 
+  Activity,
   Settings, 
   HelpCircle, 
   LogOut,
@@ -25,6 +27,10 @@ const Sidebar = () => {
   const [levelTitle, setLevelTitle] = useState('Beginner');
   const [userName, setUserName] = useState('');
   const [xpProgressPct, setXpProgressPct] = useState(0);
+  
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(
+    location.pathname === '/distractions' || location.pathname === '/focusSession'
+  );
   const [avatarUrl, setAvatarUrl] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
 
   useEffect(() => {
@@ -58,14 +64,22 @@ const Sidebar = () => {
     { name: 'All Notes', icon: FileText, path: '/notes' },
     { name: 'Subject Folders', icon: Folder, path: '/folders' },
     { name: 'Attempt Quiz', icon: ClipboardCheck, path: '/quiz' },
-    { name: 'Distraction Log', icon: AlertCircle, path: '/distractions' },
+    { 
+      name: 'Analytics', 
+      icon: Activity, 
+      isParent: true,
+      subItems: [
+        { name: 'Distraction Logs', path: '/distractions' },
+        { name: 'Focus Analytics', path: '/focusSession' }
+      ]
+    },
     { name: 'Leaderboard', icon: BarChart3, path: '/leaderboard' },
     { name: 'Achievements', icon: Trophy, path: '/achievements' },
     { name: 'Settings', icon: Settings, path: '/settings' },
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-white border-r border-gray-100 font-inter sticky top-0 self-start">
+    <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-white border-r border-gray-100 font-inter sticky top-0 self-start overflow-hidden">
       {/* Branding Header */}
       <div className="px-8 py-10">
         <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
@@ -84,10 +98,58 @@ const Sidebar = () => {
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 px-4 space-y-1">
+      <nav className="flex-1 px-4 space-y-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           
+          // Special handling for Analytics (Dropdown)
+          if (item.isParent) {
+            const hasActiveChild = item.subItems.some(sub => location.pathname === sub.path);
+            
+            return (
+              <div key={item.name} className="space-y-1">
+                <button
+                  onClick={() => setIsAnalyticsOpen(!isAnalyticsOpen)}
+                  className={`
+                    w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group
+                    ${hasActiveChild ? 'bg-[#F5F6FF] text-[#451ebb]' : 'text-gray-500 hover:bg-gray-50'}
+                  `}
+                >
+                  <div className="flex items-center gap-4">
+                    <item.icon 
+                      size={20} 
+                      className={hasActiveChild ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'} 
+                    />
+                    <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap">
+                      {item.name}
+                    </span>
+                  </div>
+                  {isAnalyticsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </button>
+                
+                {isAnalyticsOpen && (
+                  <div className="pl-12 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                    {item.subItems.map(sub => {
+                      const isSubActive = location.pathname === sub.path;
+                      return (
+                        <Link
+                          key={sub.name}
+                          to={sub.path}
+                          className={`
+                            block py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] transition-colors
+                            ${isSubActive ? 'text-[#451ebb]' : 'text-gray-500/60 hover:text-[#451ebb]'}
+                          `}
+                        >
+                          {sub.name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
           // Special handling for Subject Folders with toggle icon
           if (item.name === 'Subject Folders') {
             return (

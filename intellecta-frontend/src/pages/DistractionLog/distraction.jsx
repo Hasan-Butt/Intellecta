@@ -48,25 +48,17 @@ const TriggerItem = ({ icon: Icon, label, percentage, colorClass }) => (
 const WeeklyBarChart = ({ data }) => {
   const maxVal = Math.max(...data.map(d => d.value));
 
-  const handleBarClick = (item) => {
-    // 1. Store the selected day so your /focus page can read it
-    sessionStorage.setItem('selectedFocusDay', JSON.stringify(item));
-    
-    // 2. Standard navigation to your existing route
-    window.location.href = '/focusSession';
-  };
-
   const yTicks = 5;
   const safeMax = maxVal || 1;
 
   return (
-    <div className="relative h-80 w-full mt-10 flex gap-2">
+    <div className="relative flex-1 w-full mt-4 flex flex-row">
       {/* Y-axis labels */}
-      <div className="flex flex-col justify-between items-end pb-12 pr-2 shrink-0">
+      <div className="flex flex-col justify-between pb-10 pr-4 shrink-0 text-right min-w-[40px]">
         {[...Array(yTicks)].map((_, i) => {
           const val = Math.round((safeMax / (yTicks - 1)) * (yTicks - 1 - i));
           return (
-            <span key={i} className="text-[10px] font-bold text-[#9CA3AF] tabular-nums whitespace-nowrap">
+            <span key={i} className="text-[10px] font-bold text-[#9CA3AF] tabular-nums whitespace-nowrap leading-none">
               {val}m
             </span>
           );
@@ -74,27 +66,43 @@ const WeeklyBarChart = ({ data }) => {
       </div>
 
       {/* Chart area */}
-      <div className="relative flex-1 flex items-end justify-between gap-4 px-2">
-        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-12">
-          {[...Array(yTicks)].map((_, i) => (
-            <div key={i} className="w-full border-t border-gray-100 border-dashed" />
+      <div className="relative flex-1 flex flex-col min-w-0">
+        {/* Bars and Grid Lines Container */}
+        <div className="relative flex-1 flex items-end justify-between gap-2 md:gap-4 px-2">
+          {/* Background Grid Lines */}
+          <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+            {[...Array(yTicks)].map((_, i) => (
+              <div key={i} className="w-full border-t border-gray-100 border-dashed first:border-none" />
+            ))}
+          </div>
+
+          {/* Actual Bars */}
+          {data.map((item, index) => (
+            <div key={index} className="flex-1 flex flex-col items-center group relative z-10 h-full justify-end min-w-0">
+              <div className="relative w-full flex flex-col items-center justify-end h-full">
+                <div className="absolute -top-14 opacity-0 group-hover:opacity-100 transition-all bg-[#1A1D1F] text-white text-[10px] font-bold uppercase tracking-widest py-2 px-3 rounded-xl mb-2 shadow-2xl translate-y-1 group-hover:translate-y-0 whitespace-nowrap z-50 pointer-events-none text-center">
+                  <div className="text-[#9CA3AF] mb-1">{item.day} Breakdown</div>
+                  <div>{item.value}m lost • {item.count} leaks</div>
+                </div>
+                <div
+                  className="w-full max-w-[48px] bg-[#4F27B8] rounded-t-xl transition-all duration-300 hover:bg-[#3b1d8a] hover:scale-x-105 shadow-sm"
+                  style={{ height: `${(item.value / safeMax) * 100}%`, minHeight: '4px' }}
+                />
+              </div>
+            </div>
           ))}
         </div>
-        {data.map((item, index) => (
-          <div key={index} className="flex-1 flex flex-col items-center gap-5 group relative z-10 h-full justify-end">
-            <div className="relative w-full flex flex-col items-center justify-end h-full">
-              <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-all bg-[#1A1D1F] text-white text-[10px] font-bold uppercase tracking-widest py-1.5 px-3 rounded-lg mb-2 shadow-2xl translate-y-1 group-hover:translate-y-0 whitespace-nowrap">
-                {item.value}m — Analyze {item.day}
-              </div>
-              <div
-                onClick={() => handleBarClick(item)}
-                className="w-full max-w-[48px] bg-[#4F27B8] rounded-t-xl transition-all duration-300 hover:bg-[#3b1d8a] cursor-pointer hover:scale-x-105 active:scale-95 shadow-sm"
-                style={{ height: `${(item.value / safeMax) * 100}%`, minHeight: '6px' }}
-              />
+
+        {/* X-axis Labels */}
+        <div className="flex justify-between items-center gap-2 md:gap-4 px-2 mt-5">
+          {data.map((item, index) => (
+            <div key={index} className="flex-1 text-center min-w-0">
+              <span className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-[0.1em] block truncate">
+                {item.day}
+              </span>
             </div>
-            <span className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-[0.1em]">{item.day}</span>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -281,7 +289,7 @@ const AnalyticsDashboard = () => {
     const result = Array.from({ length: 7 }, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
-      return { day: days[d.getDay()], dateStr: d.toDateString(), value: 0 };
+      return { day: days[d.getDay()], dateStr: d.toDateString(), value: 0, count: 0 };
     });
 
     logData.forEach(row => {
@@ -291,6 +299,7 @@ const AnalyticsDashboard = () => {
       if (slot) {
         const match = row.duration?.match(/(\d+)/);
         slot.value += match ? parseInt(match[1]) : 0;
+        slot.count += 1;
       }
     });
 
@@ -402,7 +411,7 @@ const AnalyticsDashboard = () => {
                   return `mostly ${dominant.toLowerCase()} impact`;
                 })(), icon: History, color: 'text-emerald-500', bg: 'bg-emerald-50' },
             ].map((stat, i) => (
-              <div key={i} className="bg-white p-7 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-lg transition-all group min-h-[180px] flex flex-col justify-between">
+              <div key={i} className="bg-white p-7 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-lg transition-all group min-h-[160px] flex flex-col justify-between">
                 <div className="flex justify-between items-start gap-4 mb-4">
                   <div className={`p-4 rounded-2xl shrink-0 ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}><stat.icon size={28} /></div>
                   <span className={`text-[11px] font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider ml-auto whitespace-nowrap ${stat.color} ${stat.bg} border border-current border-opacity-10`}>{stat.sub}</span>
@@ -416,12 +425,12 @@ const AnalyticsDashboard = () => {
           </div>
 
           {/* Main Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-5 bg-white rounded-[32px] p-10 border border-gray-100 shadow-sm min-h-[580px] flex flex-col">
-              <div className="mb-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-5 bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm h-[375px] flex flex-col">
+              <div className="mb-4">
                   <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight">Triggers</h2>
               </div>
-              <div className="space-y-10 flex-1 overflow-y-auto custom-scrollbar pr-3">
+              <div className="space-y-5 flex-1 overflow-y-auto custom-scrollbar pr-3">
                 {triggerData.length > 0 ? (
                   triggerData.map((item, idx) => (<TriggerItem key={idx} {...item} />))
                 ) : (
@@ -436,15 +445,17 @@ const AnalyticsDashboard = () => {
               </div>
             </div>
             
-            <div className="lg:col-span-7 bg-white rounded-[32px] p-10 border border-gray-100 shadow-sm min-h-[580px] flex flex-col">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight">Focus Leaks Trend <span className="text-[#6F767E] text-sm font-medium ml-2">(Last 7 Days)</span></h2>
-                  <p className="text-xs text-[#9CA3AF] font-bold uppercase tracking-widest mt-1">Click a bar to explore data</p>
+            <div className="lg:col-span-7 bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm h-[375px] flex flex-col">
+              <div className="flex flex-row justify-between items-center mb-2 gap-4">
+                <div className="min-w-0">
+                  <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+                    Focus Leaks Trend <span className="text-[#6F767E] text-sm font-medium ml-2">(Last 7 Days)</span>
+                  </h2>
+                  <p className="text-xs text-[#9CA3AF] font-bold uppercase tracking-widest mt-1 truncate">Click a bar to explore data</p>
                 </div>
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-[#4F27B8]" /><span className="text-[10px] font-bold text-[#1A1D1F] uppercase tracking-widest">Hours Lost</span></div>
-                  <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-gray-200" /><span className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest">Baseline</span></div>
+                <div className="flex items-center gap-4 shrink-0">
+                  <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[#4F27B8]" /><span className="text-[9px] font-bold text-[#1A1D1F] uppercase tracking-widest whitespace-nowrap">Hours Lost</span></div>
+                  <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-gray-200" /><span className="text-[9px] font-bold text-[#9CA3AF] uppercase tracking-widest whitespace-nowrap">Baseline</span></div>
                 </div>
               </div>
               <div className="flex-1 flex flex-col justify-center">
@@ -486,7 +497,7 @@ const AnalyticsDashboard = () => {
               </div>
             </div>
 
-            <div className="w-full overflow-x-auto min-h-[400px] max-h-[400px] overflow-y-auto custom-scrollbar">
+            <div className="w-full overflow-x-auto min-h-[200px] max-h-[350px] overflow-y-auto custom-scrollbar">
             <table className="w-full text-left border-collapse table-fixed lg:table-auto">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-[#F9FAFB] text-[10px] font-bold text-[#6F767E] uppercase tracking-[0.12em] shadow-sm">
