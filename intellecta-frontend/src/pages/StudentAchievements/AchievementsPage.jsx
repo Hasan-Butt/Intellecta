@@ -122,11 +122,11 @@ const AchievementsPage = () => {
                     : 'bg-gray-50/50 border-gray-100/50 opacity-60'
                   }`}
                 >
-                  <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center transition-all ${
-                    badge.earned ? 'bg-indigo-50 group-hover:scale-110' : 'bg-gray-200 grayscale'
+                  <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center transition-all overflow-hidden border-2 ${
+                    badge.earned ? 'bg-indigo-50 group-hover:scale-110 border-white shadow-sm' : 'bg-gray-200 grayscale border-transparent'
                   }`}>
                     {badge.imageUrl ? (
-                      <img src={badge.imageUrl} alt={badge.displayName} className="w-12 h-12 object-contain" />
+                      <img src={badge.imageUrl} alt={badge.displayName} className="w-full h-full object-cover" />
                     ) : (
                       <Award className={badge.earned ? 'text-[#451ebb]' : 'text-gray-400'} size={32} />
                     )}
@@ -165,11 +165,11 @@ const AchievementsPage = () => {
           
           <div className="bg-white rounded-[40px] w-full max-w-lg overflow-hidden relative z-10 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
             <div className="p-12 text-center">
-              <div className={`w-32 h-32 rounded-3xl mx-auto mb-8 flex items-center justify-center rotate-3 ${
-                selectedBadge.earned ? 'bg-gradient-to-br from-[#451ebb] to-[#6c5dd3] shadow-2xl shadow-indigo-200' : 'bg-gray-100'
+              <div className={`w-32 h-32 rounded-full mx-auto mb-8 flex items-center justify-center overflow-hidden border-4 border-white shadow-2xl ${
+                selectedBadge.earned ? 'bg-gradient-to-br from-[#451ebb] to-[#6c5dd3]' : 'bg-gray-100'
               }`}>
                 {selectedBadge.imageUrl ? (
-                  <img src={selectedBadge.imageUrl} alt="Badge" className={`w-20 h-20 object-contain ${!selectedBadge.earned && 'grayscale opacity-40'}`} />
+                  <img src={selectedBadge.imageUrl} alt="Badge" className={`w-full h-full object-cover ${!selectedBadge.earned && 'grayscale opacity-40'}`} />
                 ) : (
                   <Award className={selectedBadge.earned ? 'text-white' : 'text-gray-300'} size={60} />
                 )}
@@ -232,9 +232,9 @@ const AchievementCard = ({ badge, onClick }) => (
     onClick={onClick}
     className="group bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm hover:shadow-2xl hover:border-indigo-100 transition-all cursor-pointer flex items-center gap-8"
   >
-    <div className="w-28 h-28 rounded-2xl bg-[#f5f6ff] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform rotate-3">
+    <div className="w-28 h-28 rounded-full bg-[#f5f6ff] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform overflow-hidden border-4 border-white shadow-md">
       {badge.imageUrl ? (
-        <img src={badge.imageUrl} alt={badge.displayName} className="w-16 h-16 object-contain" />
+        <img src={badge.imageUrl} alt={badge.displayName} className="w-full h-full object-cover" />
       ) : (
         <Award className="text-[#451ebb]" size={40} />
       )}
