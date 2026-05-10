@@ -13,5 +13,6 @@ public class LeaderboardEntryDTO {
     private int    level;
     private int    xpProgressPct;
     private String discipline;
+    private String avatarUrl;
     private boolean isCurrentUser;
 }

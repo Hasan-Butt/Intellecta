@@ -848,9 +848,18 @@ public class AdminService {
     }
 
     private UserResponseDto toDto(User user) {
-        return new UserResponseDto(user.getId(), user.getUsername(),
-                user.getEmail(), user.getRole() != null ? user.getRole().name() : null,
-                user.getStatus());
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole() != null ? user.getRole().name() : null)
+                .status(user.getStatus())
+                .bio(user.getBio())
+                .avatarUrl(user.getAvatarUrl())
+                .studyReminders(user.isStudyReminders())
+                .achievementAlerts(user.isAchievementAlerts())
+                .weeklyReports(user.isWeeklyReports())
+                .build();
     }
 
     private String escapeCsv(String value) {

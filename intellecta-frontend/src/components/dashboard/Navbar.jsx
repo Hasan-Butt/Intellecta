@@ -1,19 +1,59 @@
-import React, { useState } from 'react';
-import { Search, Flame, Bell } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Flame, Bell, User, Mail, BookOpen, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import intellectaLogo from '../../assets/intellectaLogo.jpeg';
+import api from '../../services/api';
+import Avatar from '../common/Avatar';
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [userData, setUserData] = useState({
+    username: 'Hasan Butt',
+    email: 'hasan@intellecta.com',
+    bio: 'Focus. Learn. Achieve.',
+    avatarUrl: ''
+  });
+  
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    fetchUserData();
+    
+    // Close menu when clicking outside
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const fetchUserData = async () => {
+    const userId = localStorage.getItem('userId') || '2';
+    try {
+      const res = await api.get(`/users/${userId}/profile`);
+      setUserData({
+        username: res.data.username || 'Hasan Butt',
+        email: res.data.email || 'hasan@intellecta.com',
+        bio: res.data.bio || 'Focus. Learn. Achieve.',
+        avatarUrl: res.data.avatarUrl || ''
+      });
+    } catch (err) {
+      console.error("Failed to fetch navbar user data", err);
+    }
+  };
 
   return (
     <header className="w-full bg-[#F9FAFB] border-b border-gray-200 font-inter sticky top-0 z-50">
       <div className="max-w-[1920px] mx-auto px-4 h-14 flex items-center ">
         
         {/* Left Section: Logo & Branding */}
-        <div className="flex items-center gap-2 cursor-pointer group">
+        <div className="flex items-center gap-2 cursor-pointer group" onClick={() => navigate('/dashboard')}>
           <div className="relative w-14 h-16 flex items-center justify-center">
-            {/* Standard img tag prevents the 'createElement' error */}
             <img 
               src={intellectaLogo} 
               alt="Intellecta Logo" 
@@ -68,15 +108,67 @@ const Navbar = () => {
 
           <div className="h-12 w-[1px] bg-gray-200 mx-1" />
           
-          <button className="flex items-center gap-1 p-0.5 rounded-full ring-2 ring-transparent hover:ring-indigo-100 transition-all">
-            <div className="w-10 h-10 rounded-full bg-zinc-800 border-2 border-white shadow-sm overflow-hidden">
-              <img 
-                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
-                alt="User Profile" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </button>
+          {/* Profile Section with Popover */}
+          <div className="relative" ref={menuRef}>
+            <button 
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className={`flex items-center gap-1 p-0.5 rounded-full ring-2 transition-all ${
+                showProfileMenu ? 'ring-indigo-500' : 'ring-transparent hover:ring-indigo-100'
+              }`}
+            >
+              <Avatar src={userData.avatarUrl} name={userData.username} />
+            </button>
+
+            {/* Profile Popover */}
+            {showProfileMenu && (
+              <div className="absolute right-0 mt-3 w-72 bg-white rounded-3xl shadow-2xl border border-gray-100 z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="p-6 bg-gradient-to-br from-[#451ebb] to-[#5d3fd3] text-white">
+                  <div className="flex items-center gap-4">
+                    <Avatar src={userData.avatarUrl} name={userData.username} size="w-14 h-14" />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-lg truncate">{userData.username}</h4>
+                      <p className="text-white/70 text-xs truncate">Student Scholar</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 space-y-1">
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-gray-50 transition-colors">
+                    <Mail size={16} className="text-gray-400" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email</p>
+                      <p className="text-xs font-bold text-zinc-800 truncate">{userData.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-gray-50 transition-colors">
+                    <BookOpen size={16} className="text-gray-400" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">About Me</p>
+                      <p className="text-xs font-medium text-zinc-600 line-clamp-2">{userData.bio || 'No bio available'}</p>
+                    </div>
+                  </div>
+
+                  <div className="h-[1px] bg-gray-100 my-2" />
+
+                  <button 
+                    onClick={() => { navigate('/settings'); setShowProfileMenu(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-indigo-50 text-indigo-600 transition-colors text-sm font-bold"
+                  >
+                    <SettingsIcon size={16} />
+                    Account Settings
+                  </button>
+
+                  <button 
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

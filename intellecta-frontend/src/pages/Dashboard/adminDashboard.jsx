@@ -10,6 +10,7 @@ import {
   RefreshCw,
   X,
 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 import Sidebar from "../../components/dashboard/Sidebar";
 import Navbar from "../../components/dashboard/Navbar";
@@ -89,17 +90,30 @@ const Dashboard = () => {
     fetchDashboard();
   }, []);
 
-  // Normalise weekly velocity (raw minutes) to bar-height percentages (0–100)
-  const weeklyVelocityPct = (() => {
-    const raw = dashboardData?.weeklyVelocity ?? [55, 68, 40, 92, 60, 35, 30];
-    const max = Math.max(...raw, 1);
-    return raw.map((v) => Math.round((v / max) * 100));
+  // Map weekly velocity to bar chart data
+  const weeklyVelocityData = (() => {
+    const raw = dashboardData?.weeklyVelocity ?? [];
+    if (!raw.length) return [];
+    const result = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const dayName = d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase();
+      result.push({ name: dayName, minutes: raw[i] });
+    }
+    return result;
   })();
 
-  const heatmapCells = dashboardData?.peakStudyTimes ?? [
-    0, 0, 1, 2, 2, 0, 1, 2, 3, 4, 2, 1, 2, 3, 4, 3, 1, 1, 2, 3, 2, 0, 0, 1, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  ];
+  const heatmapCells = dashboardData?.peakStudyTimes ?? Array(42).fill(0);
+  
+  // Transform flat array [dayIndex * 6 + slotIndex] to grid cells row by row
+  // CSS Grid flows row by row. We want 7 columns (days) and 6 rows (time slots).
+  const heatmapGrid = [];
+  for (let r = 0; r < 6; r++) {
+    for (let c = 0; c < 7; c++) {
+      heatmapGrid.push(heatmapCells[c * 6 + r] || 0);
+    }
+  }
 
   const alerts = (dashboardData?.alerts ?? []).map((a) => ({
     ...a,
@@ -236,32 +250,22 @@ const Dashboard = () => {
                   Weekly Study Velocity
                 </h3>
 
-                <div className="relative flex items-end justify-between h-64 w-full px-2">
-                  {weeklyVelocityPct.map((h, i) => (
-                    <div
-                      key={i}
-                      className="flex-1 flex flex-col items-center mx-2 justify-end group"
-                    >
-                      <div
-                        className={`w-full rounded-md transition-all duration-500 ${
-                          h === Math.max(...weeklyVelocityPct)
-                            ? "bg-[#6C5DD3]"
-                            : "bg-[#E3E0F7]"
-                        }`}
-                        style={{ height: `${Math.max(h, 4)}%` }}
-                      />
-                      <span className="text-[11px] font-black mt-4 text-gray-400 uppercase tracking-tighter">
-                        {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"][i]}
-                      </span>
-                    </div>
-                  ))}
+                <div className="h-64 w-full mt-4">
+                  {!dashboardData ? (
+                    <div className="h-full flex items-center justify-center text-sm font-bold text-gray-400">Loading...</div>
+                  ) : dashboardData.weeklyVelocity?.every((v) => v === 0) ? (
+                    <div className="h-full flex items-center justify-center text-sm font-bold text-gray-400">No data available</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={weeklyVelocityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 'bold', fill: '#9CA3AF' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 'bold', fill: '#9CA3AF' }} />
+                        <Tooltip cursor={{ fill: '#F3F4F6' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                        <Bar dataKey="minutes" fill="#6C5DD3" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
-
-                {dashboardData?.weeklyVelocity?.every((v) => v === 0) && (
-                  <p className="text-center text-sm text-gray-400 font-bold mt-4">
-                    No study sessions recorded this week yet.
-                  </p>
-                )}
               </div>
 
               {/* Peak Study Times Heatmap */}
@@ -270,29 +274,43 @@ const Dashboard = () => {
                   Peak Study Times
                 </h3>
 
-                <div className="grid grid-cols-6 gap-2 flex-1">
-                  {heatmapCells.map((val, i) => (
-                    <div
-                      key={i}
-                      className={`aspect-square rounded-md ${
-                        val === 0
-                          ? "bg-gray-100"
-                          : val === 1
-                          ? "bg-[#6C5DD3]/20"
-                          : val === 2
-                          ? "bg-[#6C5DD3]/40"
-                          : val === 3
-                          ? "bg-[#6C5DD3]/70"
-                          : "bg-[#6C5DD3]"
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                <div className="flex justify-between mt-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  {["0h", "4h", "8h", "12h", "16h", "20h"].map((label) => (
-                    <span key={label}>{label}</span>
-                  ))}
+                <div className="flex flex-col flex-1 mt-4">
+                  {!dashboardData ? (
+                    <div className="h-full flex items-center justify-center text-sm font-bold text-gray-400">Loading...</div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-[40px]">
+                        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => (
+                          <span key={label} className="flex-1 text-center">{label}</span>
+                        ))}
+                      </div>
+                      <div className="flex flex-1 gap-2">
+                        <div className="flex flex-col justify-between py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest w-[32px] text-right">
+                          {["00-04", "04-08", "08-12", "12-16", "16-20", "20-24"].map((label) => (
+                            <span key={label}>{label}</span>
+                          ))}
+                        </div>
+                        <div className="grid grid-cols-7 grid-rows-6 gap-2 flex-1">
+                          {heatmapGrid.map((val, i) => (
+                            <div
+                              key={i}
+                              className={`rounded-md ${
+                                val === 0
+                                  ? "bg-gray-100"
+                                  : val === 1
+                                  ? "bg-[#6C5DD3]/20"
+                                  : val === 2
+                                  ? "bg-[#6C5DD3]/40"
+                                  : val === 3
+                                  ? "bg-[#6C5DD3]/70"
+                                  : "bg-[#6C5DD3]"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </section>

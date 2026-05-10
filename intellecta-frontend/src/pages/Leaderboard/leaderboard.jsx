@@ -5,6 +5,7 @@ import { Filter, Download, BarChart3, TrendingUp, Award, Lightbulb, Globe, Zap, 
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
 import api from '../../services/api';
+import Avatar from '../../components/common/Avatar';
 
 const GlobalLeaderboard = () => {
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -203,9 +204,9 @@ const GlobalLeaderboard = () => {
               <div className="space-y-12 min-w-0">
                 {/* PODIUM */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-2 items-end">
-                    <PodiumCard rank="2" name={getDisplayName(top2)} univ={`Lv.${top2.level} ${resolveLevelTitle(top2.level)} • ${top2.discipline || 'General'}`} pts={top2.xp} img={`https://ui-avatars.com/api/?name=${getDisplayName(top2)}&background=random&color=fff`}/>
-                    <PodiumCard rank="1" name={getDisplayName(top1)} univ={`Lv.${top1.level} ${resolveLevelTitle(top1.level)} • ${top1.discipline || 'General'}`} pts={top1.xp} active img={`https://ui-avatars.com/api/?name=${getDisplayName(top1)}&background=random&color=fff`}/>
-                    <PodiumCard rank="3" name={getDisplayName(top3)} univ={`Lv.${top3.level} ${resolveLevelTitle(top3.level)} • ${top3.discipline || 'General'}`} pts={top3.xp} img={`https://ui-avatars.com/api/?name=${getDisplayName(top3)}&background=random&color=fff`}/>
+                    <PodiumCard rank="2" name={getDisplayName(top2)} univ={`Lv.${top2.level} ${resolveLevelTitle(top2.level)} • ${top2.discipline || 'General'}`} pts={top2.xp} avatarUrl={top2.avatarUrl}/>
+                    <PodiumCard rank="1" name={getDisplayName(top1)} univ={`Lv.${top1.level} ${resolveLevelTitle(top1.level)} • ${top1.discipline || 'General'}`} pts={top1.xp} active avatarUrl={top1.avatarUrl}/>
+                    <PodiumCard rank="3" name={getDisplayName(top3)} univ={`Lv.${top3.level} ${resolveLevelTitle(top3.level)} • ${top3.discipline || 'General'}`} pts={top3.xp} avatarUrl={top3.avatarUrl}/>
                 </div>
 
                 {/* TABLE SECTION */}
@@ -245,7 +246,7 @@ const GlobalLeaderboard = () => {
                             <td className={`px-4 py-4 first:rounded-l-2xl font-mono text-lg font-black ${row.currentUser ? 'text-indigo-600' : 'text-slate-300'}`}>{(row.rank || i + 1).toString().padStart(2, '0')}</td>
                             <td className="px-4 py-4">
                               <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white font-black text-[10px]`}>{getDisplayName(row).charAt(0).toUpperCase()}</div>
+                                <Avatar src={row.avatarUrl} name={getDisplayName(row)} />
                                 <div>
                                   <p className={`font-black text-sm ${row.currentUser ? 'text-indigo-800' : 'text-slate-900'}`}>{getDisplayName(row)}</p>
                                   <p className="text-[11px] text-slate-400 font-semibold">{row.xp} XP</p>
@@ -289,9 +290,7 @@ const GlobalLeaderboard = () => {
                       <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl mb-4 relative border border-slate-100">
                         {/* Current user */}
                         <div className="text-center z-10">
-                          <div className="w-11 h-11 bg-slate-900 rounded-full mx-auto mb-2 border-2 border-white shadow-sm flex items-center justify-center text-white font-black text-xs">
-                            {(isAnonymous ? 'A' : (currentUser.username || 'U').charAt(0).toUpperCase())}
-                          </div>
+                          <Avatar src={currentUser.avatarUrl} name={isAnonymous ? 'You' : currentUser.username} size="w-11 h-11 mx-auto mb-2" />
                           <p className="text-[9px] font-black uppercase text-slate-400">{isAnonymous ? 'You' : currentUser.username}</p>
                           <p className="text-[10px] font-black text-indigo-600">{currentUser.xp} XP</p>
                         </div>
@@ -305,9 +304,7 @@ const GlobalLeaderboard = () => {
                             className="group flex flex-col items-center focus:outline-none"
                             title="Click to change peer"
                           >
-                            <div className="w-11 h-11 bg-indigo-600 group-hover:bg-indigo-700 rounded-full mx-auto mb-2 border-2 border-white shadow-sm flex items-center justify-center text-white font-black text-xs transition-colors">
-                              {(selectedPeer.username || 'P').charAt(0).toUpperCase()}
-                            </div>
+                            <Avatar src={selectedPeer.avatarUrl} name={selectedPeer.username} size="w-11 h-11 mx-auto mb-2" />
                             <p className="text-[9px] font-black uppercase text-indigo-600 flex items-center gap-1">
                               {selectedPeer.username}
                               <span className="text-[7px] opacity-60">▼</span>
@@ -327,9 +324,7 @@ const GlobalLeaderboard = () => {
                                     peer.userId === selectedPeer.userId ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700'
                                   }`}
                                 >
-                                  <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white text-[9px] font-black shrink-0">
-                                    {(peer.username || 'P').charAt(0).toUpperCase()}
-                                  </div>
+                                  <Avatar src={peer.avatarUrl} name={peer.username} size="w-6 h-6" />
                                   <div>
                                     <p className="text-[11px] font-bold leading-none">{peer.username}</p>
                                     <p className="text-[9px] text-slate-400">Rank #{peer.rank} · {peer.xp} XP</p>
@@ -436,24 +431,15 @@ const GlobalLeaderboard = () => {
                   <div className="mb-4 bg-white/40 w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-white/60 transition-colors">
                     <Trophy size={16} className="text-[#d97706]" />
                   </div>
-                  
-                  {nextAchievement ? (
-                    <>
-                      <h3 className="text-lg font-black leading-tight mb-1 tracking-tight">Next Achievement</h3>
-                      <p className="text-[10px] font-black text-[#d97706] uppercase tracking-wider mb-2">{nextAchievement.displayName}</p>
-                      <p className="text-[11px] font-medium opacity-80 mb-6">{nextAchievement.description}</p>
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="text-lg font-black leading-tight mb-1 tracking-tight">Champion Status</h3>
-                      <p className="text-[10px] font-black text-[#d97706] uppercase tracking-wider mb-2">All Unlocked</p>
-                      <p className="text-[11px] font-medium opacity-80 mb-6">You've unlocked every achievement. Truly a master scholar!</p>
-                    </>
-                  )}
-                  
-                  <div className="flex items-center justify-between pt-2 border-t border-[#5c3d2e]/10">
-                    <p className="text-[9px] font-black uppercase opacity-60">View Achievement Gallery</p>
-                    <ChevronRight size={14} className="opacity-60 group-hover:translate-x-1 transition-transform" />
+                  <h3 className="text-lg font-black leading-tight mb-2 tracking-tight">Next: '{resolveLevelTitle((currentUser?.level || 1) + 1)}'</h3>
+                  <p className="text-[11px] font-medium opacity-80 mb-4">Keep earning XP to reach the next tier.</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex -space-x-2">
+                      {currentLeaderboard.filter(r => !r.currentUser).slice(0, 3).map((peer, i) => (
+                        <Avatar key={i} src={peer.avatarUrl} name={peer.username} size="w-7 h-7" className="border-[#fee2d5]" />
+                      ))}
+                    </div>
+                    <p className="text-[8px] font-black uppercase opacity-60">{currentLeaderboard.length - 1} others competing</p>
                   </div>
                 </section>
               </aside>
@@ -465,16 +451,14 @@ const GlobalLeaderboard = () => {
   );
 };
 
-const PodiumCard = ({ rank, name, univ, pts, active, img }) => (
+const PodiumCard = ({ rank, name, univ, pts, active, avatarUrl }) => (
   <div className={`rounded-[36px] p-5 text-center flex flex-col items-center transition-all duration-500 ${
     active 
       ? 'bg-[#512de3] text-white pt-10 pb-8 shadow-2xl relative z-10 scale-105' 
       : 'bg-white text-slate-900 shadow-md border border-slate-200/50'
   }`}>    
     <div className="relative mb-4">
-      <div className={`w-20 h-20 rounded-full overflow-hidden ${active ? 'ring-4 ring-indigo-400/30' : 'ring-2 ring-slate-100'}`}>
-         <img src={img} alt={name} className="w-full h-full object-cover" />
-      </div>
+      <Avatar src={avatarUrl} name={name} size="w-20 h-20" className={active ? 'ring-4 ring-indigo-400/30' : 'ring-2 ring-slate-100'} />
       <div className={`absolute -bottom-2 -right-2 w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shadow-lg ${active ? 'bg-[#ffca00] text-slate-900' : 'bg-slate-100 text-slate-600'}`}>
         {rank}
       </div>

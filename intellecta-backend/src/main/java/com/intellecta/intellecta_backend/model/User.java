@@ -47,6 +47,20 @@ public class User {
 
     
     private String status;
+    private String bio;
+    private String avatarUrl;
+
+    @Column(nullable = false)
+    @ColumnDefault("1")
+    private boolean studyReminders = true;
+
+    @Column(nullable = false)
+    @ColumnDefault("1")
+    private boolean achievementAlerts = true;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private boolean weeklyReports = false;
 
     // Constructors
     public User() {}
@@ -144,5 +158,45 @@ public class User {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    public boolean isStudyReminders() {
+        return studyReminders;
+    }
+
+    public void setStudyReminders(boolean studyReminders) {
+        this.studyReminders = studyReminders;
+    }
+
+    public boolean isAchievementAlerts() {
+        return achievementAlerts;
+    }
+
+    public void setAchievementAlerts(boolean achievementAlerts) {
+        this.achievementAlerts = achievementAlerts;
+    }
+
+    public boolean isWeeklyReports() {
+        return weeklyReports;
+    }
+
+    public void setWeeklyReports(boolean weeklyReports) {
+        this.weeklyReports = weeklyReports;
     }
 }
