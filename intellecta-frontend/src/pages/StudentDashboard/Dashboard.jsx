@@ -7,6 +7,7 @@ import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
 import { getDashboard, logDistraction } from "../../services/dashboardService";
 import weeklyInsightBg from "../../assets/weekly_insight_bg.png";
+import { STUDY_QUOTES } from "../../data/quotations";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const PlayIcon = () => (
@@ -485,6 +486,17 @@ export default function DashboardPage() {
   const reviewQueue = baseQueue.filter(item => !hiddenReviews.includes(item.id));
 
   const maxFocus = Math.max(...focusWeek.map((d) => d.focusMinutes), 1);
+
+  // ── Calculate Weekly Insight ──
+  const getWeeklyQuote = () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 1);
+    const diff = now - start;
+    const oneWeek = 1000 * 60 * 60 * 24 * 7;
+    const weekIndex = Math.floor(diff / oneWeek);
+    return STUDY_QUOTES[weekIndex % STUDY_QUOTES.length];
+  };
+  const weeklyQuote = getWeeklyQuote();
 
   // Badge display — prioritized real images with rounded fill styling
   const badgeDisplay = recentBadges.length > 0
@@ -985,18 +997,19 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Weekly Insight card — Image background */}
-                <div className="rounded-3xl overflow-hidden relative h-[192px] shadow-lg">
+                <div className="rounded-3xl overflow-hidden relative h-[192px] shadow-lg flex items-center justify-center text-center p-8">
                   <img src={weeklyInsightBg} alt="Abstract Background" className="absolute inset-0 w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40" />
-                  <div className="absolute bottom-7 left-5 p-6 flex flex-col gap-1 z-10">
-                    <span className="text-[#ffdfa0] text-xs font-bold uppercase">
-                      Weekly Insight
-                    </span>
-                    <p className="font-bold text-white text-base leading-6 max-w-[240px]">
-                      Try 5 minute breaks between deep work after every 25
-                      minutes.
-                    </p>
-                  </div>
+                  <div className="absolute inset-0 bg-black/45" />
+                  
+                  {/* Top Left Label */}
+                  <span className="absolute top-6 left-6 text-[#ffdfa0] text-[10px] font-black uppercase tracking-widest z-10">
+                    Weekly Insight
+                  </span>
+                  
+                  {/* Centered Quote */}
+                  <p className="relative z-10 font-extrabold text-white text-lg leading-relaxed max-w-[400px] drop-shadow-lg">
+                    "{weeklyQuote}"
+                  </p>
                 </div>
               </div>
             </div>
