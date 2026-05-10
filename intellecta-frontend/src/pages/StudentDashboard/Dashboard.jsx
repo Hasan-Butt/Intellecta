@@ -326,17 +326,18 @@ export default function DashboardPage() {
   // Modal states
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showChecklistModal, setShowChecklistModal] = useState(false);
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [newDailyGoal, setNewDailyGoal] = useState(6);
   const [checklistError, setChecklistError] = useState("");
-  const [submittingChecklist] = useState(false);
+  const [submittingChecklist, setSubmittingChecklist] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [submittingGoal, setSubmittingGoal] = useState(false);
 
   const getUserId = () => parseInt(localStorage.getItem("userId") ?? "2");
 
-  // Form states for review queue
   const [newReviewTitle, setNewReviewTitle] = useState("");
   const [newReviewSubtitle, setNewReviewSubtitle] = useState("");
   const [hiddenReviews, setHiddenReviews] = useState([]);
-  const [addedReviews, setAddedReviews] = useState([]);
 
   // Form states for checklist (exam)
   const [newChecklistLabel, setNewChecklistLabel] = useState("");
@@ -428,7 +429,6 @@ export default function DashboardPage() {
       // fetchDashboard will return the real item from the backend, so
       // we don't need an optimistic entry — just refresh.
       await fetchDashboard();
-      setAddedReviews([]);  // clear any stale optimistic entries
       setShowReviewModal(false);
       setNewReviewTitle("");
       setNewReviewSubtitle("");
@@ -439,8 +439,23 @@ export default function DashboardPage() {
     }
   };
 
+  const handleUpdateDailyGoal = async () => {
+    if (submittingGoal) return;
+    setSubmittingGoal(true);
+    try {
+      await api.patch(`/dashboard/user/${getUserId()}/goal?hours=${newDailyGoal}`);
+      await fetchDashboard();
+      setShowGoalModal(false);
+    } catch (err) {
+      console.error("Failed to update daily goal:", err);
+    } finally {
+      setSubmittingGoal(false);
+    }
+  };
+
   const handleAddChecklistItem = async () => {
     if (!newChecklistLabel.trim() || submittingChecklist) return;
+    setSubmittingChecklist(true);
     try {
       await addChecklistItem({
         courseName: newChecklistLabel,
@@ -560,13 +575,21 @@ export default function DashboardPage() {
 
               <div className="flex gap-6 items-center flex-shrink-0">
                 {/* Daily Goal card */}
-                <div className="flex gap-3 items-center px-5 py-6 rounded-3xl bg-white/70 backdrop-blur-[10px] shadow-lg border-b-4 border-[#451ebb]">
+                <div 
+                  onClick={() => {
+                    setNewDailyGoal(data?.dailyGoalHours || 6);
+                    setShowGoalModal(true);
+                  }}
+                  className="flex gap-3 items-center px-5 py-7 rounded-3xl bg-white/70 backdrop-blur-[10px] shadow-lg border-b-4 border-[#451ebb] cursor-pointer hover:scale-105 transition-all group min-w-[160px]"
+                >
                   <CircularProgress pct={dailyGoalPct} size={80} />
                   <div className="flex flex-col gap-1">
-                    <span className="font-['Inter',sans-serif] text-[#484554] text-xs tracking-[1.2px] uppercase leading-4">
-                      Daily
-                      <br />
-                      Goal
+                    <span className="font-['Inter',sans-serif] text-[#484554] text-xs tracking-[1.2px] uppercase leading-4 flex items-center gap-1">
+                      Daily Goal
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      </svg>
                     </span>
                     <span className="font-['Inter',sans-serif] font-bold text-[#161c27] text-base leading-6">
                       {todayHours} / {dailyGoal}
@@ -577,7 +600,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Streak card */}
-                <div className="flex gap-3 items-center px-5 py-6 rounded-3xl bg-white/70 backdrop-blur-[10px] shadow-lg border-b-4 border-[#fbbc00]">
+                <div className="flex gap-3 items-center px-5 py-7 rounded-3xl bg-white/70 backdrop-blur-[10px] shadow-lg border-b-4 border-[#fbbc00] min-w-[160px]">
                   <div className="w-[80px] h-[80px] flex items-center justify-center flex-shrink-0">
                     <div className="bg-[#ffdfa0] rounded-full w-10 h-14 flex items-center justify-center">
                       <FireIcon />
@@ -1143,6 +1166,66 @@ export default function DashboardPage() {
                     className="bg-[#451ebb] text-white font-bold py-3 rounded-xl hover:bg-[#5d3fd3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submittingChecklist ? "Adding..." : "Add Exam"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* ── Daily Goal Update Modal ── */}
+          {showGoalModal && (
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+              <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-bold text-xl">Update Daily Study Goal</h3>
+                  <button onClick={() => setShowGoalModal(false)}>
+                    <CloseIcon />
+                  </button>
+                </div>
+                <div className="flex flex-col gap-6">
+                  <div className="text-center space-y-2">
+                    <p className="text-4xl font-black text-[#451ebb]">
+                      {newDailyGoal} <span className="text-lg text-gray-400">hrs</span>
+                    </p>
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-widest">
+                      Your Daily Target
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 bg-[#f1f3ff] p-4 rounded-2xl">
+                    <button
+                      onClick={() => setNewDailyGoal(prev => Math.max(0.5, parseFloat((prev - 0.5).toFixed(1))))}
+                      className="w-12 h-12 rounded-full bg-white text-[#451ebb] font-bold text-2xl flex items-center justify-center shadow-sm hover:scale-110 transition-all"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="12"
+                      step="0.5"
+                      value={newDailyGoal}
+                      onChange={(e) => setNewDailyGoal(parseFloat(e.target.value))}
+                      className="flex-1 h-2 bg-[#d8dfff] rounded-lg appearance-none cursor-pointer accent-[#451ebb]"
+                    />
+                    <button
+                      onClick={() => setNewDailyGoal(prev => Math.min(12, parseFloat((prev + 0.5).toFixed(1))))}
+                      className="w-12 h-12 rounded-full bg-white text-[#451ebb] font-bold text-2xl flex items-center justify-center shadow-sm hover:scale-110 transition-all"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <p className="text-[10px] text-gray-400 text-center leading-relaxed">
+                    Setting a realistic goal helps maintain consistency. 
+                    You can change this anytime.
+                  </p>
+
+                  <button
+                    onClick={handleUpdateDailyGoal}
+                    disabled={submittingGoal}
+                    className="w-full bg-[#451ebb] text-white font-bold py-4 rounded-2xl hover:bg-[#5d3fd3] shadow-lg shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-50"
+                  >
+                    {submittingGoal ? "Saving..." : "Set as Daily Goal"}
                   </button>
                 </div>
               </div>

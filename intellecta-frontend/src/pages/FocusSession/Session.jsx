@@ -88,6 +88,7 @@ const StudySessionDashboard = () => {
   const [level, setLevel] = useState(1);
   const [currentXp, setCurrentXp] = useState(0);
   const [nextLevelXp, setNextLevelXp] = useState(141);
+  const [xpProgressPct, setXpProgressPct] = useState(0);
   const [streakDays, setStreakDays] = useState(0);
   const [todayFocusTotal, setTodayFocusTotal] = useState(0);
   const [focusWeek, setFocusWeek] = useState([]);
@@ -127,6 +128,7 @@ const StudySessionDashboard = () => {
         setLevel(dashRes.data.level ?? 1);
         setCurrentXp(dashRes.data.currentXp ?? 0);
         setNextLevelXp(dashRes.data.nextLevelXp ?? 141);
+        setXpProgressPct(dashRes.data.xpProgressPct ?? 0);
         setStreakDays(dashRes.data.streakDays ?? 0);
         setTodayFocusTotal(dashRes.data.todayStudyHours ?? 0);
         setFocusWeek(dashRes.data.focusWeek || []);
@@ -264,6 +266,7 @@ const StudySessionDashboard = () => {
         setLevel(dashRes.data.level ?? 1);
         setCurrentXp(dashRes.data.currentXp ?? 0);
         setNextLevelXp(dashRes.data.nextLevelXp ?? 141);
+        setXpProgressPct(dashRes.data.xpProgressPct ?? 0);
         setRecentSessions(sessionsRes.data || []);
         setTodayFocusTotal(dashRes.data.todayStudyHours ?? 0);
         setFocusWeek(dashRes.data.focusWeek || []);
@@ -707,7 +710,7 @@ const StudySessionDashboard = () => {
                 <div
                   className="h-full bg-indigo-600 rounded-full shadow-[0_0_10px_rgba(79,70,229,0.4)] transition-all duration-700"
                   style={{
-                    width: `${Math.min(100, nextLevelXp > 0 ? (currentXp / nextLevelXp) * 100 : 0)}%`,
+                    width: `${xpProgressPct}%`,
                   }}
                 />
               </div>

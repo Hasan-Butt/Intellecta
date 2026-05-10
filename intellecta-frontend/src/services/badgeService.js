@@ -1,6 +1,6 @@
 import api from './api';
 
-const USER_ID = localStorage.getItem('userId') || '2';
+const getUserId = () => localStorage.getItem('userId') || '2';
 
 const badgeService = {
   // Admin: Get all badge definitions with analytics
@@ -37,7 +37,7 @@ const badgeService = {
 
   // Student: Get all badges with earned status
   getMyAchievements: async () => {
-    const response = await api.get(`/achievements/user/${USER_ID}/all`);
+    const response = await api.get(`/achievements/user/${getUserId()}/all`);
     return response.data;
   },
 
