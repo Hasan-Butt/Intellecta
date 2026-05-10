@@ -1,14 +1,23 @@
 package com.intellecta.intellecta_backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import com.intellecta.intellecta_backend.dto.request.GoogleLoginRequest;
 import com.intellecta.intellecta_backend.dto.request.LoginRequest;
 import com.intellecta.intellecta_backend.dto.response.LoginResponse;
 import com.intellecta.intellecta_backend.model.User;
+import com.intellecta.intellecta_backend.enums.UserRoles;
 import com.intellecta.intellecta_backend.repository.UserRepository;
 import com.intellecta.intellecta_backend.util.JwtUtil;
+
+import java.util.Map;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -37,5 +46,62 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
 
         return new LoginResponse(token, user.getId(), user.getEmail(), user.getRole());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public LoginResponse googleLogin(GoogleLoginRequest request) {
+        try {
+            // Use Spring's RestTemplate to call Google's userinfo endpoint
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + request.getIdToken());
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                HttpMethod.GET,
+                entity,
+                Map.class
+            );
+
+            Map<String, Object> userInfo = response.getBody();
+
+            if (userInfo == null) {
+                throw new RuntimeException("Empty response from Google.");
+            }
+
+            String email = (String) userInfo.get("email");
+            String name  = (String) userInfo.get("name");
+
+            if (email == null) {
+                throw new RuntimeException("Could not retrieve email from Google.");
+            }
+
+            System.out.println("Google Login: email=" + email + ", name=" + name);
+
+            User user = userRepository.findByEmail(email);
+
+            if (user == null) {
+                // First-time Google login — auto-create the account
+                user = new User();
+                user.setEmail(email);
+                user.setUsername(name != null ? name : email.split("@")[0]);
+                user.setRole(UserRoles.STUDENT);
+                user = userRepository.save(user);
+                System.out.println("Google Login: new user created with id=" + user.getId());
+            } else {
+                System.out.println("Google Login: existing user found with id=" + user.getId());
+            }
+
+            String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
+
+            return new LoginResponse(token, user.getId(), user.getEmail(), user.getRole());
+
+        } catch (Exception e) {
+            System.out.println("Google Login Exception: " + e.getClass().getName() + " - " + e.getMessage());
+            throw new RuntimeException("Google authentication failed: " + e.getMessage(), e);
+        }
     }
 }

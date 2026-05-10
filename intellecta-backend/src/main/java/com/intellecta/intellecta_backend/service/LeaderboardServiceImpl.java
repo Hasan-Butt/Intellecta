@@ -55,7 +55,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
 
             int level = calculateLevel(u.getXp());
             long nextLevelXp  = (long)(100.0 * Math.pow(level + 1, 1.5));
-            long prevLevelXp  = (long)(100.0 * Math.pow(level, 1.5));
+            long prevLevelXp  = level <= 1 ? 0L : (long)(100.0 * Math.pow(level, 1.5));
             int xpPct = (int) Math.min(100,
                 ((u.getXp() - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
 
@@ -97,7 +97,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
             User u = sxp.getUser();
             int level = calculateLevel(sxp.getXp());
             long nextLevelXp  = (long)(100.0 * Math.pow(level + 1, 1.5));
-            long prevLevelXp  = (long)(100.0 * Math.pow(level, 1.5));
+            long prevLevelXp  = level <= 1 ? 0L : (long)(100.0 * Math.pow(level, 1.5));
             int xpPct = (int) Math.min(100,
                 ((sxp.getXp() - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
 
@@ -150,7 +150,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         long xp = u.getXp();
         int level = calculateLevel(xp);
         long nextLevelXp = (long)(100.0 * Math.pow(level + 1, 1.5));
-        long prevLevelXp = (long)(100.0 * Math.pow(level, 1.5));
+        long prevLevelXp = level <= 1 ? 0L : (long)(100.0 * Math.pow(level, 1.5));
         int xpPct = (int) Math.min(100, ((xp - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
 
         long focusHours = sessionRepository
