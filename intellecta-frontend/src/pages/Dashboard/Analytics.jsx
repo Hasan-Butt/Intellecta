@@ -10,6 +10,7 @@ import {
   TrendingUp,
   CalendarDays,
 } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import Sidebar from "../../components/dashboard/Sidebar";
 import Navbar from "../../components/dashboard/Navbar";
 import intellectaLogo from "../../assets/intellectaLogo.jpeg";
@@ -118,6 +119,11 @@ const AnalyticsPage = () => {
 
   const val = (v) => (loading || !analytics ? "—" : v);
   const activePercent = analytics?.activeUserPercentage ?? 0;
+
+  const focusData = (analytics?.focusHistory ?? []).map((h, i) => ({
+    week: `Week ${i + 1}`,
+    score: h
+  }));
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -267,16 +273,21 @@ const AnalyticsPage = () => {
                       : "—"}
                   </span>
                 </div>
-                <div className="flex items-end gap-2 h-32 mb-6">
-                  {(analytics?.focusHistory ?? [35, 45, 60, 40, 85, 50, 40, 35, 60, activePercent]).map((h, i) => (
-                    <div
-                      key={i}
-                      className={`flex-1 rounded-lg transition-all duration-500 ${
-                        h > 70 ? "bg-[#6C5DD3]" : "bg-[#E3E0F7] hover:bg-[#d0ccf0]"
-                      }`}
-                      style={{ height: `${Math.max(Math.min(h, 100), 4)}%` }}
-                    />
-                  ))}
+                <div className="h-40 mb-6">
+                  {!analytics ? (
+                    <div className="h-full flex items-center justify-center text-sm font-bold text-gray-400">Loading...</div>
+                  ) : focusData.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-sm font-bold text-gray-400">No data available</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={focusData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 'bold', fill: '#9CA3AF' }} />
+                        <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 'bold', fill: '#9CA3AF' }} />
+                        <Tooltip cursor={{ stroke: '#E3E0F7', strokeWidth: 2 }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                        <Line type="monotone" dataKey="score" stroke="#6C5DD3" strokeWidth={3} dot={{ r: 4, fill: '#6C5DD3', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
                 <p className="text-[11px] text-gray-400 font-bold uppercase tracking-tight">
                   {analytics

@@ -4,6 +4,7 @@ import {
   RefreshCw, CalendarDays, User, ChevronDown, ChevronUp,
   BarChart2, BookOpen, AlertTriangle, X,
 } from "lucide-react";
+import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import Sidebar from "../../components/dashboard/Sidebar";
 import Navbar from "../../components/dashboard/Navbar";
 import intellectaLogo from "../../assets/intellectaLogo.jpeg";
@@ -250,22 +251,32 @@ export default function PerformanceTrends() {
                   {appliedFrom ? `${appliedFrom} → ${appliedTo}` : "All Time"}
                 </span>
               </div>
-              <div className="flex items-end justify-between h-48 gap-2">
-                {(data?.performanceOverTime ?? Array(7).fill({ month: "—", score: 0 })).map((item, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-3">
-                    <div
-                      className={`w-full rounded-xl transition-all duration-500 ${item.score > 0 ? "bg-[#6C5DD3]" : "bg-[#E3E0F7]"}`}
-                      style={{ height: item.score > 0 ? `${Math.min(item.score, 100)}%` : "8px" }}
-                    />
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-tight">{item.month}</span>
+              <div className="h-56 mt-6">
+                {!data ? (
+                  <div className="h-full flex items-center justify-center text-sm font-bold text-gray-400">Loading...</div>
+                ) : !data.performanceOverTime || data.performanceOverTime.every(m => m.score === 0) ? (
+                  <div className="h-full flex flex-col items-center justify-center">
+                    <p className="text-center text-xs font-bold text-gray-400 mt-6 uppercase tracking-widest">
+                      Performance data will appear here as students complete quizzes
+                    </p>
                   </div>
-                ))}
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data.performanceOverTime} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#6C5DD3" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#6C5DD3" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 'bold', fill: '#9CA3AF' }} />
+                      <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 'bold', fill: '#9CA3AF' }} />
+                      <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} formatter={(value) => `${value}%`} />
+                      <Area type="monotone" dataKey="score" stroke="#6C5DD3" strokeWidth={3} fillOpacity={1} fill="url(#colorScore)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
               </div>
-              {(!data?.performanceOverTime || data.performanceOverTime.every(m => m.score === 0)) && (
-                <p className="text-center text-xs font-bold text-gray-400 mt-6 uppercase tracking-widest">
-                  Performance data will appear here as students complete quizzes
-                </p>
-              )}
             </div>
 
             {/* SUBJECT COMPARISON */}
@@ -306,24 +317,35 @@ export default function PerformanceTrends() {
                   )}
                 </div>
               </div>
-
-              <div className="space-y-5">
-                {displayedSubjects.map((subj) => (
-                  <div key={subj.subjectName}>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-black text-[#111827]">{subj.subjectName}</span>
-                      <span className="text-xs font-black text-gray-400">
-                        {subj.attempts > 0 ? `${subj.averageScore}%` : "No data yet"}
-                      </span>
-                    </div>
-                    <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${subj.averageScore}%`, backgroundColor: subj.color }}
-                      />
-                    </div>
+              <div className="h-64 mt-4">
+                {!data ? (
+                  <div className="h-full flex items-center justify-center text-sm font-bold text-gray-400">Loading...</div>
+                ) : displayedSubjects.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-sm font-bold text-gray-400">
+                    No data available
                   </div>
-                ))}
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={displayedSubjects}
+                        dataKey="averageScore"
+                        nameKey="subjectName"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                      >
+                        {displayedSubjects.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color || '#6C5DD3'} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} formatter={(value) => `${value}%`} />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#4B5563' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
 
