@@ -9,6 +9,7 @@ import Sidebar from "../../components/dashboard/Sidebar";
 import Navbar from "../../components/dashboard/Navbar";
 import intellectaLogo from "../../assets/intellectaLogo.jpeg";
 import api from "../../services/api";
+import "../../styles/global.css";
 
 const today = new Date().toISOString().split("T")[0];
 const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
@@ -352,23 +353,24 @@ export default function PerformanceTrends() {
             {/* STUDENT LIST + DRILL-DOWN */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Student table */}
-              <div className="lg:col-span-2 bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
-                <div className="p-8 border-b border-gray-50">
+              <div className="lg:col-span-2 bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden flex flex-col" style={{ maxHeight: "520px" }}>
+                <div className="p-8 border-b border-gray-50 flex-shrink-0">
                   <h3 className="text-2xl font-black">Student Performance</h3>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">
                     Click a student to view individual trends
                   </p>
                 </div>
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50">
-                      <th className="px-8 py-4">Student</th>
-                      <th className="px-8 py-4">Avg Score</th>
-                      <th className="px-8 py-4">Attempts</th>
-                      <th className="px-8 py-4">Trend</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
+                <div className="overflow-y-auto custom-scrollbar flex-1">
+                  <table className="w-full text-left relative">
+                    <thead className="sticky top-0 bg-white z-10 shadow-sm">
+                      <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50">
+                        <th className="px-8 py-4">Student</th>
+                        <th className="px-8 py-4">Avg Score</th>
+                        <th className="px-8 py-4">Attempts</th>
+                        <th className="px-8 py-4">Trend</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
                     {loading ? (
                       <tr><td colSpan={4} className="px-8 py-10 text-center text-sm font-bold text-gray-400">Loading...</td></tr>
                     ) : !data?.students?.length ? (
@@ -407,6 +409,7 @@ export default function PerformanceTrends() {
                   </tbody>
                 </table>
               </div>
+            </div>
 
               {/* Student detail panel — fixed height, scrollable content */}
               <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm p-8 flex flex-col" style={{ maxHeight: "520px" }}>
