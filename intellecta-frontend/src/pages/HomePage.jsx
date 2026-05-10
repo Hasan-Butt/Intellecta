@@ -40,6 +40,7 @@ function InViewSection({ children, id = "", style = {} }) {
 
 /* ─── NAVBAR ─────────────────────────────────────────────── */
 function Navbar() {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -63,7 +64,7 @@ function Navbar() {
         <div className="hp-navbar-top-row">
           {/* LEFT — Sign In */}
           <div style={{ minWidth: 160, display: "flex", alignItems: "center" }}>
-            <button className="nav-login-btn">Sign In</button>
+            <button className="nav-login-btn" onClick={() => navigate("/login")}>Sign In</button>
           </div>
 
           {/* CENTER — Logo */}
@@ -111,6 +112,7 @@ function Navbar() {
               whileHover={{ scale: 1.04, boxShadow: "0 6px 26px rgba(83,210,224,0.42)" }}
               whileTap={{ scale: 0.96 }}
               className="hp-nav-btn-started"
+              onClick={() => navigate("/login")}
             >
               Get Started Free
             </motion.button>
@@ -163,6 +165,7 @@ function Navbar() {
 
 /* ─── HERO ──────────────────────────────────────────────── */
 function Hero() {
+  const navigate = useNavigate();
   const { scrollY } = useScroll();
   const floatY = useTransform(scrollY, [0, 500], [0, -50]);
 
@@ -204,22 +207,19 @@ function Hero() {
 
           <motion.p variants={fadeUp} custom={2}
             style={{ fontSize: "clamp(0.95rem,1.6vw,1.1rem)", color: "var(--ink-light)", maxWidth: 480, lineHeight: 1.78, marginBottom: "2.2rem", fontWeight: 300 }}>
-            Intellecta is the all-in-one academic performance platform — merging AI-powered scheduling, deep work sessions, smart notes, distraction science, and competitive leaderboards into one unified sanctuary.
+            Intellecta is the all-in-one academic performance platform — merging academic scheduling, deep work sessions, smart notes, distraction science, and competitive leaderboards into one unified sanctuary.
           </motion.p>
 
           <motion.div variants={fadeUp} custom={3} style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: "2.2rem" }}>
             <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-              style={{ display: "flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,var(--cyan-dark),var(--cyan))", border: "none", color: "white", padding: "15px 30px", borderRadius: 12, fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", animation: "pulse-ring 2.5s ease-in-out infinite" }}>
+              onClick={() => navigate("/login")}
+              style={{ display: "flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,var(--hp-cyan-dark),var(--hp-cyan))", border: "none", color: "white", padding: "15px 30px", borderRadius: 12, fontSize: 16, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", animation: "pulse-ring 2.5s ease-in-out infinite" }}>
               <Zap size={17} /> Enter the Sanctuary
-            </motion.button>
-            <motion.button whileHover={{ scale: 1.03, background: "var(--cyan-soft)" }} whileTap={{ scale: 0.97 }}
-              style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.7)", backdropFilter: "blur(10px)", border: "1.5px solid var(--border)", color: "var(--ink-mid)", padding: "14px 24px", borderRadius: 12, fontSize: 15, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.2s" }}>
-              <GraduationCap size={16} /> Learn More
             </motion.button>
           </motion.div>
 
           <motion.div variants={fadeUp} custom={4} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {["Free to start", "AI Scheduling", "Deep Focus Timer", "Global Leaderboard"].map(tag => (
+            {["Free to start", "Study Planner", "Deep Focus Timer", "Global Leaderboard"].map(tag => (
               <span key={tag} style={{ fontSize: 12, fontWeight: 500, color: "var(--ink-mid)", background: "rgba(255,255,255,0.65)", backdropFilter: "blur(8px)", border: "1px solid var(--border-soft)", borderRadius: 100, padding: "5px 13px", display: "flex", alignItems: "center", gap: 5 }}>
                 <CheckCircle2 size={11} color="var(--cyan)" />{tag}
               </span>
@@ -270,7 +270,7 @@ function Hero() {
 
 /* ─── TICKER ─────────────────────────────────────────────── */
 function Ticker() {
-  const items = ["Deep Work Sessions", "AI Scheduling", "Smart Notes", "Distraction Analytics", "Coverage Tracker", "Quiz Engine", "Global Leaderboard", "Focus Intensity", "Peer Comparison", "Exam Prep", "Kinetic Recalibration", "Scholar Streaks"];
+  const items = ["Deep Work Sessions", "Study Planning", "Smart Notes", "Distraction Analytics", "Coverage Tracker", "Quiz Engine", "Global Leaderboard", "Focus Intensity", "Peer Comparison", "Exam Prep", "Strategic Planning", "Scholar Streaks"];
   const doubled = [...items, ...items];
   return (
     <div style={{ background: "linear-gradient(135deg,#1DA8B8 0%,#53D2E0 100%)", padding: "13px 0", overflow: "hidden", boxShadow: "0 4px 20px rgba(83,210,224,0.28)" }}>
@@ -288,7 +288,7 @@ function Ticker() {
 /* ─── FEATURES ───────────────────────────────────────────── */
 const FEATURES = [
   { icon: Timer,        color: "#53D2E0", label: "Focus Sessions",  title: "Deep Work, Engineered",       desc: "Timed Sanctuary sessions with real-time focus intensity tracking. Biometric-style cognitive load monitoring reveals your peak performance windows." },
-  { icon: CalendarDays, color: "#3EC8D8", label: "Study Schedule",  title: "AI Academic Trajectory",      desc: "Enroll courses with exam dates and deadlines. The Kinetic Algorithm dynamically recalibrates your weekly curriculum based on mastery gaps." },
+  { icon: CalendarDays, color: "#3EC8D8", label: "Study Schedule",  title: "Academic Trajectory",      desc: "Enroll courses with exam dates and deadlines. Organize your weekly curriculum and stay on top of upcoming milestones." },
   { icon: NotebookPen,  color: "#1DA8B8", label: "Smart Notes",     title: "Notes That Think With You",   desc: "Tag, pin, and organize notes across subjects. The slide-in editor lets you capture insights mid-session without breaking your flow state." },
   { icon: BookOpen,     color: "#F97316", label: "Subject Folders", title: "Curriculum Architecture",     desc: "Structure your academic world into subject folders. Each tracks coverage, upcoming exams, and review queues for a full bird's-eye view." },
   { icon: ShieldOff,    color: "#EF4444", label: "Distraction Log", title: "Neutralize Cognitive Leaks",  desc: "Log and analyze every distraction — social media, hunger, notifications. Trigger charts show exactly where your focus bleeds out." },
@@ -355,7 +355,7 @@ function Features() {
 const HOW_STEPS = [
   { n: "01", icon: Target,     color: "#53D2E0", title: "Set Your Mission",        desc: "Enroll courses with exam dates, difficulty, and weekly hours. Intellecta maps your entire semester into a strategic academic trajectory." },
   { n: "02", icon: BrainCog,   color: "#3EC8D8", title: "Enter the Sanctuary",     desc: "Begin a deep work session. Focus intensity is tracked live. Every distraction is logged. Your cognitive score updates in real time." },
-  { n: "03", icon: TrendingUp, color: "#F97316", title: "Track Mastery Precisely", desc: "Coverage Tracker breaks each subject into individual topics. The Kinetic Algorithm reschedules your priorities based on real progress." },
+  { n: "03", icon: TrendingUp, color: "#F97316", title: "Track Mastery Precisely", desc: "Coverage Tracker breaks each subject into individual topics. Monitor your status and prioritize topics based on your actual progress." },
   { n: "04", icon: Trophy,     color: "#F59E0B", title: "Rise Through Rankings",   desc: "Focus hours, quiz scores, and mastery gains translate into XP. Climb the Global Leaderboard and earn Scholar achievement badges." },
 ];
 
@@ -401,7 +401,7 @@ function HowItWorks() {
 /* FIX: extracted ScreenCard as a named component */
 const SCREENS = [
   { label: "Focus Session",  color: "#53D2E0", bg: "rgba(83,210,224,0.12)",  icon: Timer,        desc: "Deep work timer with live focus tracking" },
-  { label: "Study Schedule", color: "#F97316", bg: "rgba(249,115,22,0.1)",   icon: CalendarDays, desc: "AI-generated weekly curriculum view" },
+  { label: "Study Schedule", color: "#F97316", bg: "rgba(249,115,22,0.1)",   icon: CalendarDays, desc: "Personalized weekly curriculum view" },
   { label: "All Notes",      color: "#10B981", bg: "rgba(16,185,129,0.1)",   icon: NotebookPen,  desc: "Searchable notes across every subject" },
   { label: "Leaderboard",    color: "#F59E0B", bg: "rgba(245,158,11,0.1)",   icon: Trophy,       desc: "Global and sectional scholar rankings" },
 ];
@@ -518,7 +518,7 @@ function AppShowcase() {
 /* FIX: extracted PillarCard as a named component */
 const PILLARS = [
   { icon: BrainCog,          color: "#53D2E0", title: "Science-First Design",   desc: "Every feature is rooted in cognitive science — spaced repetition, Pomodoro neuroscience, and attention restoration theory." },
-  { icon: Zap,               color: "#F97316", title: "Real-Time Intelligence", desc: "The Kinetic Algorithm adapts your schedule live based on actual progress — not what you planned to do." },
+  { icon: Zap,               color: "#F97316", title: "Strategic Planning", desc: "Adapt your study plan based on actual progress. Stay flexible and focused on what matters most for your exams." },
   { icon: SlidersHorizontal, color: "#10B981", title: "Everything Integrated",  desc: "Notes, schedule, focus sessions, quiz engine, leaderboard — all connected. One sanctuary, zero app-switching." },
   { icon: ShieldOff,         color: "#EF4444", title: "Distraction Warfare",    desc: "Most apps help you plan. Intellecta helps you protect your focus. The distraction suite is unmatched." },
 ];
@@ -541,6 +541,7 @@ function PillarCard({ p, i }) {
 }
 
 function About() {
+  const navigate = useNavigate();
   return (
     <InViewSection id="about" style={{ padding: "7rem 2rem", background: "rgba(200,216,240,0.3)", backdropFilter: "blur(8px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -561,7 +562,8 @@ function About() {
               It's the only platform that treats your mind as the most important variable in academic success.
             </p>
             <motion.button whileHover={{ scale: 1.04, boxShadow: "0 8px 32px rgba(83,210,224,0.4)" }} whileTap={{ scale: 0.96 }}
-              style={{ display: "flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,var(--cyan-dark),var(--cyan))", border: "none", color: "white", padding: "14px 28px", borderRadius: 12, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: "0 4px 18px rgba(83,210,224,0.32)" }}>
+              onClick={() => navigate("/login")}
+              style={{ display: "flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,var(--hp-cyan-dark),var(--hp-cyan))", border: "none", color: "white", padding: "14px 28px", borderRadius: 12, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: "0 4px 18px rgba(83,210,224,0.32)" }}>
               Start Your Journey <ArrowRight size={16} />
             </motion.button>
           </motion.div>
@@ -577,6 +579,7 @@ function About() {
 
 /* ─── CTA ────────────────────────────────────────────────── */
 function CtaSection() {
+  const navigate = useNavigate();
   return (
     <InViewSection style={{ padding: "7rem 2rem" }}>
       <div style={{ maxWidth: 860, margin: "0 auto", textAlign: "center" }}>
@@ -603,8 +606,9 @@ function CtaSection() {
 
           <motion.button variants={fadeUp} custom={4}
             whileHover={{ scale: 1.05, boxShadow: "0 10px 40px rgba(0,0,0,0.25)" }} whileTap={{ scale: 0.96 }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "white", border: "none", color: "var(--cyan-dark)", padding: "17px 36px", borderRadius: 13, fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: "0 4px 20px rgba(0,0,0,0.12)" }}>
-            <Zap size={18} style={{ color: "var(--cyan-dark)" }} /> Enter the Sanctuary — It's Free
+            onClick={() => navigate("/login")}
+            style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "white", border: "none", color: "var(--hp-cyan-dark)", padding: "17px 36px", borderRadius: 13, fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", boxShadow: "0 4px 20px rgba(0,0,0,0.12)" }}>
+            <Zap size={18} style={{ color: "var(--hp-cyan-dark)" }} /> Enter the Sanctuary — It's Free
           </motion.button>
 
           <motion.p variants={fadeUp} custom={5}
@@ -646,16 +650,14 @@ function Footer() {
               <div className="syne" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink)", marginBottom: "1rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>{col.title}</div>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.55rem" }}>
                 {col.links.map(l => (
-                  <a key={l} href="#" style={{ fontSize: 13.5, color: "var(--ink-light)", textDecoration: "none", transition: "color 0.2s" }}
-                    onMouseEnter={e => e.target.style.color = "var(--cyan-dark)"}
-                    onMouseLeave={e => e.target.style.color = "var(--ink-light)"}>{l}</a>
+                  <span key={l} style={{ fontSize: 13.5, color: "var(--ink-light)" }}>{l}</span>
                 ))}
               </div>
             </div>
           ))}
         </div>
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.4)", paddingTop: "1.8rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-          <span style={{ fontSize: 13, color: "var(--muted)" }}>© 2025 Intellecta. All rights reserved.</span>
+          <span style={{ fontSize: 13, color: "var(--muted)" }}>© 2026 Intellecta. All rights reserved.</span>
           <span style={{ fontSize: 13, color: "var(--muted)" }}>Built for the relentlessly curious.</span>
         </div>
       </div>
