@@ -15,6 +15,7 @@ import Sidebar from "../../components/dashboard/Sidebar";
 import Navbar from "../../components/dashboard/Navbar";
 import intellectaLogo from "../../assets/intellectaLogo.jpeg";
 import api from "../../services/api";
+import "../../styles/global.css";
 
 const AnalyticsPage = () => {
   const [activeTab, setActiveTab] = useState("Analytics");
@@ -340,14 +341,14 @@ const AnalyticsPage = () => {
             {/* User Breakdown + Audit Logs */}
             <div className="grid grid-cols-12 gap-8">
               {/* Session Audit Logs */}
-              <div className="col-span-12 lg:col-span-8 bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
+              <div className="col-span-12 bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
                 <div className="p-8 flex justify-between items-center border-b border-gray-50">
                   <h4 className="text-2xl font-black text-[#111827]">Session Audit Logs</h4>
                   <div className="bg-gray-50 px-4 py-2 rounded-xl text-[10px] font-black text-gray-400 uppercase tracking-widest border border-gray-100">
                     Live Stream
                   </div>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto overflow-y-auto max-h-[400px] custom-scrollbar">
                   <table className="w-full text-left">
                     <thead className="bg-gray-50/50 text-[10px] uppercase text-gray-400 font-black tracking-widest">
                       <tr>
@@ -390,81 +391,7 @@ const AnalyticsPage = () => {
                 </div>
               </div>
 
-              {/* Side cards */}
-              <div className="col-span-12 lg:col-span-4 space-y-8">
-                {/* System Integrity */}
-                <div className="bg-white p-10 rounded-[40px] border border-gray-100 shadow-sm relative overflow-hidden group">
-                  <div className="relative z-10">
-                    <div className="bg-emerald-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-8">
-                      <ShieldCheck size={28} className="text-emerald-500" />
-                    </div>
-                    <h4 className="text-3xl font-black leading-tight text-[#111827]">
-                      System Integrity{" "}
-                      {integrityLoading ? "—" : `${integrity?.integrityScore ?? 100}%`}
-                    </h4>
-                    <p className="text-sm text-gray-400 mt-4 font-bold leading-relaxed">
-                      {integrityLoading
-                        ? "Running diagnostics..."
-                        : (integrity?.nodeStatus ?? "All systems operational")}
-                    </p>
-                    <div className="mt-6 space-y-3">
-                      <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-tight">
-                        <span>Active Sessions</span>
-                        <span className="text-emerald-500">
-                          {integrity?.concurrentSessions ?? 0}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-tight">
-                        <span>Quiz Completion</span>
-                        <span className="text-blue-500">
-                          {integrity?.quizCompletionRate ?? 100}%
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase tracking-tight">
-                        <span>Active Users</span>
-                        <span className="text-[#6C5DD3]">
-                          {integrity ? `${integrity.activeUsers}/${integrity.totalUsers}` : "—"}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={fetchIntegrity}
-                      disabled={integrityLoading}
-                      className="mt-8 w-full py-5 bg-[#6C5DD3] text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[#5a4db3] transition-all shadow-lg shadow-indigo-100 disabled:opacity-60"
-                    >
-                      {integrityLoading ? "Scanning..." : "Execute Diagnostics"}
-                    </button>
-                  </div>
-                  <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[#6C5DD3]/5 rounded-full blur-3xl group-hover:scale-125 transition-transform" />
-                </div>
 
-                {/* Distraction Sources */}
-                <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
-                  <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-8">
-                    Distraction Sources
-                  </h4>
-                  <div className="space-y-6">
-                    {(analytics?.distractionSources ?? [
-                      { label: "Social Media", percentage: 42 },
-                      { label: "Notifications", percentage: 28 },
-                      { label: "Physical Breaks", percentage: 15 },
-                    ]).map((item) => (
-                      <div key={item.label}>
-                        <div className="flex justify-between text-xs font-black mb-3 uppercase tracking-tighter">
-                          <span className="text-gray-600">{item.label}</span>
-                          <span className="text-[#6C5DD3]">{item.percentage}%</span>
-                        </div>
-                        <div className="h-2 w-full bg-gray-50 rounded-full border border-gray-100">
-                          <div
-                            className="h-full bg-[#6C5DD3] rounded-full"
-                            style={{ width: `${item.percentage}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
             </div>
 
           </div>
