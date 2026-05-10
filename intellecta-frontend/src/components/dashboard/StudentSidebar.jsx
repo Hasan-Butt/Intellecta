@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import Avatar from '../common/Avatar';
@@ -24,6 +24,7 @@ import {
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const helpBoxRef = useRef(null);
   const [userLevel, setUserLevel] = useState(1);
   const [levelTitle, setLevelTitle] = useState('Beginner');
   const [userName, setUserName] = useState('');
@@ -33,6 +34,7 @@ const Sidebar = () => {
     location.pathname === '/distractions' || location.pathname === '/focusSession'
   );
   const [avatarUrl, setAvatarUrl] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
+  const [showHelpBox, setShowHelpBox] = useState(false);
 
   useEffect(() => {
     const userId = localStorage.getItem('userId') || '2';
@@ -50,6 +52,15 @@ const Sidebar = () => {
         setXpProgressPct(res.data.xpProgressPct ?? 0);
       })
       .catch(() => {});
+
+    // Close help box when clicking outside
+    const handleClickOutside = (event) => {
+      if (helpBoxRef.current && !helpBoxRef.current.contains(event.target)) {
+        setShowHelpBox(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = () => {
@@ -216,14 +227,36 @@ const Sidebar = () => {
       <div className="mt-auto border-t border-gray-50">
         <div className="px-4 py-6 flex flex-col gap-6">
           
-          {/* Help Link */}
-          <Link 
-            to="/help" 
-            className="flex items-center gap-4 px-4 text-gray-500 hover:text-[#451ebb] transition-colors group"
-          >
-            <HelpCircle size={20} className="text-gray-400 group-hover:text-[#451ebb]" />
-            <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap">Help</span>
-          </Link>
+          {/* Help Box Tooltip */}
+          <div className="relative px-4" ref={helpBoxRef}>
+            <button 
+              onClick={() => setShowHelpBox(!showHelpBox)}
+              className={`flex items-center gap-4 text-gray-500 hover:text-[#451ebb] transition-colors group w-full ${showHelpBox ? 'text-[#451ebb]' : ''}`}
+            >
+              <HelpCircle size={20} className={`${showHelpBox ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'}`} />
+              <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap">Help</span>
+            </button>
+            
+            {showHelpBox && (
+              <div className="absolute bottom-full left-0 mb-3 w-64 p-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-indigo-50 z-[100] animate-in fade-in zoom-in-95 duration-200">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2 text-[#451ebb]">
+                    <HelpCircle size={16} strokeWidth={3} />
+                    <span className="text-[11px] font-black uppercase tracking-widest">Support Portal</span>
+                  </div>
+                  <p className="text-[12px] text-gray-600 font-medium leading-relaxed">
+                    Experiencing issues or have a suggestion? Reach out to our support team:
+                  </p>
+                  <div className="mt-1 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
+                    <span className="block text-[11px] font-bold text-[#451ebb] select-all">contact@intellecta.com</span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase mt-1">Average response time: &lt; 24h</p>
+                </div>
+                {/* Pointer Arrow */}
+                <div className="absolute -bottom-1.5 left-6 w-3 h-3 bg-white border-r border-b border-indigo-50 rotate-45" />
+              </div>
+            )}
+          </div>
 
           {/* Profile & Logout Section */}
           <div className="flex items-center gap-4 px-4">

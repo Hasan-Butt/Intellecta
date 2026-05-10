@@ -1,0 +1,16 @@
+export const STUDY_QUOTES = [
+  "Try 5 minute breaks between deep work after every 25 minutes.",
+  "Give your brain time to absorb between sessions.",
+  "A cluttered desk is a cluttered mind. Keep you space clean.",
+  "The best way to finish is to simply begin.",
+  "Eat. Sleep. Study. Repeat.",
+  "Fuel your brain: Sip water, smash goals.",
+  "Don't let your bed become your office. It's a trap.",
+  "Early bird gets the A; the night owl gets the coffee.",
+  "Another day, another shard of the crystal earned.",
+  "If you can't explain it to a 10-year-old, you don't understand it yet.",
+  "Clear the brain cache so you can focus.",
+  "During your 5-minute break, stretch or walk to a window.",
+  "Drink a full glass before you reach for more caffeine.",
+  "Look at what you finished, not just what’s left. Reward the effort."
+];
