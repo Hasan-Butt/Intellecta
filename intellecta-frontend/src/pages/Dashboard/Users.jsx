@@ -202,24 +202,6 @@ const UsersPage = () => {
     }
   };
 
-  // Automate Intervention
-  const handleIntervention = async () => {
-    try {
-      const res = await api.post("/admin/interventions");
-      showToast(res.data.message);
-    } catch {
-      showToast("Failed to trigger intervention.", "error");
-    }
-  };
-
-  // Review Students — scrolls to table and filters to STUDENT role
-  const tableRef = useRef(null);
-  const handleReviewStudents = () => {
-    setSearchInput(""); setSearch(""); setPage(0);
-    tableRef.current?.scrollIntoView({ behavior: "smooth" });
-    showToast("Showing all students in the table below.");
-  };
-
   // Use server-wide stats; fall back to page-count while stats load
   const studentCount = stats?.totalStudents ?? users.filter((u) => u.role === "STUDENT").length;
   const activeCount  = stats?.totalActiveUsers ?? users.filter((u) => u.status === "Active").length;
@@ -287,7 +269,7 @@ const UsersPage = () => {
             </div>
 
             {/* TABLE SECTION */}
-            <div ref={tableRef} className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
               <div className="p-8 border-b border-gray-50 flex justify-between items-center gap-4">
                 {/* Search bar */}
                 <form onSubmit={handleSearch} className="flex gap-3 flex-1">
@@ -434,54 +416,6 @@ const UsersPage = () => {
                 </div>
               )}
             </div>
-
-            {/* LOWER SECTION: ALERT & SYSTEM STATUS */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 bg-gradient-to-br from-white to-indigo-50/30 rounded-[40px] p-10 border border-gray-100 flex justify-between items-center relative overflow-hidden">
-                <div className="max-w-md relative z-10">
-                  <h4 className="text-2xl font-black">Cognitive Health Alert</h4>
-                  <p className="text-gray-400 font-bold mt-4 text-sm leading-relaxed">
-                    {stats ? stats.downwardTrendStudents : "—"} students show a downward trend in focus score over the last 48 hours.
-                    Suggest triggering proactive intervention modules.
-                  </p>
-                  <div className="mt-8 flex gap-4">
-                    <button
-                      onClick={handleIntervention}
-                      className="bg-zinc-900 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-zinc-700 transition-all"
-                    >
-                      Automate Intervention
-                    </button>
-                    <button
-                      onClick={handleReviewStudents}
-                      className="bg-white text-zinc-900 border border-gray-100 px-6 py-3 rounded-2xl font-bold text-sm shadow-sm hover:bg-gray-50 transition-all"
-                    >
-                      Review Students
-                    </button>
-                  </div>
-                </div>
-                <div className="opacity-10 absolute right-10 top-10 rotate-12">
-                  <Brain size={120} />
-                </div>
-              </div>
-
-              <div className="bg-gray-100/50 rounded-[40px] p-8 border border-gray-100">
-                <div className="flex justify-between items-center mb-8">
-                  <h4 className="font-black text-lg">System Status</h4>
-                  <span className="bg-emerald-400 text-emerald-900 text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest">
-                    Operational
-                  </span>
-                </div>
-                <div className="space-y-4">
-                  <StatusRow label="Real-time Sync" value={stats?.syncStatus ?? "—"} />
-                  <StatusRow label="Database Latency" value={stats?.dbLatency ?? "—"} />
-                  <StatusRow label="Storage Capacity" value={stats?.storageCapacity ?? "—"} />
-                </div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase mt-12 tracking-widest text-center">
-                  {stats?.lastMaintenance ? `Last Maintenance: ${stats.lastMaintenance}` : "Loading maintenance info..."}
-                </p>
-              </div>
-            </div>
-
           </div>
         </main>
       </div>
@@ -596,14 +530,6 @@ const StatCard = ({ icon, label, value, trend, color }) => (
     <h4 className="text-3xl font-black mt-1">{value}</h4>
   </div>
 );
-
-const StatusRow = ({ label, value }) => (
-  <div className="flex justify-between items-center">
-    <span className="text-sm font-bold text-gray-400">{label}</span>
-    <span className="text-sm font-black text-[#111827]">{value}</span>
-  </div>
-);
-
 const Modal = ({ title, onClose, children }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
     <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-md mx-4 p-8">

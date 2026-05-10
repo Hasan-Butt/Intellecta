@@ -133,7 +133,7 @@ const Dashboard = () => {
       <div className="flex min-h-screen bg-[#F9FAFB] font-inter">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        <main className="p-10 space-y-10">
+        <main className="flex-1 p-10 space-y-10 overflow-x-hidden">
           <div className="max-w-[1400px] mx-auto space-y-10">
             {/* PLATFORM OVERVIEW SECTION */}
             <section>
@@ -279,24 +279,24 @@ const Dashboard = () => {
                     <div className="h-full flex items-center justify-center text-sm font-bold text-gray-400">Loading...</div>
                   ) : (
                     <>
-                      <div className="flex justify-between mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-[40px]">
-                        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label) => (
-                          <span key={label} className="flex-1 text-center">{label}</span>
+                      <div className="flex justify-between mb-4 text-[11px] font-black text-gray-400 uppercase tracking-widest pl-[48px] pr-2">
+                        {["M", "T", "W", "T", "F", "S", "S"].map((label, idx) => (
+                          <span key={idx} className="flex-1 text-center">{label}</span>
                         ))}
                       </div>
-                      <div className="flex flex-1 gap-2">
-                        <div className="flex flex-col justify-between py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest w-[32px] text-right">
-                          {["00-04", "04-08", "08-12", "12-16", "16-20", "20-24"].map((label) => (
+                      <div className="flex flex-1 gap-4">
+                        <div className="flex flex-col justify-between py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest w-[36px] text-right">
+                          {["12AM", "4AM", "8AM", "12PM", "4PM", "8PM"].map((label) => (
                             <span key={label}>{label}</span>
                           ))}
                         </div>
-                        <div className="grid grid-cols-7 grid-rows-6 gap-2 flex-1">
+                        <div className="grid grid-cols-7 grid-rows-6 gap-3 flex-1">
                           {heatmapGrid.map((val, i) => (
                             <div
                               key={i}
-                              className={`rounded-md ${
+                              className={`rounded-lg transition-colors ${
                                 val === 0
-                                  ? "bg-gray-100"
+                                  ? "bg-gray-50"
                                   : val === 1
                                   ? "bg-[#6C5DD3]/20"
                                   : val === 2
