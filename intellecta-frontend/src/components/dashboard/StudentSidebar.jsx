@@ -66,6 +66,8 @@ const Sidebar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token'); 
     localStorage.removeItem('user');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('role');
     navigate('/login'); 
   };
 

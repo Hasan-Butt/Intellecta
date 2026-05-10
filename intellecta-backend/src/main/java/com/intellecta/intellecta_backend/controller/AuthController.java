@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.intellecta.intellecta_backend.dto.request.LoginRequest;
+import com.intellecta.intellecta_backend.dto.response.LoginResponse;
 import com.intellecta.intellecta_backend.service.AuthService;
 
 @RestController
@@ -22,7 +23,7 @@ public class AuthController {
    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
     try {
-        String response = authService.login(request);
+        LoginResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     } catch (Exception e) {
         // This will print the actual error (e.g., "Invalid password") to the console

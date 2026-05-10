@@ -5,7 +5,9 @@ import { Label } from "./ui/label";
 import loginImage from "../assets/intellectaLogo.jpeg";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../services/api";
+import Swal from "sweetalert2";
+import { ArrowLeft } from "lucide-react";
 
 export function LoginForm({ className, ...props }) {
   const [email, setEmail] = useState("");
@@ -17,17 +19,29 @@ export function LoginForm({ className, ...props }) {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://localhost:8080/api/auth/login", {
+      const res = await api.post("/auth/login", {
         email: email,
         password: password,
       });
 
-      if (res.data === "LOGIN SUCCESS") {
-        localStorage.setItem("userId", 2); // temporary until JWT returns userId
-        navigate("/studentDashboard");
+      if (res.status === 200 && res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userId", res.data.userId);
+        localStorage.setItem("role", res.data.role);
+
+        if (res.data.role === "ADMIN") {
+          navigate("/dashboard");
+        } else {
+          navigate("/studentDashboard");
+        }
       }
     } catch (err) {
-      alert("Login Failed: " + (err.response?.data || "Server Error"));
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: err.response?.data || "Server Error",
+        confirmButtonColor: "#3085d6",
+      });
       console.error(err);
     }
   };
@@ -36,10 +50,20 @@ export function LoginForm({ className, ...props }) {
     <div className={cn("flex min-h-screen w-full", className)} {...props}>
       <div className="grid w-full grid-cols-1 md:grid-cols-2">
         {/* Left Side: The Form */}
-        <div className="flex items-center justify-center bg-white p-8">
-          {/* This wrapper keeps the inputs from stretching too far */}
-          <div className="w-full max-w-sm space-y-6">
-            <div className="flex flex-col items-center gap-2 text-center">
+        <div className="flex flex-col bg-white p-8 relative">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="absolute top-8 left-8 flex items-center gap-2 text-base font-medium text-muted-foreground hover:text-primary transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Go back
+          </button>
+
+          <div className="flex-1 flex items-center justify-center">
+            {/* This wrapper keeps the inputs from stretching too far */}
+            <div className="w-full max-w-sm space-y-6">
+              <div className="flex flex-col items-center gap-2 text-center">
               <h1 className="text-2xl font-bold">Welcome back</h1>
               <p className="text-sm text-muted-foreground">
                 Login to your Intellecta account
@@ -61,12 +85,6 @@ export function LoginForm({ className, ...props }) {
               <div className="grid gap-2 text-left">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <button
-                    type="button"
-                    className="ml-auto text-sm underline hover:text-primary"
-                  >
-                    Forgot password?
-                  </button>
                 </div>
                 <Input
                   id="password"
@@ -109,6 +127,7 @@ export function LoginForm({ className, ...props }) {
             </p>
           </div>
         </div>
+      </div>
 
         {/* Right Side: The Branding */}
         <div className="hidden bg-[#F3F3F3] md:block relative w-full h-full overflow-hidden">

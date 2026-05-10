@@ -5,8 +5,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.intellecta.intellecta_backend.dto.request.LoginRequest;
+import com.intellecta.intellecta_backend.dto.response.LoginResponse;
 import com.intellecta.intellecta_backend.model.User;
 import com.intellecta.intellecta_backend.repository.UserRepository;
+import com.intellecta.intellecta_backend.util.JwtUtil;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -17,8 +19,11 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Override
-    public String login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail());
 
         if (user == null) {
@@ -29,6 +34,8 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid password");
         }
 
-        return "LOGIN SUCCESS"; // later replace with JWT
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
+
+        return new LoginResponse(token, user.getId(), user.getEmail(), user.getRole());
     }
 }
