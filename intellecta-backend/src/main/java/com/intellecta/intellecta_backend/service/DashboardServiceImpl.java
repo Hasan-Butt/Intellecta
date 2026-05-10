@@ -22,7 +22,6 @@ import com.intellecta.intellecta_backend.dto.response.FocusDayDTO;
 import com.intellecta.intellecta_backend.dto.response.LeaderboardEntryDTO;
 import com.intellecta.intellecta_backend.dto.response.ReviewItemDTO;
 import com.intellecta.intellecta_backend.dto.response.ScheduleBlockDTO;
-import com.intellecta.intellecta_backend.enums.BadgeType;
 import com.intellecta.intellecta_backend.model.Achievement;
 import com.intellecta.intellecta_backend.model.Course;
 import com.intellecta.intellecta_backend.model.DistractionEntry;
@@ -60,6 +59,15 @@ public class DashboardServiceImpl implements DashboardService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
 
+        // ── Check/Reset Streak ──
+        if (user.getStreakDays() > 0 && user.getLastStudyDate() != null) {
+            LocalDate today = LocalDate.now();
+            if (user.getLastStudyDate().isBefore(today.minusDays(1))) {
+                user.setStreakDays(0);
+                userRepository.save(user);
+            }
+        }
+
         // ── Time boundaries ───────────────────────────────────────────────────
         LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
         LocalDateTime sevenDaysAgo = LocalDate.now().minusDays(6).atStartOfDay();
@@ -87,7 +95,7 @@ public class DashboardServiceImpl implements DashboardService {
         String levelTitle = resolveLevelTitle(level);
 
         // ── Recent badges ─────────────────────────────────────────────────────
-        List<BadgeType> recentBadges = achievementRepository
+        List<String> recentBadges = achievementRepository
             .findTop3ByUserIdOrderByEarnedAtDesc(userId)
             .stream().map(Achievement::getBadgeName)
             .collect(Collectors.toList());
@@ -104,6 +112,7 @@ public class DashboardServiceImpl implements DashboardService {
             .stream().limit(5).map(n -> ReviewItemDTO.builder()
                 .id(n.getId())
                 .title(n.getTitle())
+                .content(n.getContent())
                 .subtitle(n.getUpdatedAt() != null
                     ? formatTimeAgo(n.getUpdatedAt()) : "")
                 .urgent(ChronoUnit.DAYS.between(n.getUpdatedAt(), LocalDateTime.now()) >= 2)
@@ -114,7 +123,50 @@ public class DashboardServiceImpl implements DashboardService {
         DistractionSummaryDTO distractionSummary = buildDistractionSummary(userId, sevenDaysAgo);
 
         // ── Leaderboard ───────────────────────────────────────────────────────
-        List<LeaderboardEntryDTO> leaderboard = buildLeaderboard(userId, allSessions);
+        List<User> allUsers = userRepository.findAll();
+        allUsers.sort(Comparator.comparingLong(User::getXp).reversed());
+
+        List<LeaderboardEntryDTO> leaderboard = new ArrayList<>();
+        int currentUserRank = 1;
+        int currentRank = 1;
+        int displayRank = 1;
+        long prevXp = -1;
+
+        for (User u : allUsers) {
+            if (u.getXp() != prevXp) {
+                displayRank = currentRank;
+                prevXp = u.getXp();
+            }
+            if (u.getId().equals(userId)) {
+                currentUserRank = displayRank;
+            }
+
+            if (leaderboard.size() < 5) {
+                long focusHours = sessionRepository
+                    .findByUserIdOrderByStartTimeDesc(u.getId())
+                    .stream().mapToLong(StudySession::getDurationMinutes).sum() / 60;
+
+                int uLevel = u.getLevel();
+                long uNextLevelXp = (long)(100.0 * Math.pow(uLevel + 1, 1.5));
+                long uPrevLevelXp = (long)(100.0 * Math.pow(uLevel, 1.5));
+                int uXpPct = (int) Math.min(100,
+                    ((u.getXp() - uPrevLevelXp) * 100.0) / Math.max(1, uNextLevelXp - uPrevLevelXp));
+
+                leaderboard.add(LeaderboardEntryDTO.builder()
+                    .rank(displayRank)
+                    .userId(u.getId())
+                    .username(u.getUsername())
+                    .focusHours(focusHours)
+                    .xp(u.getXp())
+                    .level(uLevel)
+                    .xpProgressPct(uXpPct)
+                    .discipline("General")
+                    .avatarUrl(u.getAvatarUrl())
+                    .isCurrentUser(u.getId().equals(userId))
+                    .build());
+            }
+            currentRank++;
+        }
 
         // ── Quick counts ──────────────────────────────────────────────────────
         long noteCount    = notesRepository.countByUserId(userId);
@@ -147,6 +199,8 @@ public class DashboardServiceImpl implements DashboardService {
             .reviewQueue(reviewQueue)
             .distractionSummary(distractionSummary)
             .leaderboard(leaderboard)
+            .currentUserRank(currentUserRank)
+            .subjectFocus(buildSubjectFocus(allSessions))
             .build();
     }
 
@@ -240,31 +294,6 @@ public class DashboardServiceImpl implements DashboardService {
             .build();
     }
 
-    private List<LeaderboardEntryDTO> buildLeaderboard(Long userId,
-                                                        List<StudySession> mySessions) {
-        // Fetch all users, rank by XP descending
-        List<User> allUsers = userRepository.findAll();
-        allUsers.sort(Comparator.comparingLong(User::getXp).reversed());
-
-        List<LeaderboardEntryDTO> board = new ArrayList<>();
-        int rank = 1;
-        for (User u : allUsers) {
-            long focusHours = sessionRepository
-                .findByUserIdOrderByStartTimeDesc(u.getId())
-                .stream().mapToLong(StudySession::getDurationMinutes).sum() / 60;
-
-            board.add(LeaderboardEntryDTO.builder()
-                .rank(rank)
-                .userId(u.getId())
-                .username(u.getUsername())
-                .focusHours(focusHours)
-                .xp(u.getXp())
-                .isCurrentUser(u.getId().equals(userId))
-                .build());
-            rank++;
-        }
-        return board.stream().limit(5).collect(Collectors.toList());
-    }
 
     private String resolveLevelTitle(int level) {
         if (level <= 3)  return "Beginner";
@@ -280,5 +309,39 @@ public class DashboardServiceImpl implements DashboardService {
         long hours = minutes / 60;
         if (hours < 24)     return hours + "h ago";
         return (hours / 24) + "d ago";
+    }
+
+    private List<DashboardResponse.SubjectFocusDTO> buildSubjectFocus(List<StudySession> sessions) {
+        if (sessions.isEmpty()) return new ArrayList<>();
+
+        Map<String, Long> subjectMinutes = sessions.stream()
+            .filter(s -> s.getEndTime() != null)
+            .collect(Collectors.groupingBy(
+                StudySession::getSubject,
+                Collectors.summingLong(s -> ChronoUnit.MINUTES.between(s.getStartTime(), s.getEndTime()))
+            ));
+
+        long totalMinutes = subjectMinutes.values().stream().mapToLong(Long::longValue).sum();
+        if (totalMinutes == 0) return new ArrayList<>();
+
+        String[] colors = { "#5D5FEF", "#A5A6F6", "#E2E2F2", "#6bfe9c", "#ffdfa0" };
+        int colorIdx = 0;
+
+        List<DashboardResponse.SubjectFocusDTO> result = new ArrayList<>();
+        for (Map.Entry<String, Long> entry : subjectMinutes.entrySet()) {
+            double hours = Math.round((entry.getValue() / 60.0) * 10.0) / 10.0;
+            int pct = (int) ((entry.getValue() * 100) / totalMinutes);
+            result.add(DashboardResponse.SubjectFocusDTO.builder()
+                .subject(entry.getKey())
+                .hours(hours)
+                .percentage(pct)
+                .color(colors[colorIdx % colors.length])
+                .build());
+            colorIdx++;
+        }
+        return result.stream()
+            .sorted((a, b) -> Integer.compare(b.getPercentage(), a.getPercentage()))
+            .limit(5)
+            .collect(Collectors.toList());
     }
 }

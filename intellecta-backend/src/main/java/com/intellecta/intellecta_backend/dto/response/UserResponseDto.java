@@ -12,4 +12,9 @@ public class UserResponseDto {
     private String email;
     private String role;
     private String status;
+    private String bio;
+    private String avatarUrl;
+    private boolean studyReminders;
+    private boolean achievementAlerts;
+    private boolean weeklyReports;
 }

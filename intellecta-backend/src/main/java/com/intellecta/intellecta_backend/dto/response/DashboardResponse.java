@@ -37,7 +37,7 @@ public class DashboardResponse {
     private int  totalPomodoros;
 
     // Recent achievements (up to 3 badge names)
-    private List<BadgeType> recentBadges;
+    private List<String> recentBadges;
 
     // Focus chart — 7 entries Mon→Sun
     private List<FocusDayDTO> focusWeek;
@@ -54,4 +54,15 @@ public class DashboardResponse {
     // Leaderboard top 5
     private List<LeaderboardEntryDTO> leaderboard;
     private int currentUserRank;
+
+    // Subject focus distribution
+    private List<SubjectFocusDTO> subjectFocus;
+
+    @Data @Builder
+    public static class SubjectFocusDTO {
+        private String subject;
+        private double hours;
+        private int    percentage;
+        private String color;
+    }
 }

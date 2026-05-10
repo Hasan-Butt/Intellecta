@@ -9,6 +9,7 @@ import AnalyticsPage from "./pages/Dashboard/Analytics.jsx";
 import PerformanceTrends from "./pages/Dashboard/PerformanceTrends.jsx";
 import ConfigurationPage from "./pages/Dashboard/Configuration.jsx";
 import StudentDashboardPage from "./pages/StudentDashboard/Dashboard";
+import LightReview from "./pages/LightReview/LightReview";
 import CreateQuizPage from "./pages/Dashboard/CreateQuiz.jsx";
 import QuizList from "./pages/Quiz/QuizList";
 import AttemptQuiz from "./pages/Quiz/AttemptQuiz";
@@ -21,6 +22,9 @@ import CoverageTrackerPage from "./pages/CoverageTracker/CoverageTrackerPage";
 import SubjectFolderPage from "./pages/SubjectFolder/SubjectFolderpage";
 import StudySessionPage from "./pages/FocusSession/Session"
 import StudySchedulePage from "./pages/StudySchedule/StudySchedulePage"
+import RewardsPage from "./pages/AdminRewards/RewardsPage";
+import AchievementsPage from "./pages/StudentAchievements/AchievementsPage";
+import SettingsPage from "./pages/Settings/SettingsPage";
 
 
 export default function AppRoutes() {
@@ -48,6 +52,10 @@ export default function AppRoutes() {
       <Route path="/focus" element={<StudySessionPage/>}/>
       <Route path="/schedule" element={<StudySchedulePage/>}/>
       <Route path="/create-quiz" element={<CreateQuizPage />} />
+      <Route path="/light-review" element={<LightReview />} />
+      <Route path="/rewards" element={<RewardsPage />} />
+      <Route path="/achievements" element={<AchievementsPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
     </Routes>
   );
 }

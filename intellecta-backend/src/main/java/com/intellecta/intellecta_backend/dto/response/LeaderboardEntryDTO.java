@@ -10,5 +10,9 @@ public class LeaderboardEntryDTO {
     private String username;
     private long   focusHours;
     private long   xp;
+    private int    level;
+    private int    xpProgressPct;
+    private String discipline;
+    private String avatarUrl;
     private boolean isCurrentUser;
 }

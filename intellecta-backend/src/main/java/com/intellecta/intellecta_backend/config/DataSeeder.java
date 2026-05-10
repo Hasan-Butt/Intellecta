@@ -231,6 +231,11 @@ public class DataSeeder implements CommandLineRunner {
                 u.setUsername(row[0]); u.setEmail(row[1]);
                 u.setPassword(passwordEncoder.encode("password123"));
                 u.setRole(UserRoles.STUDENT); u.setStatus(row[2]);
+                
+                // Add some initial streak data
+                u.setStreakDays(new Random().nextInt(12) + 1);
+                u.setLastStudyDate(LocalDate.now().minusDays(new Random().nextInt(2))); // Today or yesterday
+                
                 userRepository.save(u);
             }
         }
@@ -403,7 +408,7 @@ public class DataSeeder implements CommandLineRunner {
             BadgeType[] badges = STUDENT_BADGES[i % STUDENT_BADGES.length];
             for (BadgeType badge : badges) {
                 batch.add(Achievement.builder()
-                    .user(u).badgeName(badge)
+                    .user(u).badgeName(badge.name())
                     .description(badge.name().replace('_', ' ').toLowerCase())
                     .build());
             }

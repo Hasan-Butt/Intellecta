@@ -17,12 +17,14 @@ import intellectaLogo from "../../assets/intellectaLogo.jpeg";
 
 import quizService from "../../services/quizService";
 import api from "../../services/api";
+import Swal from 'sweetalert2';
 
 const CreateQuiz = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Create Quiz");
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   
   const [categories, setCategories] = useState([]);
   const [topics, setTopics] = useState([]);
@@ -34,7 +36,7 @@ const CreateQuiz = () => {
     topic: "",
     difficulty: "Beginner",
     timeLimit: 30,
-    imageUrl: "",
+    imageUrl: "https://plus.unsplash.com/premium_vector-1721296175273-327b6a8f4c42?q=80&w=580&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     questions: [
       {
         text: "",
@@ -79,8 +81,46 @@ const CreateQuiz = () => {
     setQuizData(prev => ({ ...prev, topic: topicName }));
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await api.post("/upload/image", formData);
+      setQuizData(prev => ({ ...prev, imageUrl: response.data.url }));
+      Swal.fire({
+        title: 'Uploaded!',
+        text: 'Image successfully uploaded.',
+        icon: 'success',
+        confirmButtonColor: '#6C5DD3',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      Swal.fire({
+        title: 'Upload Failed',
+        text: 'Could not upload the image. Please try again or use a URL.',
+        icon: 'error',
+        confirmButtonColor: '#6C5DD3'
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleQuizChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    
+    if (name === "timeLimit" && value !== "") {
+      const numValue = parseInt(value, 10);
+      value = isNaN(numValue) || numValue < 1 ? 1 : numValue;
+    }
+    
     setQuizData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -115,12 +155,29 @@ const CreateQuiz = () => {
 
   const nextStep = () => {
     if (step === 1 && !quizData.imageUrl) {
-      alert("Please provide an image URL first.");
+      Swal.fire({
+        title: 'Missing Image',
+        text: 'Please provide an image URL first.',
+        icon: 'error',
+        confirmButtonColor: '#6C5DD3'
+      });
       return;
     }
-    if (step === 2 && (!quizData.topic || !quizData.category)) {
-      alert("Please select a category and topic.");
-      return;
+    if (step === 2) {
+      const missingFields = [];
+      if (!quizData.category) missingFields.push("Category");
+      if (!quizData.topic) missingFields.push("Topic");
+      if (!quizData.description.trim()) missingFields.push("Description");
+
+      if (missingFields.length > 0) {
+        Swal.fire({
+          title: 'Incomplete Details',
+          html: `Please provide the following: ${missingFields.map(f => `<b>${f}</b>`).join(', ')}.`,
+          icon: 'error',
+          confirmButtonColor: '#6C5DD3'
+        });
+        return;
+      }
     }
     setStep(prev => prev + 1);
   };
@@ -129,14 +186,73 @@ const CreateQuiz = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate questions
+    if (!quizData.questions || quizData.questions.length === 0) {
+      Swal.fire({
+        title: 'No Questions',
+        text: 'Please add at least one question to the quiz.',
+        icon: 'error',
+        confirmButtonColor: '#6C5DD3'
+      });
+      return;
+    }
+
+    for (let i = 0; i < quizData.questions.length; i++) {
+      const q = quizData.questions[i];
+      const missingParts = [];
+      
+      if (!q.text.trim()) {
+        missingParts.push("Question Text");
+      }
+      
+      for (let j = 0; j < q.options.length; j++) {
+        if (!q.options[j].trim()) {
+          missingParts.push(`Option ${j + 1}`);
+        }
+      }
+
+      if (missingParts.length > 0) {
+        Swal.fire({
+          title: 'Incomplete Question',
+          html: `Question ${i + 1} is missing the following: ${missingParts.map(p => `<b>${p}</b>`).join(', ')}.`,
+          icon: 'error',
+          confirmButtonColor: '#6C5DD3'
+        });
+        return;
+      }
+
+      const trimmedOptions = q.options.map(opt => opt.trim());
+      const uniqueOptions = new Set(trimmedOptions);
+      if (uniqueOptions.size !== q.options.length) {
+        Swal.fire({
+          title: 'Duplicate Options',
+          text: `Question ${i + 1} has duplicate options. Please ensure all 4 options are unique.`,
+          icon: 'error',
+          confirmButtonColor: '#6C5DD3'
+        });
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       await quizService.createQuiz(quizData);
-      alert("Quiz created successfully!");
+      await Swal.fire({
+        title: 'Success!',
+        text: 'Quiz created successfully!',
+        icon: 'success',
+        confirmButtonColor: '#6C5DD3'
+      });
       navigate('/content');
     } catch (error) {
       console.error("Failed to create quiz:", error);
-      alert("Error creating quiz. Please try again.");
+      Swal.fire({
+        title: 'Error',
+        text: 'Error creating quiz. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#6C5DD3'
+      });
     } finally {
       setLoading(false);
     }
@@ -165,7 +281,7 @@ const CreateQuiz = () => {
             <header className="mb-10 flex justify-between items-end">
               <div>
                 <h2 className="text-4xl font-black tracking-tight text-[#111827]">
-                  {step === 1 ? "Visual Identity" : step === 2 ? "Quiz Details" : "Curate Questions"}
+                  {step === 1 ? "Visual Identity" : step === 2 ? "Quiz Details" : "Create Quiz"}
                 </h2>
                 <p className="text-gray-400 font-bold mt-2">
                   {step === 1 ? "Start by giving your quiz a compelling cover image." : step === 2 ? "Define the core parameters of your assessment." : "Design the questions and answers."}
@@ -206,6 +322,23 @@ const CreateQuiz = () => {
                       className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-5 focus:ring-2 focus:ring-[#6C5DD3]/20 focus:border-[#6C5DD3] outline-none transition-all font-bold text-sm"
                     />
                     
+                    <div className="flex items-center gap-4 my-6">
+                      <div className="h-px flex-1 bg-gray-200"></div>
+                      <span className="text-xs font-black text-gray-400 uppercase tracking-widest">OR</span>
+                      <div className="h-px flex-1 bg-gray-200"></div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Upload from Computer</label>
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-[#6C5DD3]/20 focus:border-[#6C5DD3] outline-none transition-all font-bold text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-[#6C5DD3] file:text-white hover:file:bg-[#5a4ebd]"
+                      />
+                      {uploadingImage && <p className="text-sm text-[#6C5DD3] font-bold animate-pulse mt-2 ml-1">Uploading image...</p>}
+                    </div>
+                    
                     {quizData.imageUrl && (
                       <div className="mt-8 rounded-[30px] overflow-hidden border-4 border-white shadow-2xl aspect-[16/9] bg-gray-100 relative group">
                         <img 
@@ -225,6 +358,7 @@ const CreateQuiz = () => {
 
                   <div className="flex justify-end pt-4">
                     <button 
+                      type="button"
                       onClick={nextStep}
                       className="bg-[#6C5DD3] text-white px-10 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-lg shadow-indigo-100 hover:gap-5 transition-all"
                     >
@@ -303,6 +437,7 @@ const CreateQuiz = () => {
                         <input 
                           type="number" 
                           name="timeLimit"
+                          min="1"
                           value={quizData.timeLimit}
                           onChange={handleQuizChange}
                           className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-[#6C5DD3]/20 focus:border-[#6C5DD3] outline-none transition-all font-bold text-sm"
@@ -314,12 +449,14 @@ const CreateQuiz = () => {
 
                   <div className="flex justify-between pt-4">
                     <button 
+                      type="button"
                       onClick={prevStep}
                       className="text-gray-400 font-bold flex items-center gap-2 hover:text-[#111827] transition-all"
                     >
                       <ArrowLeft size={20} strokeWidth={3} /> Go Back
                     </button>
                     <button 
+                      type="button"
                       onClick={nextStep}
                       className="bg-[#6C5DD3] text-white px-10 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-lg shadow-indigo-100 hover:gap-5 transition-all"
                     >
@@ -396,6 +533,7 @@ const CreateQuiz = () => {
                   
                   <div className="flex justify-start pt-4">
                     <button 
+                      type="button"
                       onClick={prevStep}
                       className="text-gray-400 font-bold flex items-center gap-2 hover:text-[#111827] transition-all"
                     >

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { Moon, Timer, BrainCircuit, Play, FileText } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Moon, Timer, BrainCircuit, Play, FileText, AlertCircle } from 'lucide-react';
 
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
+import api from '../../services/api';
 
 // --- START: HEATMAP COMPONENTS ---
 
@@ -22,27 +24,50 @@ const HeatmapSquare = ({ intensity }) => {
   );
 };
 
-const HeatmapSection = ({ name, label, data, isUser }) => (
-  <div className="flex-1 min-w-[350px]">
-    <div className="flex justify-between items-end mb-6">
-      <h3 className={`text-xs font-bold tracking-[0.2em] uppercase ${isUser ? 'text-[#8E79E3]' : 'text-[#4c35b5]'}`}>
-        {name} {isUser && <span className="opacity-70">(YOU)</span>}
-      </h3>
-      <span className="text-xs text-gray-400 font-medium">{label}</span>
-    </div>
-    <div className="grid grid-cols-7 gap-3">
-      {data.map((val, idx) => (
-        <HeatmapSquare key={idx} intensity={val} />
-      ))}
-    </div>
-  </div>
-);
+const HeatmapSection = ({ name, label, data, isUser }) => {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  return (
+    <div className="flex-1 min-w-[350px]">
+      <div className="flex justify-between items-end mb-6">
+        <h3 className={`text-xs font-bold tracking-[0.2em] uppercase ${isUser ? 'text-[#8E79E3]' : 'text-[#4c35b5]'}`}>
+          {name} {isUser && <span className="opacity-70">(YOU)</span>}
+        </h3>
+        <span className="text-xs text-gray-400 font-medium">{label}</span>
+      </div>
+      
+      <div className="grid grid-cols-7 gap-3 mb-2">
+        {days.map((day, i) => (
+          <div key={i} className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+            {day}
+          </div>
+        ))}
+      </div>
 
-const WeeklyFocusHeatmap = () => {
+      <div className="grid grid-cols-7 gap-3">
+        {data.map((val, idx) => (
+          <div key={idx} title={`${idx < 7 ? 'Last Week' : 'This Week'}, ${days[idx % 7]}`}>
+            <HeatmapSquare intensity={val} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const WeeklyFocusHeatmap = ({ data }) => {
   const [filter, setFilter] = useState('high-focus');
+
+  if (!data) return null;
   
-  const jordanData = [1, 1, 3, 3, 4, 3, 3, 1, 1, 2, 4, 4, 3, 3];
-  const alexData = [2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1];
+  // Apply a visual filter mask based on state. If 'idle', invert the heatmap visuals (4 - val)
+  const transformData = (sourceData) => {
+    const defaultData = [1, 2, 2, 3, 1, 0, 4, 2, 3, 1, 1, 2, 4, 0];
+    const target = sourceData || defaultData;
+    return filter === 'idle' ? target.map(val => 4 - val) : target;
+  };
+
+  const peerData = transformData(data.peer.heatmap);
+  const meData = transformData(data.me.heatmap);
 
   return (
 
@@ -77,27 +102,41 @@ const WeeklyFocusHeatmap = () => {
 
       <div className="flex flex-col xl:flex-row gap-16">
         <HeatmapSection 
-          name="Jordan S." 
-          label="Mostly Late Evening" 
-          data={jordanData} 
+          name={data.peer.username} 
+          label="Consistent" 
+          data={peerData} 
           isUser={false} 
         />
         <HeatmapSection 
-          name="Alex" 
-          label="Consistent Mid-Day" 
-          data={alexData} 
+          name="You" 
+          label="Active" 
+          data={meData} 
           isUser={true} 
         />
+      </div>
+
+      <div className="mt-12 flex items-center justify-end gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+        <span>Less</span>
+        <div className="flex gap-1.5 mx-1">
+          {[0, 1, 2, 3, 4].map(val => (
+            <div key={val} className="w-3 h-3 rounded-[2px] overflow-hidden">
+               <HeatmapSquare intensity={val} />
+            </div>
+          ))}
+        </div>
+        <span>More</span>
       </div>
     </section>
   );
 };
 
 // --- Peer Comparison Page Title Section ---
-const PeerComparisonTitle = () => {
+const PeerComparisonTitle = ({ data }) => {
+  if (!data || !data.me || !data.peer) return null;
+
   const participants = [
-    { id: 1, name: 'You', image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop' },
-    { id: 2, name: 'Jordan S.', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' }
+    { id: 1, name: data.me.username || 'You', image: 'https://ui-avatars.com/api/?name=' + (data.me.username || 'You') + '&background=0D8ABC&color=fff' },
+    { id: 2, name: data.peer.username || 'Peer', image: 'https://ui-avatars.com/api/?name=' + (data.peer.username || 'Peer') + '&background=4c35b5&color=fff' }
   ];
 
   return (
@@ -108,12 +147,12 @@ const PeerComparisonTitle = () => {
             Deep Peer Comparison
           </h1>
           <p className="text-gray-500 text-lg md:text-xl font-normal">
-            Detailed performance breakdown between you and Jordan S.
+            Detailed performance breakdown between you and {data.peer.username}.
           </p>
         </div>
 
-        <div className="flex items-center bg-[#f4f7f9] rounded-2xl p-5 md:py-4 md:px-6 border border-gray-100 shadow-sm self-start md:self-center">
-          <div className="flex -space-x-4 mr-8">
+        <div className="flex items-center bg-[#f4f7f9] rounded-2xl p-5 md:py-4 md:px-6 border border-gray-100 shadow-sm self-start md:self-center whitespace-nowrap">
+          <div className="flex -space-x-4 mr-8 shrink-0">
             {participants.map((user) => (
               <div key={user.id} className="relative inline-block">
                 <img
@@ -124,14 +163,33 @@ const PeerComparisonTitle = () => {
               </div>
             ))}
           </div>
-          <div className="h-12 w-[1px] bg-gray-200 mx-2" aria-hidden="true" />
-          <div className="ml-6 flex flex-col">
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">
-              Comparison ID
+          <div className="h-10 w-[1px] bg-gray-200 mx-6" aria-hidden="true" />
+          <div className="flex flex-col whitespace-nowrap">
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">
+              Rank Delta
             </span>
-            <span className="text-base font-semibold text-gray-700 font-mono mt-2">
-              #INT-2024-88A
+            <div className="flex items-baseline gap-1.5 mt-1">
+              <span className="text-xl font-black text-[#4c35b5] leading-none">
+                {Math.abs(data.me.globalRank - data.peer.globalRank)}
+              </span>
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                Positions
+              </span>
+            </div>
+          </div>
+          <div className="h-10 w-[1px] bg-gray-200 mx-6" aria-hidden="true" />
+          <div className="flex flex-col whitespace-nowrap pr-2">
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">
+              Level Gap
             </span>
+            <div className="flex items-baseline gap-1.5 mt-1">
+              <span className="text-xl font-black text-[#b8b0e8] leading-none">
+                {Math.abs(data.me.level - data.peer.level)}
+              </span>
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                Levels
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -160,43 +218,81 @@ const Card = ({ title, subtitle, badge, children }) => (
 );
 
 // --- Subject Proficiency (Radar) ---
-const SubjectProficiency = () => {
-  const jordanPoints = "100,35 155,75 140,145 60,145 45,75";
-  const alexPoints = "100,60 135,85 125,130 75,130 65,85";
+const SubjectProficiency = ({ data, dbCategories }) => {
+  if (!data || !dbCategories || dbCategories.length === 0) return null;
+
+  // Number of axes is exactly the number of actual database categories
+  const nAxes = dbCategories.length;
+  
+  // Angle step in radians
+  const angleStep = (2 * Math.PI) / nAxes;
+
+  // Generate radar points based on XP (normalized)
+  const getPoints = (stats) => {
+    // Determine max XP across all categories to scale properly. Cap minimum denominator at 100 to avoid dividing by zero.
+    const maxXP = Math.max(...dbCategories.map(c => stats.sectionalXp?.[c] || 0), 100); 
+    
+    return dbCategories.map((c, i) => {
+      // Start at top (-90 degrees)
+      const angle = i * angleStep - (Math.PI / 2);
+      const val = (stats.sectionalXp?.[c] || 0) / maxXP;
+      // Provide a small minimum radius so it doesn't entirely collapse to a dot
+      const radius = 80 * Math.max(0.15, val); 
+      return `${100 + radius * Math.cos(angle)},${100 + radius * Math.sin(angle)}`;
+    }).join(" ");
+  };
+
+  const peerPoints = getPoints(data.peer);
+  const mePoints = getPoints(data.me);
 
   return (
-    <Card title="Subject Proficiency" subtitle="Skill distribution across core disciplines">
+    <Card title="Subject Proficiency" subtitle="Skill distribution based on Sectional XP">
       <div className="relative flex flex-col items-center justify-center flex-1 py-6">
         <svg viewBox="0 0 200 200" className="w-72 h-72 md:w-80 md:h-80 overflow-visible">
+          {/* Concentric rings */}
           {[0.25, 0.5, 0.75, 1].map((scale) => (
             <circle key={scale} cx="100" cy="100" r={80 * scale} fill="none" stroke="#E5E7EB" strokeDasharray="4 4" />
           ))}
-          {[0, 72, 144, 216, 288].map((angle) => (
-            <line 
-              key={angle} x1="100" y1="100" 
-              x2={100 + 80 * Math.cos((angle - 90) * Math.PI / 180)} 
-              y2={100 + 80 * Math.sin((angle - 90) * Math.PI / 180)} 
-              stroke="#E5E7EB" 
-            />
-          ))}
-          <polygon points={jordanPoints} fill="#4c35b5" fillOpacity="0.1" stroke="#4c35b5" strokeWidth="2.5" />
-          <polygon points={alexPoints} fill="none" stroke="#b8b0e8" strokeWidth="2.5" strokeDasharray="4 2" />
           
-          <text x="100" y="25" textAnchor="middle" className="text-[11px] fill-gray-500 font-bold">Mathematics</text>
-          <text x="175" y="90" textAnchor="start" className="text-[11px] fill-gray-500 font-bold">Physics</text>
-          <text x="150" y="170" textAnchor="start" className="text-[11px] fill-gray-500 font-bold">Logic</text>
-          <text x="50" y="170" textAnchor="end" className="text-[11px] fill-gray-500 font-bold">Literature</text>
-          <text x="25" y="90" textAnchor="end" className="text-[11px] fill-gray-500 font-bold">History</text>
+          {/* Axis lines and category labels */}
+          {dbCategories.map((c, i) => {
+            const angle = i * angleStep - (Math.PI / 2);
+            const x2 = 100 + 80 * Math.cos(angle);
+            const y2 = 100 + 80 * Math.sin(angle);
+            
+            // Push text slightly further out than the maximum radius
+            const textRadius = 95;
+            const tx = 100 + textRadius * Math.cos(angle);
+            const ty = 100 + textRadius * Math.sin(angle);
+            
+            // Determine text anchor based on X position to prevent clipping
+            let anchor = "middle";
+            if (Math.abs(tx - 100) > 10) {
+              anchor = tx > 100 ? "start" : "end";
+            }
+
+            return (
+              <React.Fragment key={c}>
+                <line x1="100" y1="100" x2={x2} y2={y2} stroke="#E5E7EB" />
+                <text x={tx} y={ty + 4} textAnchor={anchor} className="text-[10px] fill-gray-500 font-bold">
+                  {c}
+                </text>
+              </React.Fragment>
+            );
+          })}
+
+          <polygon points={peerPoints} fill="#4c35b5" fillOpacity="0.1" stroke="#4c35b5" strokeWidth="2.5" />
+          <polygon points={mePoints} fill="none" stroke="#b8b0e8" strokeWidth="2.5" strokeDasharray="4 2" />
         </svg>
 
         <div className="flex gap-8 mt-12">
           <div className="flex items-center gap-3">
             <span className="w-4 h-4 rounded-full bg-[#4c35b5]" />
-            <span className="text-sm font-bold text-gray-700">Jordan S.</span>
+            <span className="text-sm font-bold text-gray-700">{data.peer.username}</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="w-4 h-4 rounded-full border-2 border-[#b8b0e8]" />
-            <span className="text-sm font-bold text-gray-700">Alex (You)</span>
+            <span className="text-sm font-bold text-gray-700">You</span>
           </div>
         </div>
       </div>
@@ -205,42 +301,87 @@ const SubjectProficiency = () => {
 };
 
 // --- Daily Focus Intensity (Line) ---
-const DailyFocusIntensity = () => {
+const DailyFocusIntensity = ({ data }) => {
+  if (!data) return null;
+
+  const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  
+  // Use heatmap data, slice to 7 days
+  const peerHeatmap = data.peer.heatmap || [1, 2, 2, 3, 1, 0, 4, 2, 3, 1, 1, 2, 4, 0];
+  const meHeatmap = data.me.heatmap || [2, 1, 3, 2, 4, 2, 1, 3, 1, 2, 1, 0, 1, 3];
+  
+  const peerWeek = peerHeatmap.slice(0, 7);
+  const meWeek = meHeatmap.slice(0, 7);
+
+  // SVG Chart Dimensions
+  const w = 400;
+  const h = 160;
+  
+  // Map values to coordinates
+  const mapPoints = (arr) => arr.map((val, i) => ({
+    x: (i / 6) * w,
+    y: h - (val / 4) * h
+  }));
+
+  // Generate smooth cubic bezier curve
+  const getSmoothPath = (points) => {
+    if (points.length === 0) return "";
+    let path = `M ${points[0].x},${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const cx = (p1.x + p2.x) / 2;
+      path += ` C ${cx},${p1.y} ${cx},${p2.y} ${p2.x},${p2.y}`;
+    }
+    return path;
+  };
+
+  const peerPath = getSmoothPath(mapPoints(peerWeek));
+  const mePath = getSmoothPath(mapPoints(meWeek));
+
+  const peerAvg = Math.round((peerWeek.reduce((a, b) => a + b, 0) / (7 * 4)) * 100);
+  const meAvg = Math.round((meWeek.reduce((a, b) => a + b, 0) / (7 * 4)) * 100);
+
   return (
-    <Card title="Daily Focus Intensity" subtitle="Cognitive load tracking over the last 7 days" badge="Weekly View">
-      <div className="flex-1 flex flex-col">
-        <div className="relative h-64 w-full bg-[#f8fafc] rounded-[24px] mb-8 overflow-hidden">
-          <svg viewBox="0 0 700 200" preserveAspectRatio="none" className="absolute inset-0 w-full h-full p-6">
-            <path 
-              d="M0,120 C100,50 200,180 350,20 C500,220 600,20 700,100" 
-              fill="none" stroke="#4c35b5" strokeWidth="5" strokeLinecap="round" 
-            />
-            <path 
-              d="M0,150 C150,120 250,180 350,100 C450,40 550,180 700,130" 
-              fill="none" stroke="#b8b0e8" strokeWidth="4" strokeDasharray="10 8" strokeLinecap="round"
-            />
-          </svg>
-          <div className="absolute bottom-4 left-0 right-0 flex justify-between px-10">
-            {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map(day => (
-              <span key={day} className="text-[11px] font-black text-gray-400 tracking-widest">{day}</span>
+    <Card title="Daily Focus Intensity" subtitle="Cognitive load tracking over the last 7 days" badge="WEEKLY VIEW">
+      <div className="flex-1 flex flex-col justify-between mt-6">
+        
+        {/* Chart Area */}
+        <div className="relative w-full h-[220px]">
+          {/* Axis decorations mimicking design L-shape */}
+          <div className="absolute left-0 top-0 bottom-6 w-3 bg-[#f1f3f9] rounded-sm" />
+          <div className="absolute left-3 right-0 top-0 h-3 bg-[#f1f3f9] rounded-sm" />
+          
+          <div className="absolute inset-0 pb-8 pl-4 pt-4 pr-2">
+            <svg viewBox={`0 -10 ${w} ${h + 20}`} className="w-full h-full overflow-visible" preserveAspectRatio="none">
+              <path d={mePath} fill="none" stroke="#b8b0e8" strokeWidth="4" strokeDasharray="8 6" strokeLinecap="round" strokeLinejoin="round" />
+              <path d={peerPath} fill="none" stroke="#4c35b5" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+
+          {/* X Axis Labels */}
+          <div className="absolute bottom-0 left-4 right-2 flex justify-between">
+            {days.map((day, i) => (
+              <span key={i} className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{day}</span>
             ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-[#f4f7f9] p-8 rounded-[24px] border border-gray-50">
-            <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-bold text-[#4c35b5]">84%</span>
-              <span className="text-base font-medium text-gray-500">Jordan</span>
+        {/* Avg Intensity Boxes */}
+        <div className="grid grid-cols-2 gap-6 mt-8">
+          <div className="bg-[#f4f7f9] p-5 rounded-2xl border border-gray-50 flex flex-col justify-center">
+            <span className="text-[11px] font-medium text-gray-500 mb-2">Avg. Daily Intensity</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-[#4c35b5]">{peerAvg}%</span>
+              <span className="text-xs font-semibold text-gray-500 truncate" title={data.peer.username}>{data.peer.username}</span>
             </div>
-            <p className="text-[11px] text-gray-400 uppercase font-black mt-2 tracking-widest">Avg. Daily Intensity</p>
           </div>
-          <div className="bg-[#f4f7f9] p-8 rounded-[24px] border border-gray-50">
-            <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-bold text-[#b8b0e8]">62%</span>
-              <span className="text-base font-medium text-gray-500">Alex</span>
+          <div className="bg-[#f4f7f9] p-5 rounded-2xl border border-gray-50 flex flex-col justify-center">
+            <span className="text-[11px] font-medium text-gray-500 mb-2">Avg. Daily Intensity</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-[#b8b0e8]">{meAvg}%</span>
+              <span className="text-xs font-semibold text-gray-500 truncate" title="You">You</span>
             </div>
-            <p className="text-[11px] text-gray-400 uppercase font-black mt-2 tracking-widest">Avg. Daily Intensity</p>
           </div>
         </div>
       </div>
@@ -249,29 +390,60 @@ const DailyFocusIntensity = () => {
 };
 
 // --- Behavioral Insights ---
-const BehavioralInsights = () => {
-  const insights = [
-    {
-      id: 1,
-      title: "Nocturnal Shift",
-      description: "Jordan studies 2.4h more at night (10PM-2AM) compared to your morning routine. This correlates with their 15% higher score in Logic.",
-      icon: <Moon className="w-8 h-8" />,
-      variant: "primary", 
-    },
-    {
-      id: 2,
-      title: "Session Durations",
-      description: "Your focus sessions are shorter but more frequent. Jordan averages 90-minute blocks, while you peak at 45 minutes.",
-      icon: <Timer className="w-8 h-8" />,
-      variant: "secondary",
-    },
-    {
-      id: 3,
-      title: "Recovery Time",
-      description: "Jordan takes 5-minute micro-breaks every 25 minutes (Pomodoro). Your breaks are fewer but longer, leading to slower mental reboot.",
-      icon: <BrainCircuit className="w-8 h-8" />,
-      variant: "secondary",
+const BehavioralInsights = ({ data }) => {
+  if (!data) return null;
+
+  const getInsight = () => {
+    if (data.me.focusHours > data.peer.focusHours) {
+        return {
+            title: "Focus Champion",
+            description: `You have ${data.me.focusHours - data.peer.focusHours} more focus hours than ${data.peer.username}. Keep up the deep work!`,
+            icon: <Timer className="w-8 h-8" />,
+            variant: "primary"
+        };
+    } else {
+        return {
+            title: "Focus Gap",
+            description: `${data.peer.username} has accumulated more focus hours. Try scheduling more study sessions!`,
+            icon: <Timer className="w-8 h-8" />,
+            variant: "secondary"
+        };
     }
+  };
+
+  const getNotesInsight = () => {
+    if (data.me.totalNotes > data.peer.totalNotes) {
+        return {
+            title: "Diligent Note Taker",
+            description: `You've created ${data.me.totalNotes} notes compared to their ${data.peer.totalNotes}. Your documentation is superior.`,
+            icon: <FileText className="w-8 h-8" />,
+            variant: "secondary"
+        };
+    } else {
+        return {
+            title: "Note Taking Gap",
+            description: `${data.peer.username} relies heavily on notes (${data.peer.totalNotes}). Consider taking more notes during your sessions.`,
+            icon: <FileText className="w-8 h-8" />,
+            variant: "secondary"
+        };
+    }
+  };
+
+  const getPomodoroInsight = () => {
+      const diff = Math.abs(data.me.totalPomodoros - data.peer.totalPomodoros);
+      const more = data.me.totalPomodoros > data.peer.totalPomodoros;
+      return {
+          title: "Pomodoro Technique",
+          description: `You've completed ${data.me.totalPomodoros} Pomodoro sessions, which is ${diff} ${more ? 'more' : 'fewer'} than ${data.peer.username}.`,
+          icon: <BrainCircuit className="w-8 h-8" />,
+          variant: "secondary"
+      }
+  };
+
+  const insights = [
+    { id: 1, ...getInsight() },
+    { id: 2, ...getNotesInsight() },
+    { id: 3, ...getPomodoroInsight() }
   ];
 
   return (
@@ -286,11 +458,7 @@ const BehavioralInsights = () => {
           }`}
         >
           <div className={`mb-8 ${item.variant === 'primary' ? "text-white" : "text-[#4c35b5]"}`}>
-            {item.id === 2 ? (
-              <span className="text-3xl font-bold font-serif leading-none">3</span>
-            ) : (
-              item.icon
-            )}
+            {item.icon}
           </div>
           <h3 className="text-2xl font-bold tracking-tight mb-4">
             {item.title}
@@ -334,6 +502,45 @@ const ComparisonCTA = () => {
 
 // --- Full Page Layout ---
 const PeerComparisonPage = () => {
+  const [searchParams] = useSearchParams();
+  const [data, setData] = useState(null);
+  const [dbCategories, setDbCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const userId = searchParams.get('userId');
+      const peerId = searchParams.get('peerId');
+      
+      if (!userId || !peerId) {
+        setError("Please select a peer from the Peer Comparison tab (above Your Standing) on the Leaderboard page to generate a report.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        // Fetch both comparison data and available categories concurrently
+        const [resCompare, resCategories] = await Promise.all([
+          api.get(`/leaderboards/compare/${userId}/${peerId}`),
+          api.get('/content/categories')
+        ]);
+        
+        setData(resCompare.data);
+        const names = (resCategories.data || []).map(c => c.name).filter(Boolean);
+        setDbCategories(names.length > 0 ? names : ["Computer Science", "Mathematics", "Physics"]); // Fallback just in case
+        
+      } catch (err) {
+        console.error("Failed to fetch peer comparison data", err);
+        setError("Failed to load peer comparison data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [searchParams]);
+
   return (
     <div className="flex flex-col min-h-screen bg-[#fcfdfe] font-sans">
           <Navbar />
@@ -341,28 +548,42 @@ const PeerComparisonPage = () => {
           <div className="flex flex-1">
             <Sidebar />
 
-        <main className="p-8 md:p-16 max-w-[1600px] mx-auto">
-          {/* Header Section */}
-          <PeerComparisonTitle />
-          
-          {/* Charts Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            <div className="lg:col-span-5">
-              <SubjectProficiency />
-            </div>
-            <div className="lg:col-span-7">
-              <DailyFocusIntensity />
-            </div>
-          </div>
+        <main className="p-8 md:p-16 max-w-[1600px] mx-auto w-full">
+          {loading && (
+             <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5D2ECC]"></div>
+             </div>
+          )}
 
-          {/* Behavioral Insights Cards */}
-          <BehavioralInsights />
+          {error && !loading && (
+             <div className="bg-red-50 text-red-600 p-6 rounded-2xl flex items-center gap-4">
+                <AlertCircle />
+                <p className="font-medium">{error}</p>
+             </div>
+          )}
 
-          {/* Weekly Focus Heatmap Section */}
-          <WeeklyFocusHeatmap />
+          {!loading && !error && data && (
+            <>
+              {/* Header Section */}
+              <PeerComparisonTitle data={data} />
+              
+              {/* Charts Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div className="lg:col-span-5">
+                  <SubjectProficiency data={data} dbCategories={dbCategories} />
+                </div>
+                <div className="lg:col-span-7">
+                  <DailyFocusIntensity data={data} />
+                </div>
+              </div>
 
-          {/* Comparison CTA Section */}
-          <ComparisonCTA />
+              {/* Behavioral Insights Cards */}
+              <BehavioralInsights data={data} />
+
+              {/* Weekly Focus Heatmap Section */}
+              <WeeklyFocusHeatmap data={data} />
+            </>
+          )}
         </main>
       </div>
     </div>

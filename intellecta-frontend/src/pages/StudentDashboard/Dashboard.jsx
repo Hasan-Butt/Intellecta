@@ -1,21 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import Avatar from "../../components/common/Avatar";
 import "../../styles/global.css";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
 import { getDashboard, logDistraction } from "../../services/dashboardService";
-
-// ── Figma asset URLs ──────────────────────────────────────────────────────────
-const imgLeaderboardUser =
-  "https://www.figma.com/api/mcp/asset/d6e2420d-b287-4faa-99e5-cec266dae359";
-const imgCurrentUser =
-  "https://www.figma.com/api/mcp/asset/de6187fa-657d-4895-a61f-89df2ee4c707";
-const imgDailyTipCard =
-  "https://www.figma.com/api/mcp/asset/ecee153a-f7f9-4e4a-a8c5-55ed756c98c6";
-const imgGradient =
-  "https://www.figma.com/api/mcp/asset/c9e33b0b-5899-4842-af5b-78200a95cfdb";
-const imgOverlayOverlayBlur =
-  "https://www.figma.com/api/mcp/asset/7865af56-4d99-4907-9238-a1d91d6c6aa1";
+import weeklyInsightBg from "../../assets/weekly_insight_bg.png";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const PlayIcon = () => (
@@ -246,13 +237,24 @@ function DistractionLog({ summary, onLog }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleLog(input)}
             placeholder="What broke your focus?"
-            className="w-full bg-[#f4f7ff] border-none rounded-2xl py-3 px-4 text-xs outline-none placeholder:text-gray-400"
+            className="w-full bg-[#f4f7ff] border-none rounded-2xl py-3 pr-12 pl-4 text-xs outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-[#451ebb]/20 transition-all"
           />
           <button
-            onClick={() => handleLog(input)}
-            className="absolute right-2 bg-[#e6deff] p-1.5 rounded-full hover:bg-[#d8dfff] transition-colors scale-75"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              handleLog(input);
+            }}
+            className="absolute right-2 bg-[#451ebb] p-2 rounded-full hover:bg-[#5d3fd3] transition-all z-10 shadow-sm cursor-pointer"
           >
-            <AddIcon />
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M6 1V11M1 6H11"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -286,13 +288,13 @@ function DistractionLog({ summary, onLog }) {
         {/* Mini bar chart — driven by API dailyCounts */}
         <div className="flex items-end justify-between h-8 px-1">
           {["M", "T", "W", "T", "F", "S", "S"].map((day, i) => {
-            const h = Math.max(4, Math.round((counts[i] / maxCount) * 24));
+            const h = maxCount > 0 ? Math.max(2, Math.round((counts[i] / maxCount) * 24)) : 0;
             const isMax = counts[i] === Math.max(...counts) && counts[i] > 0;
             return (
               <div key={i} className="flex flex-col items-center gap-1">
                 <div
-                  className={`w-4 rounded-sm ${isMax ? "bg-[#a394f0]" : "bg-[#e6deff]"}`}
-                  style={{ height: h }}
+                  className={`w-4 rounded-sm transition-all duration-500 ${isMax ? "bg-[#a394f0]" : "bg-[#e6deff]"}`}
+                  style={{ height: h, opacity: counts[i] === 0 ? 0.3 : 1 }}
                 />
                 <span className="text-[7px] text-gray-400 font-black">
                   {day}
@@ -315,6 +317,7 @@ function Skeleton({ className }) {
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [checklist, setChecklist] = useState([]);
@@ -331,6 +334,8 @@ export default function DashboardPage() {
   // Form states for review queue
   const [newReviewTitle, setNewReviewTitle] = useState("");
   const [newReviewSubtitle, setNewReviewSubtitle] = useState("");
+  const [hiddenReviews, setHiddenReviews] = useState([]);
+  const [addedReviews, setAddedReviews] = useState([]);
 
   // Form states for checklist (exam)
   const [newChecklistLabel, setNewChecklistLabel] = useState("");
@@ -371,16 +376,17 @@ export default function DashboardPage() {
       const res = await getDashboard();
       setData(res.data);
       // Initialise checklist from todaySchedule if empty
-      if (res.data.todaySchedule?.length > 0) {
-        setChecklist(
-          res.data.todaySchedule.map((s, i) => ({
+      setChecklist((prev) => {
+        if (prev.length === 0 && res.data.todaySchedule?.length > 0) {
+          return res.data.todaySchedule.map((s, i) => ({
             id: s.id ?? i + 1,
             label: s.subject,
             sub: s.topic,
             done: false,
-          })),
-        );
-      }
+          }));
+        }
+        return prev;
+      });
     } catch (err) {
       console.error("Dashboard fetch failed:", err);
     } finally {
@@ -392,10 +398,14 @@ export default function DashboardPage() {
     fetchDashboard();
   }, []);
 
-  const toggleCheck = (id) =>
+  const toggleCheck = (id) => {
     setChecklist((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, done: !c.done } : c)),
+      prev.map((c) => (c.id === id ? { ...c, done: true } : c)),
     );
+    setTimeout(() => {
+      setChecklist((prev) => prev.filter((c) => c.id !== id));
+    }, 400);
+  };
 
   const handleLogDistraction = async (reason) => {
     try {
@@ -414,7 +424,10 @@ export default function DashboardPage() {
         title: newReviewTitle,
         content: newReviewSubtitle || "Review this",
       });
+      // fetchDashboard will return the real item from the backend, so
+      // we don't need an optimistic entry — just refresh.
       await fetchDashboard();
+      setAddedReviews([]);  // clear any stale optimistic entries
       setShowReviewModal(false);
       setNewReviewTitle("");
       setNewReviewSubtitle("");
@@ -434,6 +447,12 @@ export default function DashboardPage() {
         difficulty: newChecklistDifficulty,
         plannedHoursPerDay: newChecklistHours,
       });
+      setChecklist(prev => [...prev, {
+        id: Date.now(),
+        label: newChecklistLabel,
+        sub: newChecklistSub,
+        done: false
+      }]);
       // Refresh from API — this is what makes it persist on reload
       await fetchDashboard();
       setShowChecklistModal(false);
@@ -461,15 +480,20 @@ export default function DashboardPage() {
   const leaderboard = data?.leaderboard ?? [];
   const focusWeek = data?.focusWeek ?? [];
   const todaySchedule = data?.todaySchedule ?? [];
-  const reviewQueue = data?.reviewQueue ?? [];
+  
+  const baseQueue = data?.reviewQueue ?? [];
+  const reviewQueue = baseQueue.filter(item => !hiddenReviews.includes(item.id));
 
   const maxFocus = Math.max(...focusWeek.map((d) => d.focusMinutes), 1);
 
-  // Badge icons — use API badge names to pick icons, fallback to defaults
-  const badgeDisplay =
-    recentBadges.length > 0
-      ? recentBadges.map((name) => badgeIconMap[name] ?? defaultBadges[0])
-      : defaultBadges;
+  // Badge display — prioritized real images with rounded fill styling
+  const badgeDisplay = recentBadges.length > 0
+    ? recentBadges.map((badgeKey) => ({
+        key: badgeKey,
+        imageUrl: `${api.defaults.baseURL}/badges/${badgeKey}/image`,
+        fallback: badgeIconMap[badgeKey] || defaultBadges[0]
+      }))
+    : defaultBadges.map(b => ({ ...b, isPlaceholder: true }));
 
   // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) {
@@ -573,10 +597,16 @@ export default function DashboardPage() {
                       Enter the Sanctuary
                     </h2>
                     <div className="flex gap-4">
-                      <button className="flex items-center gap-3 bg-white px-8 py-[17px] rounded-3xl font-bold text-[#451ebb] hover:opacity-90 transition-opacity">
+                      <button 
+                        onClick={() => navigate('/focus')}
+                        className="flex items-center gap-3 bg-white px-8 py-[17px] rounded-3xl font-bold text-[#451ebb] hover:opacity-90 transition-opacity"
+                      >
                         <PlayIcon /> Start Deep Work
                       </button>
-                      <button className="flex items-center gap-3 px-8 py-[17px] rounded-3xl font-bold text-white border border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all">
+                      <button 
+                        onClick={() => navigate('/light-review')}
+                        className="flex items-center gap-3 px-8 py-[17px] rounded-3xl font-bold text-white border border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all"
+                      >
                         <TimerIcon /> Light Review
                       </button>
                     </div>
@@ -692,12 +722,13 @@ export default function DashboardPage() {
                               </p>
                             </div>
                             <button
+                              onClick={() => setHiddenReviews(prev => [...prev, item.id])}
                               className={`flex items-center gap-1.5 rounded-full px-3 py-1 font-bold text-[10px] transition-all ${item.urgent ? "bg-[#451ebb] text-white" : "text-[#451ebb] border border-[#451ebb]"}`}
                             >
                               <CheckIcon
                                 color={item.urgent ? "white" : "#451ebb"}
                               />{" "}
-                              Confirm
+                              Reviewed
                             </button>
                           </div>
                         ))
@@ -774,7 +805,10 @@ export default function DashboardPage() {
                         Today's Itinerary
                       </h3>
                     </div>
-                    <button className="flex items-center gap-1 text-[#451ebb] font-bold text-sm">
+                    <button 
+                      onClick={() => navigate('/schedule')}
+                      className="flex items-center gap-1 text-[#451ebb] font-bold text-sm"
+                    >
                       <RescheduleIcon /> Reschedule
                     </button>
                   </div>
@@ -829,8 +863,8 @@ export default function DashboardPage() {
                 />
 
                 {/* ── XP / Level / Leaderboard panel ── */}
-                <div className="bg-white rounded-3xl overflow-hidden flex flex-col shadow-sm border border-gray-100 min-h-[661px]">
-                  <div className="p-8 flex flex-col gap-6 bg-gradient-to-br from-[#451ebb] to-[#5d3fd3] min-h-[214px]">
+                <div className="bg-white rounded-3xl overflow-hidden flex flex-col shadow-sm border border-gray-100 h-[655px]">
+                  <div className="p-6 flex flex-col gap-6 bg-gradient-to-br from-[#451ebb] to-[#5d3fd3] min-h-[190px]">
                     <div className="flex items-start justify-between text-white">
                       <div>
                         <p className="text-xs uppercase opacity-80 mb-1 font-bold">
@@ -842,11 +876,9 @@ export default function DashboardPage() {
                           {levelTitle}
                         </h3>
                       </div>
-                      <img
-                        src={imgOverlayOverlayBlur}
-                        alt=""
-                        className="w-8 h-9"
-                      />
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" className="text-white/20">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
                     </div>
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between text-white text-xs font-bold">
@@ -862,7 +894,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="p-8 flex flex-col gap-8">
+                  <div className="p-6 flex flex-col gap-6">
                     {/* Recent Achievements */}
                     <div className="flex flex-col gap-4">
                       <span className="text-[#484554] text-[10px] font-bold uppercase tracking-widest">
@@ -872,20 +904,36 @@ export default function DashboardPage() {
                         {badgeDisplay.map((badge, i) => (
                           <div
                             key={i}
-                            className={`w-10 h-10 rounded-full ${badge.bg} flex items-center justify-center shadow-sm`}
+                            className={`w-12 h-12 rounded-full ${badge.fallback?.bg || badge.bg || "bg-gray-100"} flex items-center justify-center shadow-sm overflow-hidden border-2 border-white`}
                           >
-                            {badge.icon}
+                            {!badge.isPlaceholder ? (
+                              <img 
+                                src={badge.imageUrl} 
+                                alt={badge.key} 
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            <div 
+                              className="items-center justify-center w-full h-full" 
+                              style={{ display: badge.isPlaceholder ? 'flex' : 'none' }}
+                            >
+                              {badge.fallback?.icon || badge.icon}
+                            </div>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     {/* Leaderboard */}
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-4">
                       <span className="text-[#484554] text-xs font-bold uppercase">
                         Cohort Leaderboard
                       </span>
-                      {leaderboard.map((entry) =>
+                      {leaderboard.slice(0, 4).map((entry) =>
                         entry.currentUser ? (
                           // Highlighted current user row
                           <div
@@ -895,11 +943,7 @@ export default function DashboardPage() {
                             <span className="font-bold text-[#451ebb] w-4">
                               {entry.rank}
                             </span>
-                            <img
-                              src={imgCurrentUser}
-                              alt="You"
-                              className="w-10 h-10 rounded-full bg-blue-50 object-cover"
-                            />
+                            <Avatar src={entry.avatarUrl} name={entry.username} />
                             <div className="flex-1">
                               <p className="font-bold text-[#451ebb] text-sm">
                                 {entry.username} (You)
@@ -918,11 +962,7 @@ export default function DashboardPage() {
                             <span className="font-bold text-[#451ebb] w-4">
                               {entry.rank}
                             </span>
-                            <img
-                              src={imgLeaderboardUser}
-                              alt={entry.username}
-                              className="w-10 h-10 rounded-full bg-blue-50"
-                            />
+                            <Avatar src={entry.avatarUrl} name={entry.username} />
                             <div className="flex-1">
                               <p className="font-bold text-sm">
                                 {entry.username}
@@ -934,26 +974,21 @@ export default function DashboardPage() {
                           </div>
                         ),
                       )}
-                      <button className="w-full bg-[#e3e8f9] text-[#451ebb] font-bold text-sm py-3 rounded-3xl hover:bg-[#d8dfff] transition-all">
+                      <button 
+                        onClick={() => navigate('/leaderboard')}
+                        className="w-full bg-[#e3e8f9] text-[#451ebb] font-bold text-sm py-3 rounded-3xl hover:bg-[#d8dfff] transition-all"
+                      >
                         View Full Standings
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {/* Weekly Insight card — static, design unchanged */}
+                {/* Weekly Insight card — Image background */}
                 <div className="rounded-3xl overflow-hidden relative h-[192px] shadow-lg">
-                  <img
-                    src={imgGradient}
-                    alt=""
-                    className="absolute inset-0 w-full h-[150%] -top-[25%] object-cover"
-                  />
-                  <img
-                    src={imgDailyTipCard}
-                    alt="Insight decoration"
-                    className="absolute inset-0 w-full h-full object-cover opacity-40"
-                  />
-                  <div className="absolute bottom-7 left-5 p-6 flex flex-col gap-1">
+                  <img src={weeklyInsightBg} alt="Abstract Background" className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40" />
+                  <div className="absolute bottom-7 left-5 p-6 flex flex-col gap-1 z-10">
                     <span className="text-[#ffdfa0] text-xs font-bold uppercase">
                       Weekly Insight
                     </span>

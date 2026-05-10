@@ -1,15 +1,15 @@
 import api from "./api";
 
-const USER_ID = 2; // replace with JWT-decoded userId later
+const getUserId = () => localStorage.getItem('userId') || '2';
 
-export const getDashboard = () =>
-  api.get(`/dashboard/user/${USER_ID}`);
+export const getDashboard = (userId = getUserId()) =>
+  api.get(`/dashboard/user/${userId}`);
 
-export const logDistraction = (reason) =>
-  api.post(`/distractions/user/${USER_ID}`, { reason });
+export const logDistraction = (reason, userId = getUserId()) =>
+  api.post(`/distractions/user/${userId}`, { reason });
 
-export const startSession = (subject, deepWork = false) =>
-  api.post(`/sessions/user/${USER_ID}/start`, { subject, deepWork });
+export const startSession = (subject, deepWork = false, userId = getUserId()) =>
+  api.post(`/sessions/user/${userId}/start`, { subject, deepWork });
 
 export const endSession = (sessionId, pomodorosCompleted) =>
   api.patch(`/sessions/${sessionId}/end`, { pomodorosCompleted });

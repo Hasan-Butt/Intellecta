@@ -7,6 +7,7 @@ import lombok.Data;
 public class ReviewItemDTO {
     private Long    id;
     private String  title;
-    private String  subtitle;
+    private String  content;   // actual note body — shown on card flip
+    private String  subtitle;  // time-ago label for the dashboard card
     private boolean urgent;
 }

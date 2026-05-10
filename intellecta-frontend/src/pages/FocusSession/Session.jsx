@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
 import api from "../../services/api";
+import AchievementToast from "../../components/AchievementToast";
 import {
   Play,
   Pause,
@@ -13,13 +14,14 @@ import {
   Zap,
   CheckCircle2,
   BellOff,
-  Lock,
   Moon,
   MousePointer2,
-  Network,
-  Type,
   X,
+  ListTodo,
+  Plus,
+  Trash2,
 } from "lucide-react";
+import Avatar from "../../components/common/Avatar";
 
 const StatCard = ({ label, value, subtext, color = "text-slate-900" }) => (
   <div className="flex flex-col">
@@ -76,7 +78,8 @@ const StudySessionDashboard = () => {
   const [breakDuration, setBreakDuration] = useState(5);
 
   const [sessionId, setSessionId] = useState(null);
-  const [isBlocked, setIsBlocked] = useState(true);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [earnedBadges, setEarnedBadges] = useState([]);
 
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState("");
@@ -93,16 +96,32 @@ const StudySessionDashboard = () => {
   const [distractionReason, setDistractionReason] = useState("");
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
+  const [lastSessionStats, setLastSessionStats] = useState(null);
+  const [userAvatar, setUserAvatar] = useState("");
+  const [userName, setUserName] = useState("");
+
+  const [ambientMode, setAmbientMode] = useState(false);
+  const [showTasks, setShowTasks] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [newTask, setNewTask] = useState("");
 
   useEffect(() => {
     const userId = localStorage.getItem("userId") || "2";
     const fetchData = async () => {
       try {
-        const [dashRes, subjectsRes, sessionsRes] = await Promise.all([
+
+        const [dashRes, subjectsRes, sessionsRes, coursesRes, profileRes] = await Promise.all([
           api.get(`/dashboard/user/${userId}`),
           api.get(`/subjects/user/${userId}`),
           api.get(`/sessions/user/${userId}`),
+          api.get(`/courses/user/${userId}`),
+          api.get(`/users/${userId}/profile`),
         ]);
+        
+        setUserAvatar(profileRes.data.avatarUrl || "");
+        setUserName(profileRes.data.username || "Scholar");
 
         setLevel(dashRes.data.level ?? 1);
         setCurrentXp(dashRes.data.currentXp ?? 0);
@@ -111,9 +130,14 @@ const StudySessionDashboard = () => {
         setTodayFocusTotal(dashRes.data.todayStudyHours ?? 0);
         setFocusWeek(dashRes.data.focusWeek || []);
 
-        setSubjects(subjectsRes.data || []);
-        if (subjectsRes.data?.length > 0) {
-          setSelectedSubject(subjectsRes.data[0].name);
+        const combined = [
+          ...(subjectsRes.data || []),
+          ...(coursesRes.data || []).map(c => ({ id: `c-${c.id}`, name: c.courseName }))
+        ];
+        
+        setSubjects(combined);
+        if (combined.length > 0) {
+          setSelectedSubject(combined[0].name);
         }
 
         setRecentSessions(sessionsRes.data || []);
@@ -163,6 +187,20 @@ const StudySessionDashboard = () => {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const addTask = () => {
+    if (!newTask.trim()) return;
+    setTasks([...tasks, { id: Date.now(), text: newTask, completed: false }]);
+    setNewTask("");
+  };
+
+  const toggleTask = (id) => {
+    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  };
+
+  const deleteTask = (id) => {
+    setTasks(tasks.filter(t => t.id !== id));
+  };
+
   const handleStartResume = async () => {
     if (!sessionId) {
       try {
@@ -205,7 +243,7 @@ const StudySessionDashboard = () => {
   const handleStop = async () => {
     if (sessionId) {
       try {
-        await api.patch(`/sessions/${sessionId}/end`, { pomodorosCompleted });
+        const response = await api.patch(`/sessions/${sessionId}/end`, { pomodorosCompleted });
         const userId = localStorage.getItem("userId") || "2";
         const [dashRes, sessionsRes] = await Promise.all([
           api.get(`/dashboard/user/${userId}`),
@@ -217,8 +255,21 @@ const StudySessionDashboard = () => {
         setRecentSessions(sessionsRes.data || []);
         setTodayFocusTotal(dashRes.data.todayStudyHours ?? 0);
         setFocusWeek(dashRes.data.focusWeek || []);
+        if (response.data.newBadges && response.data.newBadges.length > 0) {
+          setEarnedBadges(response.data.newBadges);
+        }
+        
+        setLastSessionStats({
+          pomodoros: pomodorosCompleted,
+          xp: pomodorosCompleted * 50,
+          subject: selectedSubject || "General",
+          duration: Math.round(((workDuration * 60 - timeLeft) / 60) + (pomodorosCompleted * workDuration)),
+          newBadges: response.data.newBadges || []
+        });
+        setShowSummary(true);
       } catch (err) {
-        console.error(err);
+        console.error("Error ending session:", err);
+        setIsActive(false);
       }
     }
     setIsActive(false);
@@ -233,12 +284,111 @@ const StudySessionDashboard = () => {
     setTimeLeft(mode === "Work" ? workDuration * 60 : breakDuration * 60);
   };
 
+  const TimerCard = ({ zen = false }) => (
+    <section className={`bg-[#F1F3FF] rounded-[2.5rem] p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-1000 ${zen ? "bg-white/5 border border-white/10 w-full max-w-3xl py-20 shadow-2xl backdrop-blur-xl scale-110" : "col-span-12 lg:col-span-7"}`}>
+      {zen && (
+        <button 
+          onClick={() => setAmbientMode(false)}
+          className="absolute top-8 right-8 w-10 h-10 rounded-full bg-white/10 text-white/40 flex items-center justify-center hover:bg-white/20 transition-all z-20"
+        >
+          <X size={20} />
+        </button>
+      )}
+      
+      <div className={`absolute -top-24 -left-24 w-96 h-96 ${zen ? "bg-indigo-400/20" : "bg-indigo-600/10"} blur-[80px] rounded-full`} />
+      <div className={`absolute -bottom-24 -right-24 w-96 h-96 ${zen ? "bg-emerald-400/10" : "bg-emerald-500/10"} blur-[80px] rounded-full`} />
+
+      <div className="z-10 flex flex-col items-center gap-5 w-full">
+        <div
+          className={`${mode === "Work" ? "bg-indigo-600/10 text-indigo-600" : "bg-emerald-600/10 text-emerald-600"} px-4 py-1 rounded-full flex items-center gap-2 ${zen ? "border border-white/20 text-white/80 bg-transparent" : ""}`}
+        >
+          {isActive && (
+            <div
+              className={`w-2 h-2 rounded-full ${mode === "Work" ? (zen ? "bg-white" : "bg-indigo-600") : "bg-emerald-600"} animate-pulse`}
+            />
+          )}
+          <span className="text-[12px] font-bold tracking-widest uppercase">
+            {mode} Session {isActive ? "Active" : "Paused"}
+          </span>
+        </div>
+
+        <div className={`font-['Manrope'] text-[130px] leading-none font-black tracking-tighter transition-colors duration-1000 ${zen ? "text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.4)]" : "text-[#1E1B4B]"}`}>
+          {formatTime(timeLeft)}
+        </div>
+
+        <div className="text-center space-y-1">
+          <p className={`font-bold tracking-[0.2em] uppercase text-sm ${zen ? "text-white/60" : "text-slate-500"}`}>
+            {selectedSubject || "General Focus"}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-8">
+          <button
+            onClick={handleReset}
+            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all shadow-sm ${zen ? "bg-white/10 text-white hover:bg-white/20" : "bg-white text-slate-900 hover:scale-105"}`}
+          >
+            <RotateCcw size={24} />
+          </button>
+          <button
+            onClick={isActive ? handlePause : handleStartResume}
+            className={`w-24 h-24 rounded-full flex items-center justify-center transition-all ${zen ? "bg-white text-indigo-900 shadow-[0_0_50px_rgba(255,255,255,0.25)]" : "bg-indigo-600 text-white shadow-[0_20px_40px_rgba(69,30,187,0.4)] hover:scale-105"}`}
+          >
+            {isActive ? (
+              <Pause size={32} fill="currentColor" />
+            ) : (
+              <Play size={32} fill="currentColor" className="ml-1" />
+            )}
+          </button>
+          <button
+            onClick={handleStop}
+            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all shadow-sm ${zen ? "bg-white/10 text-white hover:bg-white/20" : "bg-white text-slate-900 hover:scale-105"}`}
+          >
+            <Square size={24} fill="currentColor" />
+          </button>
+        </div>
+
+        {!zen && (
+          <div className="flex items-center gap-3 mt-4">
+            <div className="flex gap-2">
+              {pomodorosCompleted === 0 ? (
+                <div className="w-3 h-3 rounded-full bg-slate-300" />
+              ) : (
+                [...Array(pomodorosCompleted)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-3 h-3 rounded-full bg-indigo-600"
+                  />
+                ))
+              )}
+            </div>
+            <span className="text-[12px] font-bold text-slate-400 tracking-widest uppercase ml-2">
+              {pomodorosCompleted} Pomodoros
+            </span>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+
   return (
-    <div className="min-h-screen bg-[#F9F9FF]">
-      <Navbar />
+    <div className={`min-h-screen transition-colors duration-1000 ${ambientMode ? "bg-[#0A0A1B]" : "bg-[#F9F9FF]"}`}>
+      <div className={`${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"} transition-opacity duration-1000`}>
+        <Navbar />
+      </div>
+      
       <div className="flex flex-1">
-        <Sidebar />
-        <main className="flex-1 lg:p-10 overflow-y-auto relative">
+        <div className={`${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"} transition-opacity duration-1000`}>
+          <Sidebar />
+        </div>
+        
+        <main className={`flex-1 transition-all duration-1000 ${ambientMode ? "p-0" : "lg:p-10"} overflow-y-auto relative`}>
+          {/* ZEN OVERLAY */}
+          {ambientMode && (
+            <div className="fixed inset-0 z-[115] flex items-center justify-center p-6 animate-in fade-in zoom-in duration-500">
+               <TimerCard zen={true} />
+            </div>
+          )}
+
           {showDistractionDialog && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
               <div className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl relative">
@@ -272,7 +422,7 @@ const StudySessionDashboard = () => {
             </div>
           )}
 
-          <div className="max-w-6xl mx-auto">
+          <div className={`max-w-6xl mx-auto transition-opacity duration-1000 ${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
             <div className="flex justify-between items-end mb-10">
               <div className="space-y-2">
                 <h2 className="font-[sans-serif] font-extrabold text-5xl tracking-tight">
@@ -301,78 +451,7 @@ const StudySessionDashboard = () => {
             </div>
 
             <div className="grid grid-cols-12 gap-6">
-              <section className="col-span-12 lg:col-span-7 bg-[#F1F3FF] rounded-[2.5rem] p-8 flex flex-col items-center justify-center relative overflow-hidden">
-                <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-600/10 blur-[80px] rounded-full" />
-                <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-emerald-500/10 blur-[80px] rounded-full" />
-
-                <div className="z-10 flex flex-col items-center gap-5 w-full">
-                  <div
-                    className={`${mode === "Work" ? "bg-indigo-600/10 text-indigo-600" : "bg-emerald-600/10 text-emerald-600"} px-4 py-1 rounded-full flex items-center gap-2`}
-                  >
-                    {isActive && (
-                      <div
-                        className={`w-2 h-2 rounded-full ${mode === "Work" ? "bg-indigo-600" : "bg-emerald-600"} animate-pulse`}
-                      />
-                    )}
-                    <span className="text-[12px] font-bold tracking-widest uppercase">
-                      {mode} Session {isActive ? "Active" : "Paused"}
-                    </span>
-                  </div>
-
-                  <div className="font-['Manrope'] text-[130px] leading-none font-black tracking-tighter text-[#1E1B4B]">
-                    {formatTime(timeLeft)}
-                  </div>
-
-                  <div className="text-center space-y-1">
-                    <p className="text-slate-500 font-bold tracking-[0.2em] uppercase text-sm">
-                      {selectedSubject || "General Focus"}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-8">
-                    <button
-                      onClick={handleReset}
-                      className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-slate-900 hover:scale-105 transition-transform shadow-sm"
-                    >
-                      <RotateCcw size={24} />
-                    </button>
-                    <button
-                      onClick={isActive ? handlePause : handleStartResume}
-                      className="w-24 h-24 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-[0_20px_40px_rgba(69,30,187,0.4)] hover:scale-105 transition-transform"
-                    >
-                      {isActive ? (
-                        <Pause size={32} fill="currentColor" />
-                      ) : (
-                        <Play size={32} fill="currentColor" className="ml-1" />
-                      )}
-                    </button>
-                    <button
-                      onClick={handleStop}
-                      className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-slate-900 hover:scale-105 transition-transform shadow-sm"
-                    >
-                      <Square size={24} fill="currentColor" />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-3 mt-4">
-                    <div className="flex gap-2">
-                      {pomodorosCompleted === 0 ? (
-                        <div className="w-3 h-3 rounded-full bg-slate-300" />
-                      ) : (
-                        [...Array(pomodorosCompleted)].map((_, i) => (
-                          <div
-                            key={i}
-                            className={`w-3 h-3 rounded-full bg-indigo-600`}
-                          />
-                        ))
-                      )}
-                    </div>
-                    <span className="text-[12px] font-bold text-slate-400 tracking-widest uppercase ml-2">
-                      {pomodorosCompleted} Pomodoros
-                    </span>
-                  </div>
-                </div>
-              </section>
+              <TimerCard />
 
               <section className="col-span-12 lg:col-span-5 bg-white rounded-[2.5rem] p-7 border border-slate-100 shadow-sm space-y-6">
                 <div className="flex items-center gap-3">
@@ -419,7 +498,6 @@ const StudySessionDashboard = () => {
                     )}
                   </div>
 
-                  {/* Time Selectors */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-3">
                       <label className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">
@@ -494,13 +572,6 @@ const StudySessionDashboard = () => {
                       />
                     </button>
                   </div>
-
-                  <div className="bg-[#E8EEFF] p-3 px-6 rounded-full flex items-center gap-3">
-                    <CheckCircle2 className="text-emerald-600" size={18} />
-                    <span className="text-sm font-bold text-slate-600">
-                      {pomodorosCompleted} Pomodoros Completed
-                    </span>
-                  </div>
                 </div>
               </section>
 
@@ -517,26 +588,26 @@ const StudySessionDashboard = () => {
                 <div className="flex items-end justify-between h-40 px-2 mt-4 mb-6">
                   {focusWeek.length > 0 ? (
                     focusWeek.map((day, idx) => {
-                      const maxMinutes = Math.max(
-                        ...focusWeek.map((d) => d.focusMinutes),
-                        1,
-                      );
-                      const heightPct =
-                        day.focusMinutes === 0
-                          ? 0
-                          : Math.max(12, (day.focusMinutes / maxMinutes) * 100);
+                      const maxMinutes = Math.max(...focusWeek.map(d => d.focusMinutes), 1);
+                      const heightPct = day.focusMinutes === 0 
+                        ? 0 
+                        : Math.max(8, (day.focusMinutes / maxMinutes) * 100);
                       const isToday = idx === focusWeek.length - 1;
+                      
                       return (
-                        <div
-                          key={idx}
-                          className="flex flex-col items-center gap-2 group w-8"
-                        >
-                          <div
-                            className={`w-full rounded-t-lg transition-all duration-500 ${isToday ? "bg-indigo-600" : "bg-indigo-400/40"}`}
-                            style={{ height: `${heightPct}%` }}
-                            title={`${day.focusMinutes} mins`}
-                          />
-                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div key={idx} className="flex flex-col items-center gap-3 group w-8 h-full">
+                          <div className="relative w-full flex-1 flex items-end">
+                            <div
+                              className={`w-full rounded-t-xl transition-all duration-700 shadow-sm ${
+                                isToday ? "bg-indigo-600" : "bg-indigo-500/60"
+                              } group-hover:bg-indigo-400`}
+                              style={{ height: `${heightPct}%` }}
+                            />
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                              {day.focusMinutes}m
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
                             {day.dayLabel}
                           </span>
                         </div>
@@ -567,7 +638,10 @@ const StudySessionDashboard = () => {
                   <h3 className="font-['Manrope'] font-bold text-lg tracking-tight">
                     Recent Sessions
                   </h3>
-                  <button className="text-[10px] font-bold text-indigo-600 tracking-widest uppercase hover:underline">
+                  <button 
+                    onClick={() => setShowArchive(true)}
+                    className="text-[10px] font-bold text-indigo-600 tracking-widest uppercase hover:underline"
+                  >
                     View Archive
                   </button>
                 </div>
@@ -593,8 +667,14 @@ const StudySessionDashboard = () => {
             </div>
 
             <footer className="mt-8 bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-3xl p-6 flex items-center gap-8 border border-white">
-              <div className="flex items-center gap-4 min-w-[120px]">
-                <div className="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-slate-200 flex items-center justify-center text-sm font-black italic">
+              <div className="flex items-center gap-4 min-w-[200px]">
+                <Avatar 
+                  src={userAvatar}
+                  name={userName} 
+                  size="w-12 h-12" 
+                  className="border-2 border-indigo-200"
+                />
+                <div className="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-slate-200 flex items-center justify-center text-sm font-black italic shrink-0">
                   Lvl {level}
                 </div>
                 <div>
@@ -620,20 +700,179 @@ const StudySessionDashboard = () => {
                 />
               </div>
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-amber-500 shadow-sm cursor-pointer">
+                <div 
+                  onClick={() => setAmbientMode(!ambientMode)}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm cursor-pointer transition-all ${ambientMode ? "bg-amber-500 text-white" : "bg-white text-amber-500 hover:scale-110"}`}
+                  title="Ambient Focus Mode"
+                >
                   <Moon size={18} fill="currentColor" />
                 </div>
-                <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-sm cursor-pointer">
+                <div 
+                  onClick={() => setShowTasks(true)}
+                  className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-sm cursor-pointer hover:scale-110 transition-transform"
+                  title="Session Tasks"
+                >
                   <CheckCircle2 size={18} />
-                </div>
-                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-300 shadow-inner cursor-not-allowed">
-                  <Lock size={18} />
                 </div>
               </div>
             </footer>
           </div>
         </main>
       </div>
+
+      {showTasks && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-[120] animate-in fade-in duration-300">
+           <div className="bg-white rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95">
+              <div className="flex justify-between items-center mb-6">
+                 <div className="flex items-center gap-3">
+                   <ListTodo className="text-emerald-600" size={24} />
+                   <h3 className="text-xl font-bold">Session Goals</h3>
+                 </div>
+                 <button onClick={() => setShowTasks(false)} className="text-slate-400 hover:text-slate-600">
+                   <X size={20} />
+                 </button>
+              </div>
+
+              <div className="flex gap-2 mb-6">
+                <input 
+                  type="text" 
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && addTask()}
+                  placeholder="What needs doing?"
+                  className="flex-1 bg-slate-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+                <button 
+                  onClick={addTask}
+                  className="bg-emerald-600 text-white w-12 h-11 rounded-xl flex items-center justify-center hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-100"
+                >
+                  <Plus size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                 {tasks.map(task => (
+                   <div key={task.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl group transition-all">
+                      <div className="flex items-center gap-3">
+                         <button 
+                           onClick={() => toggleTask(task.id)}
+                           className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${task.completed ? "bg-emerald-600 border-emerald-600" : "border-slate-300 bg-white"}`}
+                         >
+                           {task.completed && <CheckCircle2 size={12} className="text-white" />}
+                         </button>
+                         <span className={`text-sm font-medium ${task.completed ? "text-slate-400 line-through" : "text-slate-700"}`}>
+                           {task.text}
+                         </span>
+                      </div>
+                      <button onClick={() => deleteTask(task.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                        <Trash2 size={16} />
+                      </button>
+                   </div>
+                 ))}
+                 {tasks.length === 0 && (
+                   <p className="text-center text-slate-400 text-sm py-10">No tasks added for this session.</p>
+                 )}
+              </div>
+           </div>
+        </div>
+      )}
+
+      {earnedBadges.length > 0 && (
+        <AchievementToast 
+          badges={earnedBadges} 
+          onClose={() => setEarnedBadges([])} 
+        />
+      )}
+
+      {showSummary && lastSessionStats && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-[130] animate-in fade-in duration-300">
+          <div className="bg-white rounded-[3rem] p-10 w-full max-w-lg shadow-2xl transform animate-in zoom-in-95 duration-300 flex flex-col items-center text-center">
+            <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-6">
+              <CheckCircle2 size={48} className="text-indigo-600" />
+            </div>
+            
+            <h2 className="text-3xl font-black text-slate-900 mb-2">Session Complete!</h2>
+            <p className="text-slate-500 font-medium mb-8">Great work on your {lastSessionStats.subject} session.</p>
+            
+            <div className="grid grid-cols-2 gap-4 w-full mb-8">
+              <div className="bg-slate-50 p-6 rounded-[2rem]">
+                <div className="text-3xl font-black text-indigo-600 mb-1">{lastSessionStats.pomodoros}</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pomodoros</div>
+              </div>
+              <div className="bg-slate-50 p-6 rounded-[2rem]">
+                <div className="text-3xl font-black text-emerald-600 mb-1">+{lastSessionStats.xp}</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">XP Gained</div>
+              </div>
+            </div>
+
+            {lastSessionStats.newBadges.length > 0 && (
+              <div className="w-full mb-8">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">New Achievements</p>
+                <div className="flex justify-center gap-3">
+                  {lastSessionStats.newBadges.map((badge, i) => (
+                    <div key={i} className="flex flex-col items-center gap-2">
+                      <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center border-2 border-amber-100">
+                         <span className="text-xl">🏆</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-600">{badge.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowSummary(false)}
+              className="w-full bg-indigo-600 text-white font-bold py-5 rounded-full hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showArchive && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[140] animate-in fade-in duration-300 p-4">
+          <div className="bg-white rounded-[3rem] w-full max-w-2xl max-h-[85vh] shadow-2xl flex flex-col overflow-hidden">
+            <div className="p-8 border-b border-slate-100 flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900">Session Archive</h2>
+                <p className="text-slate-500 text-sm font-medium">Your complete focus history</p>
+              </div>
+              <button 
+                onClick={() => setShowArchive(false)}
+                className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+              <div className="space-y-4">
+                {recentSessions.map((session) => (
+                  <SessionItem
+                    key={session.id}
+                    title={session.subject}
+                    subtitle="Session"
+                    time={`${new Date(session.startTime).toLocaleDateString()} • ${new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • ${session.durationMinutes} MIN`}
+                    xp={(session.pomodorosCompleted || 0) * 50}
+                    type={session.deepWork ? "Deep Focus" : "Standard"}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="p-8 bg-slate-50 border-t border-slate-100">
+              <button
+                onClick={() => setShowArchive(false)}
+                className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-all"
+              >
+                Close Archive
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
