@@ -62,6 +62,10 @@ public class User {
     @ColumnDefault("0")
     private boolean weeklyReports = false;
 
+    @Column(nullable = false)
+    @ColumnDefault("6.0")
+    private double dailyGoalHours = 6.0;
+
     // Constructors
     public User() {}
 
@@ -198,5 +202,13 @@ public class User {
 
     public void setWeeklyReports(boolean weeklyReports) {
         this.weeklyReports = weeklyReports;
+    }
+
+    public double getDailyGoalHours() {
+        return dailyGoalHours;
+    }
+
+    public void setDailyGoalHours(double dailyGoalHours) {
+        this.dailyGoalHours = dailyGoalHours;
     }
 }
