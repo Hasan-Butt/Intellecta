@@ -27,6 +27,14 @@ const Navbar = () => {
   const menuRef = useRef(null);
   const searchRef = useRef(null);
 
+  const handleLogout = () => {
+    localStorage.removeItem('token'); 
+    localStorage.removeItem('user');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('role');
+    navigate('/login'); 
+  };
+
   const allPages = [
     // Student Pages
     { name: 'Dashboard', path: '/studentDashboard', icon: Home, category: 'Student' },
@@ -269,6 +277,7 @@ const Navbar = () => {
                   </button>
 
                   <button 
+                    onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold"
                   >
                     <LogOut size={16} />

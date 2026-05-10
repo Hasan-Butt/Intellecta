@@ -26,34 +26,45 @@ import AchievementsPage from "./pages/StudentAchievements/AchievementsPage";
 import SettingsPage from "./pages/Settings/SettingsPage";
 
 
+import ProtectedRoute from "./components/ProtectedRoute";
+
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/studentDashboard" element={<StudentDashboardPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/notes" element={<NotesPage />} />
-      <Route path="/users" element={<UsersPage />} />
-      <Route path="/content" element={<ContentPage />} />
-      <Route path="/analytics" element={<AnalyticsPage />} />
-      <Route path="/trends" element={<PerformanceTrends />} />
-      <Route path="/quiz" element={<QuizList />} />
-      <Route path="/AttemptQuiz" element={<AttemptQuiz />} />
-      <Route path="/Result" element={<Result />} />
-      <Route path="/leaderboard" element={<Leaderboard />} />
-      <Route path="/peers" element={<PeerComparison />} />
-      <Route path="/distractions" element={<DistractionLog />} />
-      <Route path="/focusSession" element={<FocusSession />} />
-      <Route path="/folders" element={<SubjectFolderPage />} />
-      <Route path="/coverage" element={<CoverageTrackerPage />} />
-      <Route path="/focus" element={<StudySessionPage/>}/>
-      <Route path="/schedule" element={<StudySchedulePage/>}/>
-      <Route path="/create-quiz" element={<CreateQuizPage />} />
-      <Route path="/light-review" element={<LightReview />} />
-      <Route path="/rewards" element={<RewardsPage />} />
-      <Route path="/achievements" element={<AchievementsPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
+
+      {/* Protected Routes (Student Only) */}
+      <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
+        <Route path="/studentDashboard" element={<StudentDashboardPage />} />
+        <Route path="/notes" element={<NotesPage />} />
+        <Route path="/quiz" element={<QuizList />} />
+        <Route path="/AttemptQuiz" element={<AttemptQuiz />} />
+        <Route path="/Result" element={<Result />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/peers" element={<PeerComparison />} />
+        <Route path="/distractions" element={<DistractionLog />} />
+        <Route path="/focusSession" element={<FocusSession />} />
+        <Route path="/folders" element={<SubjectFolderPage />} />
+        <Route path="/coverage" element={<CoverageTrackerPage />} />
+        <Route path="/focus" element={<StudySessionPage/>}/>
+        <Route path="/schedule" element={<StudySchedulePage/>}/>
+        <Route path="/light-review" element={<LightReview />} />
+        <Route path="/achievements" element={<AchievementsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Route>
+
+      {/* Protected Routes (Admin Only) */}
+      <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/users" element={<UsersPage />} />
+        <Route path="/content" element={<ContentPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/trends" element={<PerformanceTrends />} />
+        <Route path="/create-quiz" element={<CreateQuizPage />} />
+        <Route path="/rewards" element={<RewardsPage />} />
+      </Route>
     </Routes>
   );
 }
