@@ -17,4 +17,5 @@ public class UserResponseDto {
     private boolean studyReminders;
     private boolean achievementAlerts;
     private boolean weeklyReports;
+    private int streakDays;
 }

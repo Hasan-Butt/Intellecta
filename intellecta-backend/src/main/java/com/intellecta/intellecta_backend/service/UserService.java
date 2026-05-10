@@ -88,6 +88,7 @@ public class UserService {
                 .studyReminders(user.isStudyReminders())
                 .achievementAlerts(user.isAchievementAlerts())
                 .weeklyReports(user.isWeeklyReports())
+                .streakDays(user.getStreakDays())
                 .build();
     }
 }

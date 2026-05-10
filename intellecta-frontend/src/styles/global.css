@@ -34,3 +34,15 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8; /* slate-400 */
 }
+
+@keyframes fire {
+  0% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 3px #f97316); }
+  25% { transform: scale(1.05) translateY(-1px) rotate(-1deg); filter: drop-shadow(0 0 6px #fb923c); }
+  50% { transform: scale(1.1) translateY(-2px) rotate(1deg); filter: drop-shadow(0 0 10px #f97316); }
+  75% { transform: scale(1.05) translateY(-1px) rotate(-1deg); filter: drop-shadow(0 0 6px #fb923c); }
+  100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 3px #f97316); }
+}
+
+.animate-fire {
+  animation: fire 1.5s ease-in-out infinite;
+}
