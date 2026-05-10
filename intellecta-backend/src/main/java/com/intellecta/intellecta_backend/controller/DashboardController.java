@@ -17,4 +17,10 @@ public class DashboardController {
     public ResponseEntity<DashboardResponse> getDashboard(@PathVariable Long userId) {
         return ResponseEntity.ok(dashboardService.getDashboard(userId));
     }
+
+    @PatchMapping("/user/{userId}/goal")
+    public ResponseEntity<Void> updateDailyGoal(@PathVariable Long userId, @RequestParam double hours) {
+        dashboardService.updateDailyGoal(userId, hours);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -25,6 +25,7 @@ public class BadgeController {
 
     private final BadgeDefinitionService badgeService;
     private final BadgeDefinitionRepository badgeRepo;
+    private final com.intellecta.intellecta_backend.service.GamificationService gamificationService;
 
     @Value("${badge.upload.dir:uploads/badges}")
     private String uploadDir;
@@ -87,6 +88,8 @@ public class BadgeController {
     @GetMapping("/api/achievements/user/{userId}/all")
     public ResponseEntity<List<BadgeDefinitionResponse>> getAllForStudent(
             @PathVariable Long userId) {
+        // Sync achievements before fetching
+        gamificationService.checkAndAwardBadges(userId);
         return ResponseEntity.ok(badgeService.getAllBadgesForStudent(userId));
     }
 

@@ -4,4 +4,5 @@ import com.intellecta.intellecta_backend.dto.response.DashboardResponse;
 
 public interface DashboardService {
     DashboardResponse getDashboard(Long userId);
+    void updateDailyGoal(Long userId, double hours);
 }

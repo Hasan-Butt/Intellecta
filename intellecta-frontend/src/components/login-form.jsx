@@ -134,10 +134,24 @@ export function LoginForm({ className, ...props }) {
           <div className="flex-1 flex items-center justify-center">
             <div className="w-full max-w-sm space-y-6">
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Welcome back</h1>
-                <p className="text-sm text-muted-foreground">
-                  Login to your Intellecta account
-                </p>
+              <h1 className="text-2xl font-bold">Welcome back</h1>
+              <p className="text-sm text-muted-foreground">
+                Login to your Intellecta account
+              </p>
+            </div>
+
+            <form className="space-y-4" onSubmit={handleLogin}>
+              <div className="grid gap-2 text-left">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
 
               <form className="space-y-4" onSubmit={handleLogin}>
@@ -164,20 +178,14 @@ export function LoginForm({ className, ...props }) {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={loading} 
-                  style={{backgroundColor: '#451ebb'}}
-                >
-                  {loading ? "Logging in..." : "Login"}
-                </Button>
-              </form>
-
-              <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                <span className="relative z-10 bg-white px-2 text-muted-foreground">
-                  Or continue with
-                </span>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
 
               <Button 

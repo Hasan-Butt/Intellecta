@@ -42,8 +42,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
 
-    private static final double DAILY_GOAL_HOURS = 6.0;
-
     private final UserRepository         userRepository;
     private final StudySessionRepository sessionRepository;
     private final CourseRepository        courseRepository;
@@ -52,9 +50,12 @@ public class DashboardServiceImpl implements DashboardService {
     private final SubjectRepository       subjectRepository;
     private final AchievementRepository   achievementRepository;
     private final DistractionRepository   distractionRepository;
+    private final GamificationService     gamificationService;
 
     @Override
     public DashboardResponse getDashboard(Long userId) {
+        // Sync achievements before building dashboard
+        gamificationService.checkAndAwardBadges(userId);
 
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found: " + userId));
@@ -78,7 +79,9 @@ public class DashboardServiceImpl implements DashboardService {
 
         double todayHours = todaySessions.stream()
             .mapToLong(StudySession::getDurationMinutes).sum() / 60.0;
-        int dailyGoalPct = (int) Math.min(100, (todayHours / DAILY_GOAL_HOURS) * 100);
+        
+        double dailyGoal = user.getDailyGoalHours() > 0 ? user.getDailyGoalHours() : 6.0;
+        int dailyGoalPct = (int) Math.min(100, (todayHours / dailyGoal) * 100);
 
         int totalPomodoros = Optional.ofNullable(
         sessionRepository.sumPomodorosByUserId(userId)
@@ -179,20 +182,20 @@ public class DashboardServiceImpl implements DashboardService {
             Character.toUpperCase(user.getUsername().charAt(0)) + 
             user.getUsername().substring(1))
             .todayStudyHours(Math.round(todayHours * 10.0) / 10.0)
-            .dailyGoalHours(DAILY_GOAL_HOURS)
-            .dailyGoalPct(dailyGoalPct)
             .streakDays(user.getStreakDays())
-            .level(level)
-            .currentXp(currentXp)
-            .nextLevelXp(nextLevelXp)
-            .xpProgressPct(xpPct)
-            .levelTitle(levelTitle)
             .totalNotes(noteCount)
             .reviewQueueCount(reviewCount)
             .totalDocuments(docCount)
             .totalSubjects(subjectCount)
             .totalSessions(allSessions.size())
             .totalPomodoros(totalPomodoros)
+            .dailyGoalHours(dailyGoal)
+            .dailyGoalPct(dailyGoalPct)
+            .level(level)
+            .currentXp(currentXp)
+            .nextLevelXp(nextLevelXp)
+            .xpProgressPct(xpPct)
+            .levelTitle(levelTitle)
             .recentBadges(recentBadges)
             .focusWeek(focusWeek)
             .todaySchedule(todaySchedule)
@@ -343,5 +346,13 @@ public class DashboardServiceImpl implements DashboardService {
             .sorted((a, b) -> Integer.compare(b.getPercentage(), a.getPercentage()))
             .limit(5)
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public void updateDailyGoal(Long userId, double hours) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+        user.setDailyGoalHours(hours);
+        userRepository.save(user);
     }
 }
