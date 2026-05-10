@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.intellecta.intellecta_backend.dto.request.GoogleLoginRequest;
 import com.intellecta.intellecta_backend.dto.request.LoginRequest;
+import com.intellecta.intellecta_backend.dto.request.RegisterRequest;
 import com.intellecta.intellecta_backend.dto.response.LoginResponse;
 import com.intellecta.intellecta_backend.model.User;
 import com.intellecta.intellecta_backend.enums.UserRoles;
@@ -36,11 +37,16 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(request.getEmail());
 
         if (user == null) {
-            throw new RuntimeException("User not found");
+            throw new RuntimeException("No account found with this email.");
+        }
+
+        // Handle Google users who haven't set a password
+        if (user.getPassword() == null) {
+            throw new RuntimeException("This account is linked with Google. Please use 'Login with Google'.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid password");
+            throw new RuntimeException("Invalid email or password.");
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
@@ -103,5 +109,31 @@ public class AuthServiceImpl implements AuthService {
             System.out.println("Google Login Exception: " + e.getClass().getName() + " - " + e.getMessage());
             throw new RuntimeException("Google authentication failed: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public LoginResponse register(RegisterRequest request) {
+        // Validate passwords match
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Passwords do not match.");
+        }
+
+        // Validate email not already taken
+        if (userRepository.findByEmail(request.getEmail()) != null) {
+            throw new RuntimeException("An account with this email already exists.");
+        }
+
+        // Create new student user
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(UserRoles.STUDENT);
+        user = userRepository.save(user);
+
+        System.out.println("Register: new student created - " + user.getEmail());
+
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
+        return new LoginResponse(token, user.getId(), user.getEmail(), user.getRole());
     }
 }

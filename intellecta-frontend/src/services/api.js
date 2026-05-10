@@ -19,15 +19,20 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    const isAuthRequest = error.config?.url?.includes('/auth/login') || error.config?.url?.includes('/auth/google') || error.config?.url?.includes('/auth/register');
+
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      // Clear all auth data on token expiry or unauthorized access
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('role');
-      
-      // Redirect to login page
-      window.location.href = '/login';
+      // Only clear storage and redirect if it's NOT an authentication request
+      // (because 401 on login just means "wrong password", not "session expired")
+      if (!isAuthRequest) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('role');
+        
+        // Redirect to login page
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
