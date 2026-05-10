@@ -21,6 +21,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import Avatar from "../../components/common/Avatar";
 
 const StatCard = ({ label, value, subtext, color = "text-slate-900" }) => (
   <div className="flex flex-col">
@@ -99,6 +100,8 @@ const StudySessionDashboard = () => {
   const [showSummary, setShowSummary] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
   const [lastSessionStats, setLastSessionStats] = useState(null);
+  const [userAvatar, setUserAvatar] = useState("");
+  const [userName, setUserName] = useState("");
 
   const [ambientMode, setAmbientMode] = useState(false);
   const [showTasks, setShowTasks] = useState(false);
@@ -109,12 +112,17 @@ const StudySessionDashboard = () => {
     const userId = localStorage.getItem("userId") || "2";
     const fetchData = async () => {
       try {
-        const [dashRes, subjectsRes, sessionsRes, coursesRes] = await Promise.all([
+
+        const [dashRes, subjectsRes, sessionsRes, coursesRes, profileRes] = await Promise.all([
           api.get(`/dashboard/user/${userId}`),
           api.get(`/subjects/user/${userId}`),
           api.get(`/sessions/user/${userId}`),
           api.get(`/courses/user/${userId}`),
+          api.get(`/users/${userId}/profile`),
         ]);
+        
+        setUserAvatar(profileRes.data.avatarUrl || "");
+        setUserName(profileRes.data.username || "Scholar");
 
         setLevel(dashRes.data.level ?? 1);
         setCurrentXp(dashRes.data.currentXp ?? 0);
@@ -671,8 +679,14 @@ const StudySessionDashboard = () => {
             </div>
 
             <footer className="mt-8 bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-3xl p-6 flex items-center gap-8 border border-white">
-              <div className="flex items-center gap-4 min-w-[120px]">
-                <div className="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-slate-200 flex items-center justify-center text-sm font-black italic">
+              <div className="flex items-center gap-4 min-w-[200px]">
+                <Avatar 
+                  src={userAvatar}
+                  name={userName} 
+                  size="w-12 h-12" 
+                  className="border-2 border-indigo-200"
+                />
+                <div className="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-slate-200 flex items-center justify-center text-sm font-black italic shrink-0">
                   Lvl {level}
                 </div>
                 <div>

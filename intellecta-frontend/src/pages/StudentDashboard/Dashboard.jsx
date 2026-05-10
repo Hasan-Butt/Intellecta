@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import Avatar from "../../components/common/Avatar";
 import "../../styles/global.css";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
@@ -236,13 +237,24 @@ function DistractionLog({ summary, onLog }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleLog(input)}
             placeholder="What broke your focus?"
-            className="w-full bg-[#f4f7ff] border-none rounded-2xl py-3 px-4 text-xs outline-none placeholder:text-gray-400"
+            className="w-full bg-[#f4f7ff] border-none rounded-2xl py-3 pr-12 pl-4 text-xs outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-[#451ebb]/20 transition-all"
           />
           <button
-            onClick={() => handleLog(input)}
-            className="absolute right-2 bg-[#e6deff] p-1.5 rounded-full hover:bg-[#d8dfff] transition-colors scale-75"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              handleLog(input);
+            }}
+            className="absolute right-2 bg-[#451ebb] p-2 rounded-full hover:bg-[#5d3fd3] transition-all z-10 shadow-sm cursor-pointer"
           >
-            <AddIcon />
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M6 1V11M1 6H11"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -276,13 +288,13 @@ function DistractionLog({ summary, onLog }) {
         {/* Mini bar chart — driven by API dailyCounts */}
         <div className="flex items-end justify-between h-8 px-1">
           {["M", "T", "W", "T", "F", "S", "S"].map((day, i) => {
-            const h = Math.max(4, Math.round((counts[i] / maxCount) * 24));
+            const h = maxCount > 0 ? Math.max(2, Math.round((counts[i] / maxCount) * 24)) : 0;
             const isMax = counts[i] === Math.max(...counts) && counts[i] > 0;
             return (
               <div key={i} className="flex flex-col items-center gap-1">
                 <div
-                  className={`w-4 rounded-sm ${isMax ? "bg-[#a394f0]" : "bg-[#e6deff]"}`}
-                  style={{ height: h }}
+                  className={`w-4 rounded-sm transition-all duration-500 ${isMax ? "bg-[#a394f0]" : "bg-[#e6deff]"}`}
+                  style={{ height: h, opacity: counts[i] === 0 ? 0.3 : 1 }}
                 />
                 <span className="text-[7px] text-gray-400 font-black">
                   {day}
@@ -474,11 +486,14 @@ export default function DashboardPage() {
 
   const maxFocus = Math.max(...focusWeek.map((d) => d.focusMinutes), 1);
 
-  // Badge icons — use API badge names to pick icons, fallback to defaults
-  const badgeDisplay =
-    recentBadges.length > 0
-      ? recentBadges.map((name) => badgeIconMap[name] ?? defaultBadges[0])
-      : defaultBadges;
+  // Badge display — prioritized real images with rounded fill styling
+  const badgeDisplay = recentBadges.length > 0
+    ? recentBadges.map((badgeKey) => ({
+        key: badgeKey,
+        imageUrl: `${api.defaults.baseURL}/badges/${badgeKey}/image`,
+        fallback: badgeIconMap[badgeKey] || defaultBadges[0]
+      }))
+    : defaultBadges.map(b => ({ ...b, isPlaceholder: true }));
 
   // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) {
@@ -889,9 +904,25 @@ export default function DashboardPage() {
                         {badgeDisplay.map((badge, i) => (
                           <div
                             key={i}
-                            className={`w-10 h-10 rounded-full ${badge.bg} flex items-center justify-center shadow-sm`}
+                            className={`w-12 h-12 rounded-full ${badge.fallback?.bg || badge.bg || "bg-gray-100"} flex items-center justify-center shadow-sm overflow-hidden border-2 border-white`}
                           >
-                            {badge.icon}
+                            {!badge.isPlaceholder ? (
+                              <img 
+                                src={badge.imageUrl} 
+                                alt={badge.key} 
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            <div 
+                              className="items-center justify-center w-full h-full" 
+                              style={{ display: badge.isPlaceholder ? 'flex' : 'none' }}
+                            >
+                              {badge.fallback?.icon || badge.icon}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -912,11 +943,7 @@ export default function DashboardPage() {
                             <span className="font-bold text-[#451ebb] w-4">
                               {entry.rank}
                             </span>
-                            <img
-                              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(entry.username)}&background=e6deff&color=451ebb`}
-                              alt="You"
-                              className="w-10 h-10 rounded-full bg-blue-50 object-cover"
-                            />
+                            <Avatar src={entry.avatarUrl} name={entry.username} />
                             <div className="flex-1">
                               <p className="font-bold text-[#451ebb] text-sm">
                                 {entry.username} (You)
@@ -935,11 +962,7 @@ export default function DashboardPage() {
                             <span className="font-bold text-[#451ebb] w-4">
                               {entry.rank}
                             </span>
-                            <img
-                              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(entry.username)}&background=f1f3ff&color=484554`}
-                              alt={entry.username}
-                              className="w-10 h-10 rounded-full bg-blue-50 object-cover"
-                            />
+                            <Avatar src={entry.avatarUrl} name={entry.username} />
                             <div className="flex-1">
                               <p className="font-bold text-sm">
                                 {entry.username}
@@ -951,7 +974,10 @@ export default function DashboardPage() {
                           </div>
                         ),
                       )}
-                      <button className="w-full bg-[#e3e8f9] text-[#451ebb] font-bold text-sm py-3 rounded-3xl hover:bg-[#d8dfff] transition-all">
+                      <button 
+                        onClick={() => navigate('/leaderboard')}
+                        className="w-full bg-[#e3e8f9] text-[#451ebb] font-bold text-sm py-3 rounded-3xl hover:bg-[#d8dfff] transition-all"
+                      >
                         View Full Standings
                       </button>
                     </div>

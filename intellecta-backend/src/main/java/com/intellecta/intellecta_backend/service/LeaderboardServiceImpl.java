@@ -68,6 +68,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
                 .level(level)
                 .xpProgressPct(xpPct)
                 .discipline("General")
+                .avatarUrl(u.getAvatarUrl())
                 .isCurrentUser(u.getId().equals(userId))
                 .build());
             currentRank++;
@@ -109,6 +110,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
                 .level(level)
                 .xpProgressPct(xpPct)
                 .discipline(sxp.getCategory())
+                .avatarUrl(u.getAvatarUrl())
                 .isCurrentUser(u.getId().equals(userId))
                 .build());
             currentRank++;

@@ -55,7 +55,7 @@ public class DataSeeder implements CommandLineRunner {
         }
         if (pool.isEmpty()) return;
 
-        String[] subjects   = {"Mathematics", "Physics", "Computer Science"};
+        String[] subjects   = {"Data Structures", "OOP", "Database Systems"};
         long[]   minutesAgo = {90L, 45L, 120L};
         for (int i = 0; i < pool.size(); i++) {
             studySessionRepository.save(StudySession.builder()
@@ -81,7 +81,7 @@ public class DataSeeder implements CommandLineRunner {
                 .nextSyncWindow(LocalDateTime.now().plusDays(14)
                         .withHour(4).withMinute(0).withSecond(0).withNano(0))
                 .lastDeployedAt(LocalDateTime.now().minusDays(3))
-                .deployedBy("Prof. Admin")
+                .deployedBy("Dr. Ayesha Khan")
                 .build());
         System.out.println("[DataSeeder] Seeded system config.");
     }
@@ -91,18 +91,40 @@ public class DataSeeder implements CommandLineRunner {
     private void seedAppGovernanceRules() {
         if (appGovernanceRuleRepository.count() > 0) return;
         appGovernanceRuleRepository.saveAll(List.of(
-            AppGovernanceRule.builder().appName("Visual Studio Code")
+            AppGovernanceRule.builder().appName("VS Code")
                     .type("WHITELIST").createdAt(LocalDateTime.now().minusDays(30)).build(),
-            AppGovernanceRule.builder().appName("Notion Desktop")
+            AppGovernanceRule.builder().appName("Notion")
                     .type("WHITELIST").createdAt(LocalDateTime.now().minusDays(25)).build(),
-            AppGovernanceRule.builder().appName("Slack (Huddles)")
+            AppGovernanceRule.builder().appName("Obsidian")
                     .type("WHITELIST").createdAt(LocalDateTime.now().minusDays(20)).build(),
-            AppGovernanceRule.builder().appName("Steam Client")
+            AppGovernanceRule.builder().appName("Figma")
+                    .type("WHITELIST").createdAt(LocalDateTime.now().minusDays(18)).build(),
+            AppGovernanceRule.builder().appName("Google Docs")
+                    .type("WHITELIST").createdAt(LocalDateTime.now().minusDays(15)).build(),
+            AppGovernanceRule.builder().appName("Slack")
+                    .type("WHITELIST").createdAt(LocalDateTime.now().minusDays(12)).build(),
+            AppGovernanceRule.builder().appName("Zoom")
+                    .type("WHITELIST").createdAt(LocalDateTime.now().minusDays(10)).build(),
+            AppGovernanceRule.builder().appName("Postman")
+                    .type("WHITELIST").createdAt(LocalDateTime.now().minusDays(5)).build(),
+            AppGovernanceRule.builder().appName("PUBG Mobile")
                     .type("BLACKLIST").createdAt(LocalDateTime.now().minusDays(30)).build(),
-            AppGovernanceRule.builder().appName("Instagram Web")
+            AppGovernanceRule.builder().appName("Instagram")
                     .type("BLACKLIST").createdAt(LocalDateTime.now().minusDays(25)).build(),
-            AppGovernanceRule.builder().appName("Reddit (All Subdomains)")
-                    .type("BLACKLIST").createdAt(LocalDateTime.now().minusDays(20)).build()
+            AppGovernanceRule.builder().appName("TikTok")
+                    .type("BLACKLIST").createdAt(LocalDateTime.now().minusDays(20)).build(),
+            AppGovernanceRule.builder().appName("Netflix")
+                    .type("BLACKLIST").createdAt(LocalDateTime.now().minusDays(15)).build(),
+            AppGovernanceRule.builder().appName("Steam")
+                    .type("BLACKLIST").createdAt(LocalDateTime.now().minusDays(10)).build(),
+            AppGovernanceRule.builder().appName("Spotify (non-study)")
+                    .type("BLACKLIST").createdAt(LocalDateTime.now().minusDays(8)).build(),
+            AppGovernanceRule.builder().appName("Reddit")
+                    .type("BLACKLIST").createdAt(LocalDateTime.now().minusDays(6)).build(),
+            AppGovernanceRule.builder().appName("Snapchat")
+                    .type("BLACKLIST").createdAt(LocalDateTime.now().minusDays(4)).build(),
+            AppGovernanceRule.builder().appName("Discord (gaming servers)")
+                    .type("BLACKLIST").createdAt(LocalDateTime.now().minusDays(2)).build()
         ));
         System.out.println("[DataSeeder] Seeded app governance rules.");
     }
@@ -112,21 +134,21 @@ public class DataSeeder implements CommandLineRunner {
     private void seedAlerts() {
         if (systemAlertRepository.count() > 0) return;
         systemAlertRepository.saveAll(List.of(
-            alert("Anomalous Session Duration",
-                  "User ID: 88219 logged 18+ consecutive focus hours.",
+            alert("Unusual login pattern detected for user sara.khan",
+                  "Unusual login pattern detected for user sara.khan.",
                   2, "CRITICAL", "ANOMALY"),
-            alert("API Latency Spike",
-                  "EU-West node experiencing >400ms response times.",
+            alert("Peak concurrent sessions hit 47 — 18% above weekly average",
+                  "Peak concurrent sessions hit 47 — 18% above weekly average.",
                   14, "WARNING", "PERFORMANCE"),
-            alert("Account Safeguard Triggered",
-                  "Multiple login attempts from unverified IP (Beijing, CN).",
-                  60, "RESOLVED", "SECURITY"),
-            alert("High Quiz Failure Rate",
-                  "Chemistry quiz showing 78% failure rate — content review recommended.",
-                  180, "WARNING", "PERFORMANCE"),
-            alert("Bulk Registration Detected",
-                  "42 new student accounts registered within a 10-minute window.",
-                  300, "RESOLVED", "SECURITY")
+            alert("Quiz failure rate for Data Structures exceeded 70% threshold",
+                  "Quiz failure rate for Data Structures exceeded 70% threshold.",
+                  60, "RESOLVED", "PERFORMANCE"),
+            alert("3 students flagged for 12+ consecutive study hours",
+                  "3 students flagged for 12+ consecutive study hours.",
+                  180, "WARNING", "ANOMALY"),
+            alert("Storage utilization crossed 80% on document upload server",
+                  "Storage utilization crossed 80% on document upload server.",
+                  300, "RESOLVED", "SYSTEM")
         ));
     }
 
@@ -140,13 +162,20 @@ public class DataSeeder implements CommandLineRunner {
     // ── Rich test data ────────────────────────────────────────────────────────
 
     private static final String[] SUBJECTS = {
-        "Mathematics", "Physics", "Chemistry", "Computer Science", "English Literature"
+        "Data Structures", "OOP", "Database Systems", "Calculus", "Linear Algebra", 
+        "Software Engineering", "Operating Systems", "Computer Networks", 
+        "Discrete Mathematics", "English Communication"
     };
 
     private static final String[] DISTRACTIONS = {
-        "Checked social media", "Received phone call", "Took unplanned break",
-        "Started watching videos", "Got distracted by notifications",
-        "Opened unrelated app", "Chat messages interrupted focus"
+        "Got distracted by Instagram Reels",
+        "Friend called from back home",
+        "Opened YouTube for one video, stayed 40 minutes",
+        "Went to get chai, ended up talking to roommates",
+        "Started scrolling Twitter/X",
+        "Phone notification from WhatsApp group",
+        "Got hungry and took a long break",
+        "Switched to playing PUBG Mobile"
     };
 
     private void seedRichTestData() {
@@ -174,26 +203,26 @@ public class DataSeeder implements CommandLineRunner {
 
     private List<User> seedStudents() {
         String[][] data = {
-            {"Ali Hassan",       "ali.hassan@intellecta.com",       "Active"},
-            {"Sara Khan",        "sara.khan@intellecta.com",        "Active"},
-            {"Usman Malik",      "usman.malik@intellecta.com",      "Active"},
-            {"Fatima Siddiqui",  "fatima.sid@intellecta.com",       "Active"},
-            {"Ahmed Raza",       "ahmed.raza@intellecta.com",       "Active"},
-            {"Zainab Qureshi",   "zainab.q@intellecta.com",         "Active"},
-            {"Bilal Chaudhry",   "bilal.ch@intellecta.com",         "Inactive"},
-            {"Nadia Ahmed",      "nadia.ahmed@intellecta.com",      "Active"},
-            {"Omar Khan",        "omar.khan@intellecta.com",        "Active"},
-            {"Ayesha Tariq",     "ayesha.tariq@intellecta.com",     "Active"},
-            {"Hassan Ali",       "hassan.ali@intellecta.com",       "Active"},
-            {"Maryam Noor",      "maryam.noor@intellecta.com",      "Active"},
-            {"Imran Butt",       "imran.butt@intellecta.com",       "Active"},
-            {"Sana Iqbal",       "sana.iqbal@intellecta.com",       "Active"},
-            {"Talha Raza",       "talha.raza@intellecta.com",       "Inactive"},
-            {"Rabia Malik",      "rabia.malik@intellecta.com",      "Active"},
-            {"Faisal Ahmed",     "faisal.ahmed@intellecta.com",     "Active"},
-            {"Hira Anwar",       "hira.anwar@intellecta.com",       "Active"},
-            {"Zubair Hassan",    "zubair.hassan@intellecta.com",    "Active"},
-            {"Amna Sheikh",      "amna.sheikh@intellecta.com",      "Inactive"},
+            {"Muhammad Hamza",   "muhammad.hamza@intellecta.com",   "Active"},
+            {"Ayesha Noor",      "ayesha.noor@intellecta.com",      "Active"},
+            {"Zainab Ali",       "zainab.ali@intellecta.com",       "Active"},
+            {"Rana Waqas",       "rana.waqas@intellecta.com",       "Active"},
+            {"Bilal Tariq",      "bilal.tariq@intellecta.com",      "Active"},
+            {"Fatima Zahra",     "fatima.zahra@intellecta.com",     "Active"},
+            {"Usman Shah",       "usman.shah@intellecta.com",       "Inactive"},
+            {"Nida Jamil",       "nida.jamil@intellecta.com",       "Active"},
+            {"Ali Reza",         "ali.reza@intellecta.com",         "Active"},
+            {"Hira Qureshi",     "hira.qureshi@intellecta.com",     "Active"},
+            {"Saad Riaz",        "saad.riaz@intellecta.com",        "Active"},
+            {"Mahnoor Safdar",   "mahnoor.safdar@intellecta.com",   "Active"},
+            {"Talha Mehmood",    "talha.mehmood@intellecta.com",    "Active"},
+            {"Sana Mir",         "sana.mir@intellecta.com",         "Active"},
+            {"Fahad Mustafa",    "fahad.mustafa@intellecta.com",    "Inactive"},
+            {"Iqra Aziz",        "iqra.aziz@intellecta.com",        "Active"},
+            {"Omar Abdullah",    "omar.abdullah@intellecta.com",    "Active"},
+            {"Amna Chaudhry",    "amna.chaudhry@intellecta.com",    "Active"},
+            {"Hamza Kiani",      "hamza.kiani@intellecta.com",      "Active"},
+            {"Kiran Sheikh",     "kiran.sheikh@intellecta.com",     "Inactive"},
         };
 
         for (String[] row : data) {
@@ -212,9 +241,9 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         String[][] admins = {
-            {"Prof. Admin",  "prof.admin@intellecta.com"},
-            {"Dr. Khan",     "dr.khan@intellecta.com"},
-            {"Prof. Rahman", "prof.rahman@intellecta.com"},
+            {"Dr. Ayesha Khan",      "dr.ayesha@intellecta.com"},
+            {"Prof. Tariq Mahmood",  "tariq.mahmood@intellecta.com"},
+            {"Mr. Bilal Chaudhry",   "bilal.chaudhry@intellecta.com"},
         };
         for (String[] a : admins) {
             if (!userRepository.existsByEmail(a[1])) {
@@ -237,17 +266,32 @@ public class DataSeeder implements CommandLineRunner {
     private void seedStudySessions(List<User> students) {
         Random rng = new Random(42L);
         List<StudySession> batch = new ArrayList<>();
+        int[] durations = {45, 90, 120};
+        int[] morningHours = {8, 9, 10, 11};
+        int[] afternoonHours = {14, 15, 16, 17};
+        int[] nightHours = {21, 22, 23, 0};
 
         for (User student : students) {
             int profile = (int) (student.getId() % 3); // 0=heavy, 1=moderate, 2=light
-            double studyChance = profile == 0 ? 0.65 : profile == 1 ? 0.45 : 0.25;
+            double studyChance = profile == 0 ? 0.80 : profile == 1 ? 0.55 : 0.35;
+            
+            // Assign a preferred study time pattern
+            int timePattern = rng.nextInt(3);
 
             for (int daysBack = 89; daysBack >= 1; daysBack--) {
                 if (rng.nextDouble() > studyChance) continue;
                 int numSessions = (profile == 0 && rng.nextDouble() > 0.55) ? 2 : 1;
                 for (int s = 0; s < numSessions; s++) {
-                    int startHour    = 7 + rng.nextInt(15);
-                    int durationMins = 30 + rng.nextInt(91);
+                    int startHour;
+                    if (timePattern == 0) {
+                        startHour = morningHours[rng.nextInt(morningHours.length)];
+                    } else if (timePattern == 1) {
+                        startHour = afternoonHours[rng.nextInt(afternoonHours.length)];
+                    } else {
+                        startHour = nightHours[rng.nextInt(nightHours.length)];
+                    }
+                    
+                    int durationMins = durations[rng.nextInt(durations.length)];
                     String subject   = SUBJECTS[rng.nextInt(SUBJECTS.length)];
                     LocalDateTime start = LocalDateTime.now()
                             .minusDays(daysBack)
@@ -269,11 +313,11 @@ public class DataSeeder implements CommandLineRunner {
     // ── Quiz attempts — 7-month programmatic generation ──────────────────────
     //
     // Score profiles by (student.id % 5):
-    //   0 = consistently high  (~87%)
+    //   0 = consistently high  (~85%)
     //   1 = improving          (38% → 86% over 7 months)
     //   2 = declining          (88% → 40% over 7 months)
-    //   3 = consistently low   (~38-45%)   ← ensures weak topics appear
-    //   4 = volatile           (random 30-90%)
+    //   3 = consistently low   (~45%)   ← ensures weak topics appear
+    //   4 = average            (~65%)
 
     private void seedQuizAttempts(List<User> students) {
         List<Quiz> quizzes = quizRepository.findAllWithQuestions();
@@ -298,13 +342,13 @@ public class DataSeeder implements CommandLineRunner {
 
                     double baseScorePct;
                     switch (profile) {
-                        case 0  -> baseScorePct = 87.0;
+                        case 0  -> baseScorePct = 85.0;
                         case 1  -> baseScorePct = 38.0 + (6 - monthsBack) * 8.0;  // 38→86
                         case 2  -> baseScorePct = 88.0 - (6 - monthsBack) * 8.0;  // 88→40
-                        case 3  -> baseScorePct = 38.0 + rng.nextInt(10);           // 38-47 (low)
-                        default -> baseScorePct = 30.0 + rng.nextInt(60);           // volatile
+                        case 3  -> baseScorePct = 45.0;                           // 45
+                        default -> baseScorePct = 65.0;                           // average
                     }
-                    double variance = (rng.nextDouble() - 0.5) * 12.0;
+                    double variance = (rng.nextDouble() - 0.5) * 20.0;
                     double finalPct = Math.max(0, Math.min(100, baseScorePct + variance));
                     int score = (int) Math.round(finalPct / 100.0 * totalQ);
 
@@ -358,21 +402,24 @@ public class DataSeeder implements CommandLineRunner {
     // ── Achievements ──────────────────────────────────────────────────────────
 
     private static final BadgeType[][] STUDENT_BADGES = {
-        {BadgeType.STAR_SCHOLAR,  BadgeType.GOAL_GETTER},
-        {BadgeType.STREAK_FIRE,   BadgeType.CONSISTENT_CAT},
-        {BadgeType.DEEP_DIVER},
-        {BadgeType.LEAF_BALANCED, BadgeType.MARATHON},
-        {BadgeType.STAR_SCHOLAR,  BadgeType.MATH_WIZARD, BadgeType.GOAL_GETTER},
+        {BadgeType.MARATHON,      BadgeType.DEEP_DIVER, BadgeType.STREAK_FIRE}, // heavy
+        {BadgeType.EARLY_BIRD},                                                 // morning
+        {BadgeType.NIGHT_OWL},                                                  // night
+        {BadgeType.CONSISTENT_CAT,BadgeType.GOAL_GETTER},                       // consistent
+        {BadgeType.STAR_SCHOLAR,  BadgeType.MATH_WIZARD},                       // top
         {BadgeType.STREAK_FIRE},
-        {BadgeType.EARLY_BIRD},
+        {BadgeType.EARLY_BIRD,    BadgeType.CONSISTENT_CAT},
         {BadgeType.NIGHT_OWL,     BadgeType.DEEP_DIVER},
+        {BadgeType.MARATHON,      BadgeType.STAR_SCHOLAR},
+        {BadgeType.GOAL_GETTER}
     };
 
     private void seedAchievements(List<User> students) {
         List<Achievement> batch = new ArrayList<>();
-        for (int i = 0; i < students.size() && i < STUDENT_BADGES.length; i++) {
+        for (int i = 0; i < students.size(); i++) {
             User u = students.get(i);
-            for (BadgeType badge : STUDENT_BADGES[i]) {
+            BadgeType[] badges = STUDENT_BADGES[i % STUDENT_BADGES.length];
+            for (BadgeType badge : badges) {
                 batch.add(Achievement.builder()
                     .user(u).badgeName(badge.name())
                     .description(badge.name().replace('_', ' ').toLowerCase())

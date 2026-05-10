@@ -24,6 +24,7 @@ import StudySessionPage from "./pages/FocusSession/Session"
 import StudySchedulePage from "./pages/StudySchedule/StudySchedulePage"
 import RewardsPage from "./pages/AdminRewards/RewardsPage";
 import AchievementsPage from "./pages/StudentAchievements/AchievementsPage";
+import SettingsPage from "./pages/Settings/SettingsPage";
 
 
 export default function AppRoutes() {
@@ -54,6 +55,7 @@ export default function AppRoutes() {
       <Route path="/light-review" element={<LightReview />} />
       <Route path="/rewards" element={<RewardsPage />} />
       <Route path="/achievements" element={<AchievementsPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
     </Routes>
   );
 }
