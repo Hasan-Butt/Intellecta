@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/Auth/Login";
+import RegisterPage from "./pages/Auth/Register";
 import DashboardPage from "./pages/Dashboard/adminDashboard";
 import NotesPage from "./pages/Notes/Notespage";
 import UsersPage from "./pages/Dashboard/Users";
@@ -34,6 +35,7 @@ export default function AppRoutes() {
       {/* Public Routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<RegisterPage />} />
 
       {/* Protected Routes (Student Only) */}
       <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>

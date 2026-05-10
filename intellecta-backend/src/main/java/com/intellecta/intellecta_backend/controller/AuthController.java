@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.intellecta.intellecta_backend.dto.request.LoginRequest;
 import com.intellecta.intellecta_backend.dto.request.GoogleLoginRequest;
+import com.intellecta.intellecta_backend.dto.request.RegisterRequest;
 import com.intellecta.intellecta_backend.dto.response.LoginResponse;
 import com.intellecta.intellecta_backend.service.AuthService;
 
@@ -40,6 +41,17 @@ public class AuthController {
         } catch (Exception e) {
             System.out.println("Google Login Error: " + e.getMessage());
             return ResponseEntity.status(401).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        try {
+            LoginResponse response = authService.register(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.out.println("Register Error: " + e.getMessage());
+            return ResponseEntity.status(400).body(e.getMessage());
         }
     }
 }
