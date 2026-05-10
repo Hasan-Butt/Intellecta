@@ -151,44 +151,41 @@ const PeerComparisonTitle = ({ data }) => {
           </p>
         </div>
 
-        <div className="flex items-center bg-[#f4f7f9] rounded-2xl p-5 md:py-4 md:px-6 border border-gray-100 shadow-sm self-start md:self-center whitespace-nowrap">
-          <div className="flex -space-x-4 mr-8 shrink-0">
+        <div className="flex items-center gap-5 bg-[#f4f7f9] rounded-2xl p-5 border border-gray-100 shadow-sm self-start md:self-center">
+          {/* Avatars */}
+          <div className="flex -space-x-4 shrink-0">
             {participants.map((user) => (
               <div key={user.id} className="relative inline-block">
                 <img
-                  className="h-12 w-12 rounded-full ring-4 ring-white object-cover"
+                  className="h-12 w-12 rounded-full ring-4 ring-[#f4f7f9] object-cover"
                   src={user.image}
                   alt={user.name}
                 />
               </div>
             ))}
           </div>
-          <div className="h-10 w-[1px] bg-gray-200 mx-6" aria-hidden="true" />
-          <div className="flex flex-col whitespace-nowrap">
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">
-              Rank Delta
-            </span>
-            <div className="flex items-baseline gap-1.5 mt-1">
-              <span className="text-xl font-black text-[#4c35b5] leading-none">
-                {Math.abs(data.me.globalRank - data.peer.globalRank)}
-              </span>
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                Positions
-              </span>
+
+          <div className="h-10 w-[1px] bg-gray-200 shrink-0" aria-hidden="true" />
+
+          {/* Stats */}
+          <div className="flex gap-3">
+            <div className="bg-white rounded-xl px-4 py-2.5 text-center border border-gray-100 shadow-sm min-w-[80px]">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] block mb-1">Rank Delta</span>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className="text-xl font-black text-[#4c35b5] leading-none">
+                  {Math.abs((data.me.globalRank || 0) - (data.peer.globalRank || 0))}
+                </span>
+                <span className="text-[10px] font-bold text-gray-400">pos</span>
+              </div>
             </div>
-          </div>
-          <div className="h-10 w-[1px] bg-gray-200 mx-6" aria-hidden="true" />
-          <div className="flex flex-col whitespace-nowrap pr-2">
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">
-              Level Gap
-            </span>
-            <div className="flex items-baseline gap-1.5 mt-1">
-              <span className="text-xl font-black text-[#b8b0e8] leading-none">
-                {Math.abs(data.me.level - data.peer.level)}
-              </span>
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                Levels
-              </span>
+            <div className="bg-white rounded-xl px-4 py-2.5 text-center border border-gray-100 shadow-sm min-w-[80px]">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] block mb-1">Level Gap</span>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className="text-xl font-black text-[#b8b0e8] leading-none">
+                  {Math.abs((data.me.level || 0) - (data.peer.level || 0))}
+                </span>
+                <span className="text-[10px] font-bold text-gray-400">lvls</span>
+              </div>
             </div>
           </div>
         </div>
