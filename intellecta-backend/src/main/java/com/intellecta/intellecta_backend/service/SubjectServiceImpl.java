@@ -9,6 +9,7 @@ import com.intellecta.intellecta_backend.repository.SubjectRepository;
 import com.intellecta.intellecta_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,12 +43,18 @@ public class SubjectServiceImpl implements SubjectService {
     }
 
     @Override
+    @Transactional  //  so both deletes happen together or not at all
     public void deleteSubject(Long userId, Long subjectId) {
         Subject subject = subjectRepository.findById(subjectId)
             .orElseThrow(() -> new RuntimeException("Subject not found"));
+
         if (!subject.getUser().getId().equals(userId)) {
             throw new RuntimeException("Access denied");
         }
+
+        //  delete all documents with this subject name before deleting the subject
+        documentRepository.deleteByUserIdAndSubject(userId, subject.getName());
+
         subjectRepository.delete(subject);
     }
 

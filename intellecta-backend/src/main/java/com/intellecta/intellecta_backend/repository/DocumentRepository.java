@@ -8,19 +8,18 @@ import java.util.List;
 
 public interface DocumentRepository extends JpaRepository<Document, Long> {
 
-    // All docs for a user newest first
     List<Document> findByUserIdOrderByUploadDateDesc(Long userId);
 
-    // Filter by subject
     List<Document> findByUserIdAndSubjectOrderByUploadDateDesc(Long userId, String subject);
 
-    // Search by filename or tag
+    
+    void deleteByUserIdAndSubject(Long userId, String subject);
+
     @Query("SELECT d FROM Document d WHERE d.user.id = :userId AND (" +
            "LOWER(d.fileName) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(d.tags) LIKE LOWER(CONCAT('%', :q, '%')))")
     List<Document> searchByNameOrTag(@Param("userId") Long userId, @Param("q") String q);
 
-    // Search within a subject
     @Query("SELECT d FROM Document d WHERE d.user.id = :userId AND d.subject = :subject AND (" +
            "LOWER(d.fileName) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(d.tags) LIKE LOWER(CONCAT('%', :q, '%')))")
