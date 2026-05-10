@@ -161,6 +161,7 @@ public class DashboardServiceImpl implements DashboardService {
                     .level(uLevel)
                     .xpProgressPct(uXpPct)
                     .discipline("General")
+                    .avatarUrl(u.getAvatarUrl())
                     .isCurrentUser(u.getId().equals(userId))
                     .build());
             }

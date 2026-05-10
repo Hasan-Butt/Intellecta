@@ -80,10 +80,28 @@ const RewardsPage = () => {
     try {
       setUploading(true);
       await badgeService.uploadBadgeImage(editingBadge.badgeKey, file);
+      
+      // Fetch fresh data
       const updated = await badgeService.getAllBadgeDefs();
-      setBadges(updated);
-      setEditingBadge(normalizeBadgeForEdit(updated.find(b => b.badgeKey === editingBadge.badgeKey)));
+      const currentBadgeKey = editingBadge.badgeKey;
+      
+      // Add cache buster to URLs to force browser to reload changed assets if the URL is static
+      const cacheBuster = `?t=${Date.now()}`;
+      const processedBadges = updated.map(b => ({
+        ...b,
+        imageUrl: b.imageUrl ? `${b.imageUrl}${b.imageUrl.includes('?') ? '&' : '?'}${Date.now()}` : null
+      }));
+      
+      setBadges(processedBadges);
+      const newBadge = processedBadges.find(b => b.badgeKey === currentBadgeKey);
+      if (newBadge) {
+        setEditingBadge(normalizeBadgeForEdit(newBadge));
+      }
+      
+      // Reset input so same file can be uploaded again if needed
+      e.target.value = '';
     } catch (error) {
+      console.error("Upload failed", error);
       alert("Image upload failed");
     } finally {
       setUploading(false);
@@ -215,7 +233,7 @@ const RewardsPage = () => {
                       }`}>
                         {badge.rarity}
                       </span>
-                      <span className="text-[11px] font-bold text-gray-400">{badge.unlockPercentage}% Unlocked</span>
+                      {/* Removed unlock percentage */}
                     </div>
 
                     <h4 className="text-lg font-black text-zinc-900 uppercase tracking-tight mb-2 group-hover:text-[#633ECD] transition-colors line-clamp-1">
@@ -276,7 +294,6 @@ const RewardsPage = () => {
                 <h5 className="text-[11px] font-black text-zinc-900 uppercase tracking-tight mb-1 line-clamp-1 group-hover:text-[#633ECD] transition-colors">
                   {badge.displayName}
                 </h5>
-                <p className="text-[10px] font-bold text-gray-400">{badge.unlockPercentage}% Unlock</p>
               </div>
             ))}
 

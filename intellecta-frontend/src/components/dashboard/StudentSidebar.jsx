@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import Avatar from '../common/Avatar';
 import { 
   Home, 
   Calendar, 
@@ -24,14 +25,21 @@ const Sidebar = () => {
   const [levelTitle, setLevelTitle] = useState('Beginner');
   const [userName, setUserName] = useState('');
   const [xpProgressPct, setXpProgressPct] = useState(0);
+  const [avatarUrl, setAvatarUrl] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
 
   useEffect(() => {
     const userId = localStorage.getItem('userId') || '2';
+    api.get(`/users/${userId}/profile`)
+      .then(res => {
+        setUserName(res.data.username ?? 'Scholar');
+        setAvatarUrl(res.data.avatarUrl || '');
+      })
+      .catch(() => {});
+    
     api.get(`/dashboard/user/${userId}`)
       .then(res => {
         setUserLevel(res.data.level ?? 1);
         setLevelTitle(res.data.levelTitle ?? 'Beginner');
-        setUserName(res.data.username ?? 'Scholar');
         setXpProgressPct(res.data.xpProgressPct ?? 0);
       })
       .catch(() => {});
@@ -155,13 +163,7 @@ const Sidebar = () => {
 
           {/* Profile & Logout Section */}
           <div className="flex items-center gap-4 px-4">
-            <div className="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 overflow-hidden shrink-0">
-              <img 
-                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
-                alt="Avatar"
-                className="object-cover"
-              />
-            </div>
+            <Avatar src={avatarUrl} name={userName} />
             
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-bold text-zinc-900 truncate">{userName || 'Scholar'}</span>
