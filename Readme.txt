@@ -93,3 +93,4 @@ Section 4: List of Known Bugs (UC/Feature-Wise)
 4. **Leaderboard (Real-Time Sync):**
    - *Bug:* The leaderboard relies on polling or manual page refreshes to update rankings. If another user surpasses the current user's XP while they are viewing the page, the ranks will not update dynamically until the component remounts.
 5. **Focus Timer:* As we navigate to other tabs of the web app having our focus timer turned on it resets and doesnot records the session stats. 
+6. **Button Notification: At the Navbar there is bell shaped icon that does nothing it has no implementation on the backend.
