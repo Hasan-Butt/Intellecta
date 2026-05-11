@@ -24,7 +24,10 @@ const RewardsPage = () => {
   const [loading, setLoading] = useState(true);
   const [editingBadge, setEditingBadge] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newBadge, setNewBadge] = useState({ badgeKey: '', displayName: '', description: '', rarity: 'COMMON', ruleType: 'TOTAL_SESSIONS', ruleThreshold: 1, targetPercentage: 0 });
   const [uploading, setUploading] = useState(false);
+  const [createError, setCreateError] = useState('');
 
   useEffect(() => {
     fetchBadges();
@@ -73,6 +76,23 @@ const RewardsPage = () => {
     }
   };
 
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    setCreateError('');
+    if (!newBadge.badgeKey.trim() || !newBadge.displayName.trim()) {
+      setCreateError('Badge Key and Display Name are required.');
+      return;
+    }
+    try {
+      await badgeService.createBadgeDef(newBadge);
+      setIsCreating(false);
+      setNewBadge({ badgeKey: '', displayName: '', description: '', rarity: 'COMMON', ruleType: 'TOTAL_SESSIONS', ruleThreshold: 1, targetPercentage: 0 });
+      fetchBadges();
+    } catch (error) {
+      setCreateError(error?.response?.data?.message || 'Failed to create badge. Badge key may already exist.');
+    }
+  };
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -113,19 +133,26 @@ const RewardsPage = () => {
   const others = badges.filter(b => b.rarity !== 'LEGENDARY' && b.rarity !== 'EPIC');
 
   const totalBadges = badges.length;
+  const legendaryCount = legendaryBadges.length;
+  const epicCount = epicBadges.length;
+  const rareCount = badges.filter(b => b.rarity === 'RARE').length;
+  const commonCount = badges.filter(b => b.rarity === 'COMMON').length;
+
   const totalUnlocks = badges.reduce((sum, b) => sum + (b.unlockCount || 0), 0);
-  const avgUnlockRate = totalBadges > 0 ? (totalUnlocks / (totalBadges * 100)) * 100 : 0; // Simplified for display
+  const avgUnlockRate = totalBadges > 0 
+    ? (badges.reduce((sum, b) => sum + (b.unlockPercentage || 0), 0) / totalBadges) 
+    : 0;
 
   const stats = [
-    { label: 'LEGENDARY TIERS', value: legendaryBadges.length, sub: '+2 This Month', subColor: 'text-[#006A33]' },
-    { label: 'TOTAL BADGES', value: totalBadges, sub: 'Active in System', subColor: 'text-gray-400' }
+    { label: 'LEGENDARY TIERS', value: legendaryCount, sub: 'Rare Collections', subColor: 'text-[#B41340]' },
+    { label: 'TOTAL BADGES', value: totalBadges, sub: 'Active Rewards', subColor: 'text-gray-400' }
   ];
 
   const distribution = [
-    { type: 'COMMON (70% TARGET)', target: 70, current: 72 },
-    { type: 'RARE (20% TARGET)', target: 20, current: 19 },
-    { type: 'EPIC (8% TARGET)', target: 8, current: 8.2 },
-    { type: 'LEGENDARY (2% TARGET)', target: 2, current: 0.8 },
+    { type: 'COMMON (70% TARGET)', target: 70, current: totalBadges > 0 ? Math.round((commonCount / totalBadges) * 100) : 0 },
+    { type: 'RARE (20% TARGET)', target: 20, current: totalBadges > 0 ? Math.round((rareCount / totalBadges) * 100) : 0 },
+    { type: 'EPIC (8% TARGET)', target: 8, current: totalBadges > 0 ? Math.round((epicCount / totalBadges) * 100) : 0 },
+    { type: 'LEGENDARY (2% TARGET)', target: 2, current: totalBadges > 0 ? Math.round((legendaryCount / totalBadges) * 100) : 0 },
   ];
 
   if (loading) {
@@ -155,13 +182,13 @@ const RewardsPage = () => {
           <div className="flex-1 bg-gradient-to-br from-[#633ECD] to-[#572FC1] rounded-2xl p-10 text-white relative overflow-hidden shadow-xl shadow-indigo-100">
             <div className="relative z-10">
               <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">Global Engagement</p>
-              <h2 className="text-5xl font-extrabold mb-8 leading-tight">74.2% Unlock Rate</h2>
+              <h2 className="text-5xl font-extrabold mb-8 leading-tight">{avgUnlockRate.toFixed(1)}% Unlock Rate</h2>
               
               <div className="flex items-center gap-4 max-w-sm">
                 <div className="flex-1 h-2.5 bg-white/20 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#3FFF8B] w-[74.2%]" />
+                  <div className="h-full bg-[#3FFF8B] transition-all duration-1000" style={{ width: `${avgUnlockRate}%` }} />
                 </div>
-                <span className="text-sm font-bold opacity-90 whitespace-nowrap">Progressive Spike</span>
+                <span className="text-sm font-bold opacity-90 whitespace-nowrap">System Average</span>
               </div>
             </div>
             {/* Decorative circles */}
@@ -182,7 +209,9 @@ const RewardsPage = () => {
         {/* Management Tools */}
         <div className="flex items-center justify-between mb-10">
           <div className="flex gap-3">
-            <button className="bg-[#633ECD] text-white px-5 py-3 rounded-xl flex items-center gap-2 text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-[#572FC1] transition-all">
+            <button
+              onClick={() => setIsCreating(true)}
+              className="bg-[#633ECD] text-white px-5 py-3 rounded-xl flex items-center gap-2 text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-[#572FC1] transition-all">
               <Plus size={18} />
               Create New Reward
             </button>
@@ -233,7 +262,9 @@ const RewardsPage = () => {
                       }`}>
                         {badge.rarity}
                       </span>
-                      {/* Removed unlock percentage */}
+                      <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">
+                        {badge.unlockPercentage}% Earned
+                      </span>
                     </div>
 
                     <h4 className="text-lg font-black text-zinc-900 uppercase tracking-tight mb-2 group-hover:text-[#633ECD] transition-colors line-clamp-1">
@@ -251,7 +282,7 @@ const RewardsPage = () => {
                           </div>
                         ))}
                       </div>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">14 Recent Earners</span>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{badge.unlockCount} Total Earners</span>
                     </div>
                   </div>
                 </div>
@@ -269,7 +300,7 @@ const RewardsPage = () => {
               <div className="w-1.5 h-6 bg-[#A88FFF] rounded-full" />
               <h3 className="text-xl font-black text-zinc-900 tracking-tight">Operational Hierarchy</h3>
             </div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Displaying 1-12 of 134</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Displaying {others.length} of {totalBadges}</p>
           </div>
 
           <div className="grid grid-cols-6 gap-5">
@@ -297,7 +328,9 @@ const RewardsPage = () => {
               </div>
             ))}
 
-            <div className="bg-white rounded-2xl p-6 text-center border-2 border-dashed border-gray-100 flex flex-col items-center justify-center gap-3 hover:border-[#633ECD] transition-all cursor-pointer group">
+            <div
+              onClick={() => setIsCreating(true)}
+              className="bg-white rounded-2xl p-6 text-center border-2 border-dashed border-gray-100 flex flex-col items-center justify-center gap-3 hover:border-[#633ECD] transition-all cursor-pointer group">
               <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
                 <Plus size={24} className="text-gray-300 group-hover:text-[#633ECD]" />
               </div>
@@ -361,13 +394,142 @@ const RewardsPage = () => {
         </div>
       </main>
 
+      {/* Create Badge Modal */}
+      {isCreating && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsCreating(false)} />
+          <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center shrink-0">
+              <div>
+                <h3 className="text-2xl font-black text-zinc-900 tracking-tight uppercase">Create New Badge</h3>
+                <p className="text-sm text-gray-400 font-medium tracking-tight">Define a new reward milestone</p>
+              </div>
+              <button onClick={() => setIsCreating(false)} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+                <X size={24} className="text-gray-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreate} className="p-8 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                    Badge Key <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. NIGHT_OWL"
+                    value={newBadge.badgeKey}
+                    onChange={e => setNewBadge({...newBadge, badgeKey: e.target.value.toUpperCase().replace(/\s+/g, '_')})}
+                    className="w-full bg-[#f8f9fc] border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#633ECD] transition-all font-mono"
+                  />
+                  <p className="text-[9px] text-gray-400 mt-1 font-bold">Unique identifier — uppercase, underscores only</p>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                    Display Name <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Night Owl"
+                    value={newBadge.displayName}
+                    onChange={e => setNewBadge({...newBadge, displayName: e.target.value})}
+                    className="w-full bg-[#f8f9fc] border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#633ECD] transition-all"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Description</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Describe the achievement..."
+                    value={newBadge.description}
+                    onChange={e => setNewBadge({...newBadge, description: e.target.value})}
+                    className="w-full bg-[#f8f9fc] border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#633ECD] transition-all resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Rarity</label>
+                  <select
+                    value={newBadge.rarity}
+                    onChange={e => setNewBadge({...newBadge, rarity: e.target.value})}
+                    className="w-full bg-[#f8f9fc] border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#633ECD] transition-all"
+                  >
+                    <option value="COMMON">COMMON</option>
+                    <option value="RARE">RARE</option>
+                    <option value="EPIC">EPIC</option>
+                    <option value="LEGENDARY">LEGENDARY</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Rule Type</label>
+                  <select
+                    value={newBadge.ruleType}
+                    onChange={e => setNewBadge({...newBadge, ruleType: e.target.value})}
+                    className="w-full bg-[#f8f9fc] border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#633ECD] transition-all"
+                  >
+                    <option value="TOTAL_SESSIONS">Total Sessions</option>
+                    <option value="STREAK_DAYS">Streak Days</option>
+                    <option value="SESSION_DURATION">Session Duration (Mins)</option>
+                    <option value="DEEP_WORK_SESSION">Deep Work Session (Mins)</option>
+                    <option value="EARLY_BIRD">Early Bird (Before 8 AM)</option>
+                    <option value="NIGHT_OWL">Night Owl (After 10 PM)</option>
+                    <option value="TOTAL_NOTES">Total Notes</option>
+                    <option value="TOTAL_POMODOROS">Total Pomodoros</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Rule Threshold</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={newBadge.ruleThreshold}
+                    onChange={e => setNewBadge({...newBadge, ruleThreshold: parseInt(e.target.value) || 1})}
+                    className="w-full bg-[#f8f9fc] border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#633ECD] transition-all"
+                  />
+                  <p className="text-[9px] text-gray-400 mt-1 font-bold">Value required to earn this badge</p>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Target Unlock %</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={newBadge.targetPercentage}
+                    onChange={e => setNewBadge({...newBadge, targetPercentage: parseFloat(e.target.value) || 0})}
+                    className="w-full bg-[#f8f9fc] border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#633ECD] transition-all"
+                  />
+                </div>
+              </div>
+
+              {createError && (
+                <div className="mb-6 bg-red-50 border border-red-100 rounded-xl px-5 py-4">
+                  <p className="text-xs font-bold text-red-600">{createError}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full bg-[#633ECD] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-indigo-100 hover:bg-[#572FC1] transition-all"
+              >
+                Create Badge
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
           
-          <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="px-10 py-8 border-b border-gray-50 flex justify-between items-center">
+          <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center shrink-0">
               <div>
                 <h3 className="text-2xl font-black text-zinc-900 tracking-tight uppercase">Edit Badge</h3>
                 <p className="text-sm text-gray-400 font-medium tracking-tight">Configuration for {editingBadge.badgeKey}</p>
@@ -377,8 +539,8 @@ const RewardsPage = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="p-10">
-              <div className="grid grid-cols-2 gap-8 mb-10">
+            <form onSubmit={handleSave} className="p-8 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-6 mb-8">
                 <div className="col-span-2">
                   <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Display Name</label>
                   <input 
@@ -421,6 +583,36 @@ const RewardsPage = () => {
                     onChange={e => setEditingBadge({...editingBadge, targetPercentage: parseFloat(e.target.value)})}
                     className="w-full bg-[#f8f9fc] border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#633ECD] transition-all"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Rule Type</label>
+                  <select 
+                    value={editingBadge.ruleType || "TOTAL_SESSIONS"}
+                    onChange={e => setEditingBadge({...editingBadge, ruleType: e.target.value})}
+                    className="w-full bg-[#f8f9fc] border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#633ECD] transition-all"
+                  >
+                    <option value="TOTAL_SESSIONS">Total Sessions</option>
+                    <option value="STREAK_DAYS">Streak Days</option>
+                    <option value="SESSION_DURATION">Session Duration (Mins)</option>
+                    <option value="DEEP_WORK_SESSION">Deep Work Session (Mins)</option>
+                    <option value="EARLY_BIRD">Early Bird (Before 8 AM)</option>
+                    <option value="NIGHT_OWL">Night Owl (After 10 PM)</option>
+                    <option value="TOTAL_NOTES">Total Notes</option>
+                    <option value="TOTAL_POMODOROS">Total Pomodoros</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Rule Threshold</label>
+                  <input 
+                    type="number"
+                    min="1"
+                    value={editingBadge.ruleThreshold || 1}
+                    onChange={e => setEditingBadge({...editingBadge, ruleThreshold: parseInt(e.target.value) || 1})}
+                    className="w-full bg-[#f8f9fc] border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#633ECD] transition-all"
+                  />
+                  <p className="text-[9px] text-gray-400 mt-1 font-bold">Value required to earn this badge</p>
                 </div>
 
                 <div className="col-span-2">
