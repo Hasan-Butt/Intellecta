@@ -97,12 +97,12 @@ public class GamificationServiceImpl implements GamificationService {
                     sessions.stream().anyMatch(s -> s.isDeepWork() && s.getDurationMinutes() >= threshold);
 
             case "EARLY_BIRD" ->
-                    sessions.stream().anyMatch(s ->
-                            s.getStartTime() != null && s.getStartTime().getHour() < 8);
+                    sessions.stream().filter(s ->
+                            s.getStartTime() != null && s.getStartTime().getHour() < 8).count() >= threshold;
 
             case "NIGHT_OWL" ->
-                    sessions.stream().anyMatch(s ->
-                            s.getStartTime() != null && s.getStartTime().getHour() >= 22);
+                    sessions.stream().filter(s ->
+                            s.getStartTime() != null && s.getStartTime().getHour() >= 22).count() >= threshold;
 
             case "TOTAL_NOTES" ->
                     totalNotes >= threshold;

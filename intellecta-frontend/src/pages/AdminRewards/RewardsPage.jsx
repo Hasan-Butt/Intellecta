@@ -18,6 +18,7 @@ import {
   Trash2,
   X
 } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 const RewardsPage = () => {
   const [badges, setBadges] = useState([]);
@@ -26,6 +27,8 @@ const RewardsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [newBadge, setNewBadge] = useState({ badgeKey: '', displayName: '', description: '', rarity: 'COMMON', ruleType: 'TOTAL_SESSIONS', ruleThreshold: 1, targetPercentage: 0 });
+  const [newBadgeImage, setNewBadgeImage] = useState(null);
+  const [newBadgeImagePreview, setNewBadgeImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [createError, setCreateError] = useState('');
 
@@ -84,13 +87,35 @@ const RewardsPage = () => {
       return;
     }
     try {
+      setUploading(true);
       await badgeService.createBadgeDef(newBadge);
+      
+      if (newBadgeImage) {
+        const finalKey = newBadge.badgeKey.toUpperCase().replace(/ /g, "_");
+        await badgeService.uploadBadgeImage(finalKey, newBadgeImage);
+      }
+
       setIsCreating(false);
       setNewBadge({ badgeKey: '', displayName: '', description: '', rarity: 'COMMON', ruleType: 'TOTAL_SESSIONS', ruleThreshold: 1, targetPercentage: 0 });
+      setNewBadgeImage(null);
+      setNewBadgeImagePreview(null);
       fetchBadges();
     } catch (error) {
       setCreateError(error?.response?.data?.message || 'Failed to create badge. Badge key may already exist.');
+    } finally {
+      setUploading(false);
     }
+  };
+
+  const handleNewBadgeImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setNewBadgeImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewBadgeImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleImageUpload = async (e) => {
@@ -504,6 +529,24 @@ const RewardsPage = () => {
                     className="w-full bg-[#f8f9fc] border-none rounded-xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#633ECD] transition-all"
                   />
                 </div>
+
+                <div className="col-span-2">
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Badge Graphic (Optional)</label>
+                  <div className="flex items-center gap-6">
+                    <div className="w-20 h-20 rounded-2xl bg-gray-100 border-2 border-dashed border-gray-200 overflow-hidden flex items-center justify-center">
+                      {newBadgeImagePreview ? (
+                        <img src={newBadgeImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <Award className="text-gray-300" size={32} />
+                      )}
+                    </div>
+                    <label className={`cursor-pointer bg-white border-2 border-[#633ECD] text-[#633ECD] px-6 py-3 rounded-xl text-sm font-bold hover:bg-indigo-50 transition-all flex items-center gap-2 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                      <Upload size={18} />
+                      {newBadgeImage ? 'Change Asset' : 'Upload Asset'}
+                      <input type="file" className="hidden" onChange={handleNewBadgeImageSelect} accept="image/*" />
+                    </label>
+                  </div>
+                </div>
               </div>
 
               {createError && (
@@ -645,11 +688,22 @@ const RewardsPage = () => {
                   <button 
                     type="button"
                     onClick={async () => {
-                      if (window.confirm("Are you sure?")) {
-                        await badgeService.deleteBadgeDef(editingBadge.badgeKey);
-                        setIsModalOpen(false);
-                        fetchBadges();
-                      }
+                      Swal.fire({
+                        title: "Are you sure?",
+                        text: "You won't be able to revert this!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#633ECD",
+                        cancelButtonColor: "#ef4444",
+                        confirmButtonText: "Yes, delete it!"
+                      }).then(async (result) => {
+                        if (result.isConfirmed) {
+                          await badgeService.deleteBadgeDef(editingBadge.badgeKey);
+                          setIsModalOpen(false);
+                          fetchBadges();
+                          Swal.fire("Deleted!", "Badge has been deleted.", "success");
+                        }
+                      });
                     }}
                     className="w-16 flex items-center justify-center bg-red-50 text-red-500 rounded-2xl hover:bg-red-100 transition-all"
                   >
