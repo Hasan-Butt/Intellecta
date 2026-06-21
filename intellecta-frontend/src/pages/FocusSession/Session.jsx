@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
 import api from "../../services/api";
-import AchievementToast from "../../components/AchievementToast";
 import {
   Play,
   Pause,
@@ -108,6 +107,21 @@ const StudySessionDashboard = () => {
   const [showTasks, setShowTasks] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
+  const [showAchievementModal, setShowAchievementModal] = useState(false);
+  const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
+
+  useEffect(() => {
+    let timer;
+    if (showAchievementModal && earnedBadges.length > 0) {
+      // 5 seconds delay per badge, except if we are on the last badge (then wait indefinitely or auto close, but let's wait indefinitely so they can click "Awesome!")
+      if (currentAchievementIndex < earnedBadges.length - 1) {
+        timer = setTimeout(() => {
+          setCurrentAchievementIndex(prev => prev + 1);
+        }, 5000);
+      }
+    }
+    return () => clearTimeout(timer);
+  }, [showAchievementModal, currentAchievementIndex, earnedBadges]);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId") || "2";
@@ -791,14 +805,6 @@ const StudySessionDashboard = () => {
            </div>
         </div>
       )}
-
-      {earnedBadges.length > 0 && (
-        <AchievementToast 
-          badges={earnedBadges} 
-          onClose={() => setEarnedBadges([])} 
-        />
-      )}
-
       {showSummary && lastSessionStats && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-[130] animate-in fade-in duration-300">
           <div className="bg-white rounded-[3rem] p-10 w-full max-w-lg shadow-2xl transform animate-in zoom-in-95 duration-300 flex flex-col items-center text-center">
@@ -837,7 +843,15 @@ const StudySessionDashboard = () => {
             )}
 
             <button
-              onClick={() => setShowSummary(false)}
+              onClick={() => {
+                setShowSummary(false);
+                if (lastSessionStats.newBadges && lastSessionStats.newBadges.length > 0) {
+                  setShowAchievementModal(true);
+                  setCurrentAchievementIndex(0);
+                } else {
+                  setEarnedBadges([]);
+                }
+              }}
               className="w-full bg-indigo-600 text-white font-bold py-5 rounded-full hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
             >
               Back to Dashboard
@@ -885,6 +899,75 @@ const StudySessionDashboard = () => {
                 Close Archive
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showAchievementModal && earnedBadges.length > 0 && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[150] animate-in fade-in duration-300">
+          <div className="bg-white rounded-[3rem] p-12 w-full max-w-lg shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
+            
+            {/* Multi-colored time progress line */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-slate-100">
+               <div className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 ease-linear" style={{ width: '100%', transition: 'width 5000ms linear' }} key={currentAchievementIndex} />
+            </div>
+
+            {/* Twinkling Stars */}
+            <div className="absolute top-8 left-12 text-yellow-400 animate-[pulse_0.8s_ease-in-out_infinite] text-2xl">✦</div>
+            <div className="absolute bottom-24 right-10 text-yellow-400 animate-[pulse_1.2s_ease-in-out_infinite] delay-100 text-3xl">✦</div>
+            <div className="absolute top-20 right-16 text-indigo-300 animate-[pulse_0.6s_ease-in-out_infinite] delay-300 text-xl">✧</div>
+            <div className="absolute bottom-32 left-16 text-pink-300 animate-[pulse_1s_ease-in-out_infinite] delay-200 text-xl">✧</div>
+            <div className="absolute top-32 left-8 text-purple-300 animate-[pulse_0.5s_ease-in-out_infinite] delay-500 text-sm">✦</div>
+            <div className="absolute top-40 right-8 text-amber-300 animate-[pulse_1.5s_ease-in-out_infinite] delay-700 text-lg">✧</div>
+            <div className="absolute top-12 right-32 text-pink-400 animate-[pulse_0.7s_ease-in-out_infinite] delay-150 text-xl">✦</div>
+            <div className="absolute bottom-16 left-32 text-indigo-400 animate-[pulse_0.9s_ease-in-out_infinite] delay-400 text-2xl">✧</div>
+            <div className="absolute top-48 left-16 text-yellow-300 animate-[pulse_1.1s_ease-in-out_infinite] delay-250 text-xl">✦</div>
+            <div className="absolute bottom-48 right-16 text-purple-400 animate-[pulse_0.6s_ease-in-out_infinite] delay-600 text-lg">✧</div>
+            <div className="absolute top-4 right-48 text-yellow-500 animate-[pulse_0.8s_ease-in-out_infinite] delay-350 text-lg">✦</div>
+            <div className="absolute bottom-8 left-48 text-indigo-200 animate-[pulse_1.3s_ease-in-out_infinite] delay-800 text-xl">✧</div>
+
+            <button onClick={() => { setShowAchievementModal(false); setEarnedBadges([]); }} className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 z-20">
+               <X size={24} />
+            </button>
+            <h2 className="text-sm font-black text-indigo-600 uppercase tracking-widest mb-6 relative z-10 animate-[pulse_1.5s_ease-in-out_infinite]">Achievement Unlocked</h2>
+            
+            {/* Revolving Outline Badge Container */}
+            <div className="relative w-40 h-40 mb-6 flex items-center justify-center rounded-full overflow-hidden p-1.5">
+              <div className="absolute w-[200%] h-[200%] bg-[conic-gradient(transparent,transparent,transparent,#633ECD,#ec4899)] animate-[spin_3s_linear_infinite]" />
+              <div className="absolute inset-1.5 bg-white rounded-full z-0" />
+              <div className="relative z-10 w-full h-full bg-indigo-50/50 rounded-full flex items-center justify-center overflow-hidden border border-indigo-100/50 backdrop-blur-sm">
+                 {earnedBadges[currentAchievementIndex].imageUrl ? (
+                   <img src={earnedBadges[currentAchievementIndex].imageUrl} alt={earnedBadges[currentAchievementIndex].displayName || earnedBadges[currentAchievementIndex].name} className="w-full h-full object-cover" />
+                 ) : (
+                   <span className="text-6xl">🏆</span>
+                 )}
+              </div>
+            </div>
+
+            <h3 className="text-3xl font-black text-slate-900 mb-4 relative z-10">{earnedBadges[currentAchievementIndex].displayName || earnedBadges[currentAchievementIndex].name}</h3>
+            <p className="text-slate-500 font-medium mb-8 leading-relaxed relative z-10">
+              {earnedBadges[currentAchievementIndex].description}
+            </p>
+            
+            <div className="flex gap-2 mb-8 relative z-10">
+              {earnedBadges.map((_, idx) => (
+                <div key={idx} className={`h-2 rounded-full transition-all duration-300 ${idx === currentAchievementIndex ? 'bg-indigo-600 w-6' : 'bg-slate-200 w-2'}`} />
+              ))}
+            </div>
+            
+            <button
+              onClick={() => {
+                if (currentAchievementIndex < earnedBadges.length - 1) {
+                  setCurrentAchievementIndex(prev => prev + 1);
+                } else {
+                  setShowAchievementModal(false);
+                  setEarnedBadges([]);
+                }
+              }}
+              className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 relative z-10"
+            >
+              {currentAchievementIndex < earnedBadges.length - 1 ? 'Next Achievement' : 'Awesome!'}
+            </button>
           </div>
         </div>
       )}
