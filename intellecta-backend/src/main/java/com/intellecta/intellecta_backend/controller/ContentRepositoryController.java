@@ -14,7 +14,6 @@ import com.intellecta.intellecta_backend.dto.request.QuizTopicRequest;
 @RestController
 @RequestMapping("/api/content")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class ContentRepositoryController {
 
     private final ContentRepositoryService contentRepositoryService;

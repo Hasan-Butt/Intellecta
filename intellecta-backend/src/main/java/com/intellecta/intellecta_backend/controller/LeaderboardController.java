@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+
 @RestController
 @RequestMapping("/api/leaderboards")
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ public class LeaderboardController {
     @GetMapping("/global/{userId}")
     public ResponseEntity<List<LeaderboardEntryDTO>> getGlobalLeaderboard(
             @PathVariable Long userId) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(leaderboardService.getGlobalLeaderboard(userId));
     }
 
@@ -26,6 +29,7 @@ public class LeaderboardController {
     public ResponseEntity<List<LeaderboardEntryDTO>> getSectionalLeaderboard(
             @PathVariable Long userId,
             @RequestParam(required = false, defaultValue = "Computer Science") String category) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(leaderboardService.getSectionalLeaderboard(userId, category));
     }
 
@@ -33,6 +37,7 @@ public class LeaderboardController {
     public ResponseEntity<PeerComparisonDTO> comparePeers(
             @PathVariable Long userId,
             @PathVariable Long peerId) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(leaderboardService.comparePeers(userId, peerId));
     }
 }

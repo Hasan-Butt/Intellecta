@@ -10,6 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+
 @RestController
 @RequestMapping("/api/documents")
 @RequiredArgsConstructor
@@ -25,12 +27,14 @@ public class DocumentController {
             @RequestParam("subject") String subject,
             @RequestParam(value = "semester", defaultValue = "Semester 1") String semester)
             throws IOException {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(documentService.uploadDocument(userId, file, subject, semester));
     }
 
     // Get all documents for user
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<DocumentResponse>> getAllDocuments(@PathVariable Long userId) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(documentService.getAllDocuments(userId));
     }
 
@@ -39,6 +43,7 @@ public class DocumentController {
     public ResponseEntity<List<DocumentResponse>> getBySubject(
             @PathVariable Long userId,
             @RequestParam String subject) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(documentService.getDocumentsBySubject(userId, subject));
     }
 
@@ -48,6 +53,7 @@ public class DocumentController {
             @PathVariable Long userId,
             @RequestParam String q,
             @RequestParam(required = false) String subject) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(documentService.searchDocuments(userId, q, subject));
     }
 
@@ -57,6 +63,7 @@ public class DocumentController {
             @PathVariable Long userId,
             @PathVariable Long documentId,
             @RequestBody DocumentTagRequest request) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(documentService.tagDocument(userId, documentId, request));
     }
 
@@ -65,6 +72,7 @@ public class DocumentController {
     public ResponseEntity<Void> deleteDocument(
             @PathVariable Long userId,
             @PathVariable Long documentId) throws IOException {
+        SecurityUtils.validateUser(userId);
         documentService.deleteDocument(userId, documentId);
         return ResponseEntity.noContent().build();
     }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
 import com.intellecta.intellecta_backend.dto.request.StudySessionRequest;
 import com.intellecta.intellecta_backend.dto.response.StudySessionResponse;
 import com.intellecta.intellecta_backend.service.StudySessionService;
@@ -29,6 +30,7 @@ public class StudySessionController {
         @PathVariable Long userId,
         @RequestBody StudySessionRequest request
     ) {
+         SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(sessionService.startSession(userId, request));
     }
 
@@ -42,6 +44,7 @@ public class StudySessionController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<StudySessionResponse>> getAll(@PathVariable Long userId) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(sessionService.getUserSessions(userId));
     }
 }

@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+
 @Service
 @RequiredArgsConstructor
 public class TopicServiceImpl implements TopicService {
@@ -28,11 +30,15 @@ public class TopicServiceImpl implements TopicService {
     public TopicResponse createTopic(Long subjectId, TopicRequest request) {
         Subject subject = subjectRepository.findById(subjectId)
             .orElseThrow(() -> new RuntimeException("Subject not found"));
+        SecurityUtils.validateUser(subject.getUser().getId());
 
         Exam exam = null;
         if (request.getExamId() != null) {
             exam = examRepository.findById(request.getExamId())
                 .orElse(null);
+            if (exam != null) {
+                SecurityUtils.validateUser(exam.getSubject().getUser().getId());
+            }
         }
 
         Topic topic = Topic.builder()
@@ -48,12 +54,20 @@ public class TopicServiceImpl implements TopicService {
 
     @Override
     public List<TopicResponse> getTopicsBySubject(Long subjectId) {
+        Subject subject = subjectRepository.findById(subjectId)
+            .orElseThrow(() -> new RuntimeException("Subject not found"));
+        SecurityUtils.validateUser(subject.getUser().getId());
+        
         return topicRepository.findBySubjectIdOrderByIdAsc(subjectId)
             .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
     public List<TopicResponse> getTopicsByExam(Long examId) {
+        Exam exam = examRepository.findById(examId)
+            .orElseThrow(() -> new RuntimeException("Exam not found"));
+        SecurityUtils.validateUser(exam.getSubject().getUser().getId());
+
         return topicRepository.findByExamIdOrderByIdAsc(examId)
             .stream().map(this::toResponse).collect(Collectors.toList());
     }
@@ -63,6 +77,7 @@ public class TopicServiceImpl implements TopicService {
         if (request.getUpdates() == null) return;
         for (TopicBulkSaveRequest.TopicStatusUpdate update : request.getUpdates()) {
             topicRepository.findById(update.getId()).ifPresent(topic -> {
+                SecurityUtils.validateUser(topic.getSubject().getUser().getId());
                 topic.setStatus(TopicStatus.valueOf(update.getStatus()));
                 topicRepository.save(topic);
             });
@@ -71,7 +86,10 @@ public class TopicServiceImpl implements TopicService {
 
     @Override
     public void deleteTopic(Long topicId) {
-        topicRepository.deleteById(topicId);
+        Topic topic = topicRepository.findById(topicId)
+            .orElseThrow(() -> new RuntimeException("Topic not found"));
+        SecurityUtils.validateUser(topic.getSubject().getUser().getId());
+        topicRepository.delete(topic);
     }
 
     private TopicResponse toResponse(Topic t) {

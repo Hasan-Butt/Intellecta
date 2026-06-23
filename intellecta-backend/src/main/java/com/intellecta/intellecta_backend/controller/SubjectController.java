@@ -3,6 +3,7 @@ package com.intellecta.intellecta_backend.controller;
 import com.intellecta.intellecta_backend.dto.request.SubjectRequest;
 import com.intellecta.intellecta_backend.dto.response.SubjectResponse;
 import com.intellecta.intellecta_backend.service.SubjectService;
+import com.intellecta.intellecta_backend.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +20,13 @@ public class SubjectController {
     public ResponseEntity<SubjectResponse> createSubject(
             @PathVariable Long userId,
             @RequestBody SubjectRequest request) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(subjectService.createSubject(userId, request));
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<SubjectResponse>> getAllSubjects(@PathVariable Long userId) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(subjectService.getAllSubjects(userId));
     }
 
@@ -31,6 +34,7 @@ public class SubjectController {
     public ResponseEntity<Void> deleteSubject(
             @PathVariable Long userId,
             @PathVariable Long subjectId) {
+        SecurityUtils.validateUser(userId);
         subjectService.deleteSubject(userId, subjectId);
         return ResponseEntity.noContent().build();
     }

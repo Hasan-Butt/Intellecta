@@ -19,6 +19,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+
 @RestController
 @RequiredArgsConstructor
 public class BadgeController {
@@ -88,6 +90,7 @@ public class BadgeController {
     @GetMapping("/api/achievements/user/{userId}/all")
     public ResponseEntity<List<BadgeDefinitionResponse>> getAllForStudent(
             @PathVariable Long userId) {
+        SecurityUtils.validateUser(userId);
         // Sync achievements before fetching
         gamificationService.checkAndAwardBadges(userId);
         return ResponseEntity.ok(badgeService.getAllBadgesForStudent(userId));
@@ -98,6 +101,7 @@ public class BadgeController {
     @GetMapping("/api/achievements/user/{userId}")
     public ResponseEntity<List<BadgeDefinitionResponse>> getEarned(
             @PathVariable Long userId) {
+        SecurityUtils.validateUser(userId);
         List<BadgeDefinitionResponse> all = badgeService.getAllBadgesForStudent(userId);
         return ResponseEntity.ok(all.stream()
                 .filter(BadgeDefinitionResponse::isEarned)

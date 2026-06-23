@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+
 @Service
 @RequiredArgsConstructor
 public class ChecklistItemServiceImpl implements ChecklistItemService {
@@ -23,6 +25,7 @@ public class ChecklistItemServiceImpl implements ChecklistItemService {
     public ChecklistItemResponse createItem(Long examId, ChecklistItemRequest request) {
         Exam exam = examRepository.findById(examId)
             .orElseThrow(() -> new RuntimeException("Exam not found"));
+        SecurityUtils.validateUser(exam.getSubject().getUser().getId());
 
         ChecklistItem item = ChecklistItem.builder()
             .description(request.getDescription())
@@ -35,6 +38,10 @@ public class ChecklistItemServiceImpl implements ChecklistItemService {
 
     @Override
     public List<ChecklistItemResponse> getItemsByExam(Long examId) {
+        Exam exam = examRepository.findById(examId)
+            .orElseThrow(() -> new RuntimeException("Exam not found"));
+        SecurityUtils.validateUser(exam.getSubject().getUser().getId());
+
         return checklistItemRepository.findByExamIdOrderByIdAsc(examId)
             .stream().map(this::toResponse).collect(Collectors.toList());
     }
@@ -43,13 +50,19 @@ public class ChecklistItemServiceImpl implements ChecklistItemService {
     public ChecklistItemResponse toggleDone(Long itemId) {
         ChecklistItem item = checklistItemRepository.findById(itemId)
             .orElseThrow(() -> new RuntimeException("Item not found"));
+        SecurityUtils.validateUser(item.getExam().getSubject().getUser().getId());
+
         item.setDone(!item.isDone());
         return toResponse(checklistItemRepository.save(item));
     }
 
     @Override
     public void deleteItem(Long itemId) {
-        checklistItemRepository.deleteById(itemId);
+        ChecklistItem item = checklistItemRepository.findById(itemId)
+            .orElseThrow(() -> new RuntimeException("Item not found"));
+        SecurityUtils.validateUser(item.getExam().getSubject().getUser().getId());
+
+        checklistItemRepository.delete(item);
     }
 
     private ChecklistItemResponse toResponse(ChecklistItem item) {

@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+
 @Service
 @RequiredArgsConstructor
 public class QuizService {
@@ -25,6 +27,7 @@ public class QuizService {
     public List<Quiz> getAllQuizzes(Long userId) {
         List<Quiz> quizzes = new java.util.ArrayList<>(quizRepository.findAllWithQuestions());
         if (userId != null) {
+            SecurityUtils.validateUser(userId);
             System.out.println("Filtering quizzes for userId: " + userId + ". Initial count: " + quizzes.size());
             // Remove quizzes already attempted by this user
             quizzes.removeIf(quiz -> {
@@ -58,17 +61,14 @@ public class QuizService {
 
     @org.springframework.transaction.annotation.Transactional
     public QuizAttempt submitQuiz(QuizSubmissionRequest request) {
+        SecurityUtils.validateUser(request.getUserId());
         if (quizAttemptRepository.existsByUserIdAndQuizId(request.getUserId(), request.getQuizId())) {
             throw new RuntimeException("Quiz already attempted by this user.");
         }
         try {
             Quiz quiz = getQuizById(request.getQuizId());
-            User user = userRepository.findById(request.getUserId()).orElseGet(() -> {
-                System.out.println("Warning: User ID " + request.getUserId()
-                        + " not found. Falling back to the first available user.");
-                return userRepository.findAll().stream().findFirst()
-                        .orElseThrow(() -> new RuntimeException("No users found in the database."));
-            });
+            User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found: " + request.getUserId()));
 
             int score = 0;
             List<Question> questions = quiz.getQuestions();
