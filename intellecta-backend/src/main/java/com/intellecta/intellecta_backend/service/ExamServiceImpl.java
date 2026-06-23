@@ -14,6 +14,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+
 @Service
 @RequiredArgsConstructor
 public class ExamServiceImpl implements ExamService {
@@ -25,6 +27,7 @@ public class ExamServiceImpl implements ExamService {
     public ExamResponse createExam(ExamRequest request) {
         Subject subject = subjectRepository.findById(request.getSubjectId())
             .orElseThrow(() -> new RuntimeException("Subject not found"));
+        SecurityUtils.validateUser(subject.getUser().getId());
 
         Exam exam = Exam.builder()
             .name(request.getName())
@@ -37,6 +40,10 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     public List<ExamResponse> getExamsBySubject(Long subjectId) {
+        Subject subject = subjectRepository.findById(subjectId)
+            .orElseThrow(() -> new RuntimeException("Subject not found"));
+        SecurityUtils.validateUser(subject.getUser().getId());
+
         return examRepository.findBySubjectIdOrderByExamDateAsc(subjectId)
             .stream().map(this::toResponse).collect(Collectors.toList());
     }
@@ -45,13 +52,19 @@ public class ExamServiceImpl implements ExamService {
     public ExamResponse updateExamDate(Long examId, String newDate) {
         Exam exam = examRepository.findById(examId)
             .orElseThrow(() -> new RuntimeException("Exam not found"));
+        SecurityUtils.validateUser(exam.getSubject().getUser().getId());
+
         exam.setExamDate(LocalDate.parse(newDate));
         return toResponse(examRepository.save(exam));
     }
 
     @Override
     public void deleteExam(Long examId) {
-        examRepository.deleteById(examId);
+        Exam exam = examRepository.findById(examId)
+            .orElseThrow(() -> new RuntimeException("Exam not found"));
+        SecurityUtils.validateUser(exam.getSubject().getUser().getId());
+
+        examRepository.delete(exam);
     }
 
     private ExamResponse toResponse(Exam exam) {

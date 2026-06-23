@@ -13,6 +13,8 @@ import com.intellecta.intellecta_backend.dto.response.TriggerStatDTO;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+
 @RestController
 @RequestMapping("/api/distractions")
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class DistractionController {
         @PathVariable Long userId,
         @RequestBody DistractionRequest request
     ) {
+        SecurityUtils.validateUser(userId);
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -59,6 +62,7 @@ public class DistractionController {
 
     @GetMapping("/user/{userId}/triggers")
     public ResponseEntity<List<TriggerStatDTO>> getTriggers(@PathVariable Long userId) {
+        SecurityUtils.validateUser(userId);
         List<Object[]> results = distractionRepository.findTriggerCountsByUserId(userId);
         
         long totalCount = 0;
@@ -82,6 +86,7 @@ public class DistractionController {
 
     @GetMapping("/user/{userId}/logs")
     public ResponseEntity<List<com.intellecta.intellecta_backend.dto.response.DistractionLogDTO>> getLogs(@PathVariable Long userId) {
+        SecurityUtils.validateUser(userId);
         List<DistractionEntry> entries = distractionRepository.findByUserIdOrderByLoggedAtDesc(userId);
         
         List<com.intellecta.intellecta_backend.dto.response.DistractionLogDTO> dtos = entries.stream()

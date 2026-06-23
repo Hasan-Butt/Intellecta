@@ -14,6 +14,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import com.intellecta.intellecta_backend.filter.JwtAuthFilter;
 
 @Configuration
@@ -30,6 +31,11 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/uploads/**", "/api/badges/*/image").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/content/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/content/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/content/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/quizzes").hasRole("ADMIN")
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )

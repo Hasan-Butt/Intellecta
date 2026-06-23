@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+
 @RestController
 @RequestMapping("/api/courses")
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ public class CourseController {
     // GET /api/courses/user/{userId}
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<CourseResponse>> getCourses(@PathVariable Long userId) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(courseService.getCourses(userId));
     }
 
@@ -28,6 +31,7 @@ public class CourseController {
         @PathVariable Long userId,
         @RequestBody CourseRequest request
     ) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(courseService.addCourse(userId, request));
     }
 
@@ -37,6 +41,7 @@ public class CourseController {
         @PathVariable Long userId,
         @PathVariable Long courseId
     ) {
+        SecurityUtils.validateUser(userId);
         courseService.deleteCourse(userId, courseId);
         return ResponseEntity.noContent().build();
     }

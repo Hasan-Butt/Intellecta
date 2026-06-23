@@ -17,6 +17,8 @@ import com.intellecta.intellecta_backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+
 @Service
 @RequiredArgsConstructor
 public class StudySessionServiceImpl implements StudySessionService {
@@ -46,6 +48,7 @@ public class StudySessionServiceImpl implements StudySessionService {
     public StudySessionResponse endSession(Long sessionId, StudySessionRequest request) {
         StudySession session = sessionRepository.findById(sessionId)
             .orElseThrow(() -> new RuntimeException("Session not found"));
+        SecurityUtils.validateUser(session.getUser().getId());
         session.setEndTime(LocalDateTime.now());
         
         if (request != null) {

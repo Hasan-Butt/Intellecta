@@ -16,7 +16,6 @@ import com.intellecta.intellecta_backend.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin
 public class AuthController {
 
     @Autowired

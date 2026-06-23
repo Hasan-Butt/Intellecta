@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
 import com.intellecta.intellecta_backend.dto.request.GeneratesSchedulerRequest;
 import com.intellecta.intellecta_backend.dto.response.GeneratesSchedulerResponse;
 import com.intellecta.intellecta_backend.service.ScheduleService;
@@ -26,6 +27,7 @@ public class ScheduleController {
         @PathVariable Long userId,
         @RequestBody GeneratesSchedulerRequest request
     ) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(scheduleService.generate(userId, request));
     }
 }

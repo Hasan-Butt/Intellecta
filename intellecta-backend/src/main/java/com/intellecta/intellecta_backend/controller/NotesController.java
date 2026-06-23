@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+
 @RestController
 @RequestMapping("/api/notes")
 @RequiredArgsConstructor
@@ -20,11 +22,13 @@ public class NotesController {
     public ResponseEntity<NoteResponse> createNote(
             @PathVariable Long userId,
             @RequestBody NoteRequest request) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(notesService.createNote(userId, request));
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<NoteResponse>> getAllNotes(@PathVariable Long userId) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(notesService.getAllNotes(userId));
     }
 
@@ -32,6 +36,7 @@ public class NotesController {
     public ResponseEntity<NoteResponse> getNoteById(
             @PathVariable Long userId,
             @PathVariable Long noteId) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(notesService.getNoteById(userId, noteId));
     }
 
@@ -40,6 +45,7 @@ public class NotesController {
             @PathVariable Long userId,
             @PathVariable Long noteId,
             @RequestBody NoteRequest request) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(notesService.updateNote(userId, noteId, request));
     }
 
@@ -47,6 +53,7 @@ public class NotesController {
     public ResponseEntity<Void> deleteNote(
             @PathVariable Long userId,
             @PathVariable Long noteId) {
+        SecurityUtils.validateUser(userId);
         notesService.deleteNote(userId, noteId);
         return ResponseEntity.noContent().build();
     }
@@ -57,6 +64,7 @@ public class NotesController {
             @PathVariable Long userId,
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String tag) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(notesService.searchNotes(userId, q, tag));
     }
 
@@ -64,6 +72,7 @@ public class NotesController {
     public ResponseEntity<NoteResponse> togglePin(
             @PathVariable Long userId,
             @PathVariable Long noteId) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(notesService.togglePin(userId, noteId));
     }
 
@@ -71,11 +80,13 @@ public class NotesController {
     public ResponseEntity<NoteResponse> flagForReview(
             @PathVariable Long userId,
             @PathVariable Long noteId) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(notesService.flagForReview(userId, noteId));
     }
 
     @GetMapping("/user/{userId}/review-queue")
     public ResponseEntity<List<NoteResponse>> getReviewQueue(@PathVariable Long userId) {
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(notesService.getReviewQueue(userId));
     }
 }

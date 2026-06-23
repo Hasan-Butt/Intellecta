@@ -1,6 +1,6 @@
 import api from './api';
 
-const getUserId = () => localStorage.getItem('userId') || '2';
+const getUserId = () => localStorage.getItem('userId');
 
 const badgeService = {
   // Admin: Get all badge definitions with analytics
