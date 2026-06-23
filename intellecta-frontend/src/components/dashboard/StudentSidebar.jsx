@@ -21,6 +21,8 @@ import {
   Target
 } from 'lucide-react';
 
+import { logout, getUserId } from '../../utils/auth';
+
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -37,7 +39,8 @@ const Sidebar = () => {
   const [showHelpBox, setShowHelpBox] = useState(false);
 
   useEffect(() => {
-    const userId = localStorage.getItem('userId') || '2';
+    const userId = getUserId();
+    if (!userId) return;
     api.get(`/users/${userId}/profile`)
       .then(res => {
         setUserName(res.data.username ?? 'Scholar');
@@ -64,11 +67,7 @@ const Sidebar = () => {
   }, [location.pathname]); // Re-fetch level/XP on every page navigation
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); 
-    localStorage.removeItem('user');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('role');
-    navigate('/login'); 
+    logout();
   };
 
   const menuItems = [

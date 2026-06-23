@@ -7,6 +7,8 @@ import Navbar from '../../components/dashboard/Navbar';
 import api from '../../services/api';
 import Swal from 'sweetalert2';
 
+import { getUserId } from '../../utils/auth';
+
 const FullAssessmentInterface = () => {
   const [searchParams] = useSearchParams();
   const quizId = searchParams.get('id');
@@ -79,7 +81,8 @@ const FullAssessmentInterface = () => {
 
   const handleSubmit = async () => {
     try {
-      const userId = localStorage.getItem("userId") || "2";
+      const userId = getUserId();
+      if (!userId) return;
       const response = await api.post('/quizzes/submit', {
         userId: parseInt(userId),
         quizId: quiz.id,

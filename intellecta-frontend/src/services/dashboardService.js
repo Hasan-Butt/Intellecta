@@ -1,6 +1,6 @@
 import api from "./api";
 
-const getUserId = () => localStorage.getItem('userId');
+import { getUserId } from "../utils/auth";
 
 export const getDashboard = (userId = getUserId()) =>
   api.get(`/dashboard/user/${userId}`);

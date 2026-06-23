@@ -8,6 +8,7 @@ import Sidebar from "../../components/dashboard/StudentSidebar";
 import { getDashboard, logDistraction } from "../../services/dashboardService";
 import weeklyInsightBg from "../../assets/weekly_insight_bg.png";
 import { STUDY_QUOTES } from "../../data/quotations";
+import { getUserId as getUserIdFromAuth } from "../../utils/auth";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const PlayIcon = () => (
@@ -333,7 +334,7 @@ export default function DashboardPage() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [submittingGoal, setSubmittingGoal] = useState(false);
 
-  const getUserId = () => parseInt(localStorage.getItem("userId") ?? "2");
+  const getUserId = () => parseInt(getUserIdFromAuth() || "0");
 
   const [newReviewTitle, setNewReviewTitle] = useState("");
   const [newReviewSubtitle, setNewReviewSubtitle] = useState("");

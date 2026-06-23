@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import StudentSidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
+import { getUserId } from '../../utils/auth';
 import { 
   User, 
   Lock, 
@@ -62,7 +63,8 @@ const SettingsPage = () => {
 
   const fetchProfile = async () => {
     setLoading(true);
-    const userId = localStorage.getItem('userId') || '2';
+    const userId = getUserId();
+    if (!userId) return;
     try {
       const res = await api.get(`/users/${userId}/profile`);
       setProfileData({
@@ -87,7 +89,8 @@ const SettingsPage = () => {
   const handleSaveProfile = async () => {
     setSaving(true);
     setError(null);
-    const userId = localStorage.getItem('userId') || '2';
+    const userId = getUserId();
+    if (!userId) return;
     try {
       await api.put(`/users/${userId}/profile`, {
         ...profileData,
@@ -109,7 +112,8 @@ const SettingsPage = () => {
     }
     setSaving(true);
     setError(null);
-    const userId = localStorage.getItem('userId') || '2';
+    const userId = getUserId();
+    if (!userId) return;
     try {
       await api.put(`/users/${userId}/password`, {
         currentPassword: passwordData.currentPassword,
@@ -134,7 +138,8 @@ const SettingsPage = () => {
     if (!file) return;
 
     setSaving(true);
-    const userId = localStorage.getItem('userId') || '2';
+    const userId = getUserId();
+    if (!userId) return;
     const formData = new FormData();
     formData.append('file', file);
 
