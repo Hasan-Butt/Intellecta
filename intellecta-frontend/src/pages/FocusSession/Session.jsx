@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
 import api from "../../services/api";
+import { getUserId } from "../../utils/auth";
 import {
   Play,
   Pause,
@@ -124,7 +125,8 @@ const StudySessionDashboard = () => {
   }, [showAchievementModal, currentAchievementIndex, earnedBadges]);
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId") || "2";
+    const userId = getUserId();
+    if (!userId) return;
     const fetchData = async () => {
       try {
 
@@ -185,12 +187,14 @@ const StudySessionDashboard = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && isBlocked && isActive && mode === "Work") {
-        const userId = localStorage.getItem("userId") || "2";
-        api
-          .post(`/distractions/user/${userId}`, {
-            reason: "Tab Switch during Work",
-          })
-          .catch(() => {});
+        const userId = getUserId();
+        if (userId) {
+          api
+            .post(`/distractions/user/${userId}`, {
+              reason: "Tab Switch during Work",
+            })
+            .catch(() => {});
+        }
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -221,7 +225,8 @@ const StudySessionDashboard = () => {
   const handleStartResume = async () => {
     if (!sessionId) {
       try {
-        const userId = localStorage.getItem("userId") || "2";
+        const userId = getUserId();
+        if (!userId) return;
         const res = await api.post(`/sessions/user/${userId}/start`, {
           subject: selectedSubject || "General",
           deepWork: isBlocked,
@@ -249,7 +254,8 @@ const StudySessionDashboard = () => {
          durationMinutes = Math.max(1, Math.round((Date.now() - pauseStartTime) / 60000));
       }
 
-      const userId = localStorage.getItem("userId") || "2";
+      const userId = getUserId();
+      if (!userId) return;
       await api.post(`/distractions/user/${userId}`, {
         reason: distractionReason || "Paused Session",
         duration: `${durationMinutes} min`
@@ -272,7 +278,8 @@ const StudySessionDashboard = () => {
     if (sessionId) {
       try {
         const response = await api.patch(`/sessions/${sessionId}/end`, { pomodorosCompleted });
-        const userId = localStorage.getItem("userId") || "2";
+        const userId = getUserId();
+        if (!userId) return;
         const [dashRes, sessionsRes] = await Promise.all([
           api.get(`/dashboard/user/${userId}`),
           api.get(`/sessions/user/${userId}`),

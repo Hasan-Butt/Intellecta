@@ -1,8 +1,10 @@
 package com.intellecta.intellecta_backend.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +15,11 @@ import com.intellecta.intellecta_backend.dto.request.GoogleLoginRequest;
 import com.intellecta.intellecta_backend.dto.request.RegisterRequest;
 import com.intellecta.intellecta_backend.dto.response.LoginResponse;
 import com.intellecta.intellecta_backend.service.AuthService;
+import com.intellecta.intellecta_backend.security.SecurityUtils;
+import com.intellecta.intellecta_backend.security.UserPrincipal;
+
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,10 +29,12 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         try {
-            LoginResponse response = authService.login(request);
-            return ResponseEntity.ok(response);
+            LoginResponse loginResponse = authService.login(request);
+            setTokenCookie(response, loginResponse.getToken());
+            loginResponse.setToken(null); // Clear from response body for extra security
+            return ResponseEntity.ok(loginResponse);
         } catch (Exception e) {
             System.out.println("Login Error: " + e.getMessage());
             return ResponseEntity.status(401).body(e.getMessage());
@@ -33,10 +42,12 @@ public class AuthController {
     }
 
     @PostMapping("/google")
-    public ResponseEntity<?> googleLogin(@RequestBody GoogleLoginRequest request) {
+    public ResponseEntity<?> googleLogin(@RequestBody GoogleLoginRequest request, HttpServletResponse response) {
         try {
-            LoginResponse response = authService.googleLogin(request);
-            return ResponseEntity.ok(response);
+            LoginResponse loginResponse = authService.googleLogin(request);
+            setTokenCookie(response, loginResponse.getToken());
+            loginResponse.setToken(null);
+            return ResponseEntity.ok(loginResponse);
         } catch (Exception e) {
             System.out.println("Google Login Error: " + e.getMessage());
             return ResponseEntity.status(401).body(e.getMessage());
@@ -44,13 +55,53 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request, HttpServletResponse response) {
         try {
-            LoginResponse response = authService.register(request);
-            return ResponseEntity.ok(response);
+            LoginResponse loginResponse = authService.register(request);
+            setTokenCookie(response, loginResponse.getToken());
+            loginResponse.setToken(null);
+            return ResponseEntity.ok(loginResponse);
         } catch (Exception e) {
             System.out.println("Register Error: " + e.getMessage());
             return ResponseEntity.status(400).body(e.getMessage());
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("token", "")
+                .httpOnly(true)
+                .secure(false) // Set to true in prod/HTTPS
+                .path("/")
+                .maxAge(0) // Immediately clear cookie
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getMe() {
+        try {
+            UserPrincipal principal = SecurityUtils.getAuthenticatedUser();
+            return ResponseEntity.ok(Map.of(
+                "userId", principal.getId(),
+                "email", principal.getUsername(),
+                "role", principal.getRole()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Not authenticated");
+        }
+    }
+
+    private void setTokenCookie(HttpServletResponse response, String token) {
+        ResponseCookie cookie = ResponseCookie.from("token", token)
+                .httpOnly(true)
+                .secure(false) // Set to true in prod/HTTPS
+                .path("/")
+                .maxAge(24 * 60 * 60) // 24 hours
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

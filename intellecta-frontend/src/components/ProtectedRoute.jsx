@@ -1,28 +1,47 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import api from "../services/api";
+import { logout, setAuthData } from "../utils/auth";
 
 export default function ProtectedRoute({ allowedRoles }) {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const [loading, setLoading] = useState(true);
+  const [authenticatedUser, setAuthenticatedUser] = useState(null);
 
   useEffect(() => {
-    const handleStorageChange = (e) => {
-      // Listen for token or role changes from other tabs
-      if (e.key === "token" || e.key === "role") {
-        window.location.reload();
+    const checkAuth = async () => {
+      try {
+        const response = await api.get("/auth/me");
+        setAuthenticatedUser(response.data);
+        // Sync memory state
+        setAuthData(response.data.userId.toString(), response.data.role);
+      } catch (err) {
+        logout();
+      } finally {
+        setLoading(false);
       }
     };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+
+    checkAuth();
   }, []);
 
-  // If no token, redirect to login
-  if (!token) {
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-gray-500 font-medium font-sans">Verifying security credentials...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authenticatedUser) {
     return <Navigate to="/login" replace />;
   }
 
+  const role = authenticatedUser.role;
+
   // If roles are specified and user's role is not allowed, redirect to a safe page
-  // Assuming studentDashboard for students and dashboard for admins
   if (allowedRoles && !allowedRoles.includes(role)) {
     if (role === "ADMIN") {
       return <Navigate to="/dashboard" replace />;

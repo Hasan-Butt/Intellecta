@@ -52,10 +52,7 @@ export function SignupForm({ className, ...props }) {
         confirmPassword,
       });
 
-      if (res.status === 200 && res.data.token) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("userId", res.data.userId);
-        localStorage.setItem("role", res.data.role);
+      if (res.status === 200) {
 
         await Swal.fire({
           icon: "success",

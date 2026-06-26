@@ -22,6 +22,7 @@ import {
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
 import api from '../../services/api';
+import { getUserId } from '../../utils/auth';
 
 // --- Components ---
 
@@ -127,7 +128,7 @@ const AnalyticsDashboard = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const userId = localStorage.getItem('userId') || '2';
+        const userId = getUserId() || '2';
         const res = await api.get(`/distractions/user/${userId}/logs`);
         const formattedLogs = res.data.map((item) => {
            const label = item.reason || "Unknown";

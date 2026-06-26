@@ -6,6 +6,7 @@ import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
 import api from '../../services/api';
 import Avatar from '../../components/common/Avatar';
+import { getUserId } from '../../utils/auth';
 
 const GlobalLeaderboard = () => {
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -24,7 +25,8 @@ const GlobalLeaderboard = () => {
   useEffect(() => {
     const fetchAchievements = async () => {
       try {
-        const userId = localStorage.getItem("userId") || "2";
+        const userId = getUserId();
+        if (!userId) return;
         const res = await api.get(`/achievements/user/${userId}/all`);
         // Find the first unearned achievement
         const unearned = res.data.find(a => !a.earned);
@@ -56,7 +58,8 @@ const GlobalLeaderboard = () => {
   useEffect(() => {
     const fetchGlobal = async () => {
       try {
-        const userId = parseInt(localStorage.getItem("userId") ?? "2");
+        const userId = getUserId();
+        if (!userId) return;
         const globalRes = await api.get(`/leaderboards/global/${userId}`);
         setGlobalData(globalRes.data || []);
       } catch (err) {
@@ -71,7 +74,8 @@ const GlobalLeaderboard = () => {
       if (!selectedCategory) return;
       setLoading(true);
       try {
-        const userId = parseInt(localStorage.getItem("userId") ?? "2");
+        const userId = getUserId();
+        if (!userId) return;
         const sectionalRes = await api.get(`/leaderboards/sectional/${userId}?category=${encodeURIComponent(selectedCategory)}`);
         setSectionalData(sectionalRes.data || []);
       } catch (err) {
@@ -408,7 +412,8 @@ const GlobalLeaderboard = () => {
 
                 <div
                   onClick={() => {
-                    const userId = localStorage.getItem('userId') ?? '2';
+                    const userId = getUserId();
+                    if (!userId) return;
                     if (selectedPeer && selectedPeer.userId) {
                       navigate(`/peers?userId=${userId}&peerId=${selectedPeer.userId}`);
                     } else {

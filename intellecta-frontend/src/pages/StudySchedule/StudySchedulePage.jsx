@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
 import api from "../../services/api";
+import { getUserId } from "../../utils/auth";
 import {
   UploadCloud,
   MoreVertical,
@@ -153,7 +154,8 @@ const EnrollForm = ({ onEnrolled }) => {
     setError("");
     setLoading(true);
     try {
-      const userId = localStorage.getItem("userId") || "2";
+      const userId = getUserId();
+      if (!userId) return;
       await api.post(`/courses/user/${userId}`, {
         courseName: courseName.trim(),
         examDate,
@@ -629,7 +631,7 @@ export default function StudySchedulePage() {
   const [loadingGen, setLoadingGen] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
-  const userId = localStorage.getItem("userId") || "2";
+  const userId = getUserId();
 
   const fetchCourses = async () => {
     try {

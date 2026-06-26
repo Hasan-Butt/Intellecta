@@ -12,6 +12,7 @@ import {
 import Sidebar from "../../components/dashboard/StudentSidebar";
 import Navbar from "../../components/dashboard/Navbar";
 import api from "../../services/api";
+import { getUserId } from "../../utils/auth";
 import "../../styles/global.css";
 
 // --- Sub-components ---
@@ -87,7 +88,7 @@ const PerformanceDashboard = () => {
   const [distractions, setDistractions] = useState([]);
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId") || "2";
+    const userId = getUserId() || "2";
     
     // Fetch sessions
     api.get(`/sessions/user/${userId}`)

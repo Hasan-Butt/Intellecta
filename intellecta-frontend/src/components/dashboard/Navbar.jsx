@@ -9,6 +9,8 @@ import intellectaLogo from '../../assets/intellectaLogo.jpeg';
 import api from '../../services/api';
 import Avatar from '../common/Avatar';
 
+import { logout, getUserId } from '../../utils/auth';
+
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,11 +30,7 @@ const Navbar = () => {
   const searchRef = useRef(null);
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); 
-    localStorage.removeItem('user');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('role');
-    navigate('/login'); 
+    logout();
   };
 
   const allPages = [
@@ -99,7 +97,8 @@ const Navbar = () => {
   }, []);
 
   const fetchUserData = async () => {
-    const userId = localStorage.getItem('userId') || '2';
+    const userId = getUserId();
+    if (!userId) return;
     try {
       const res = await api.get(`/users/${userId}/profile`);
       setUserData({

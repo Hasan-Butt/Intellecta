@@ -27,10 +27,7 @@ export function LoginForm({ className, ...props }) {
         password: password,
       });
 
-      if (res.status === 200 && res.data.token) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("userId", res.data.userId);
-        localStorage.setItem("role", res.data.role);
+      if (res.status === 200) {
 
         if (res.data.role === "ADMIN") {
           navigate("/dashboard");
@@ -81,10 +78,7 @@ export function LoginForm({ className, ...props }) {
         idToken: tokenResponse.access_token,
       });
 
-      if (res.status === 200 && res.data.token) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("userId", res.data.userId);
-        localStorage.setItem("role", res.data.role);
+      if (res.status === 200) {
 
         if (res.data.role === "ADMIN") {
           navigate("/dashboard");

@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Award
 } from 'lucide-react';
+import { logout } from '../../utils/auth';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -19,11 +20,7 @@ const Sidebar = () => {
   const [isContentOpen, setIsContentOpen] = useState(location.pathname === '/content' || location.pathname === '/create-quiz');
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); 
-    localStorage.removeItem('user');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('role');
-    navigate('/login'); 
+    logout();
   };
 
   const menuItems = [

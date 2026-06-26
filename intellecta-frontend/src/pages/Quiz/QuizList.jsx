@@ -15,6 +15,8 @@ import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
 import api from "../../services/api";
 
+import { getUserId } from "../../utils/auth";
+
 const QuizPlatform = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [quizzes, setQuizzes] = useState([]);
@@ -24,7 +26,8 @@ const QuizPlatform = () => {
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
-        const userId = localStorage.getItem("userId") || "2";
+        const userId = getUserId();
+        if (!userId) return;
         const response = await api.get(`/quizzes?userId=${userId}`);
         // Filter out quizzes that have already been attempted
         const availableQuizzes = response.data.filter(q => !q.attempted);
