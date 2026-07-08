@@ -277,7 +277,7 @@ const NewNote = ({ isOpen, onClose, isSanctuaryMode = false, onSaved }) => {
                     <X
                       size={12}
                       className="cursor-pointer hover:text-red-500"
-                      onClick={() => removeTag(tag)}
+                      onClick={(e) => { e.stopPropagation(); removeTag(tag); }}
                     />
                   </span>
                 ))}

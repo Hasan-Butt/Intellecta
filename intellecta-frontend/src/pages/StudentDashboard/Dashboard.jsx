@@ -321,7 +321,15 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [checklist, setChecklist] = useState([]);
+  const [checklist, setChecklist] = useState(() => {
+    const stored = localStorage.getItem("preExamChecklist");
+    if (stored) return JSON.parse(stored);
+    return [
+      { id: 1, category: "Exam Logistics", label: "Know exam room/location", done: false },
+      { id: 2, category: "Required Documents", label: "Pack student ID", done: false },
+      { id: 3, category: "Personal & Health", label: "Sleep 8 hours the night before", done: false }
+    ];
+  });
 
   // Modal states
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -336,15 +344,12 @@ export default function DashboardPage() {
   const getUserId = () => parseInt(localStorage.getItem("userId") ?? "2");
 
   const [newReviewTitle, setNewReviewTitle] = useState("");
-  const [newReviewSubtitle, setNewReviewSubtitle] = useState("");
-  const [hiddenReviews, setHiddenReviews] = useState([]);
+  const [newReviewNotes, setNewReviewNotes] = useState("");
 
   // Form states for checklist (exam)
   const [newChecklistLabel, setNewChecklistLabel] = useState("");
-  const [newChecklistSub, setNewChecklistSub] = useState("");
-  const [newChecklistDifficulty, setNewChecklistDifficulty] =
-    useState("MEDIUM");
-  const [newChecklistHours, setNewChecklistHours] = useState(2);
+  const [newChecklistNote, setNewChecklistNote] = useState("");
+  const [newChecklistCategory, setNewChecklistCategory] = useState("Exam Logistics");
 
   // Add item to review queue (notes flagged for review)
   async function addReviewItem({ title, content }) {
@@ -356,39 +361,11 @@ export default function DashboardPage() {
     return response.data;
   }
 
-  // Add item to pre-exam checklist (create exam entry)
-  async function addChecklistItem({
-    courseName,
-    examDate,
-    difficulty,
-    plannedHoursPerDay,
-  }) {
-    const response = await api.post(`/courses/user/${getUserId()}`, {
-      courseName,
-      examDate,
-      difficulty,
-      plannedHoursPerDay,
-    });
-    return response.data;
-  }
-
   // ── Fetch dashboard data ──────────────────────────────────────────────────
   const fetchDashboard = async () => {
     try {
       const res = await getDashboard();
       setData(res.data);
-      // Initialise checklist from todaySchedule if empty
-      setChecklist((prev) => {
-        if (prev.length === 0 && res.data.todaySchedule?.length > 0) {
-          return res.data.todaySchedule.map((s, i) => ({
-            id: s.id ?? i + 1,
-            label: s.subject,
-            sub: s.topic,
-            done: false,
-          }));
-        }
-        return prev;
-      });
     } catch (err) {
       console.error("Dashboard fetch failed:", err);
     } finally {
@@ -401,11 +378,17 @@ export default function DashboardPage() {
   }, []);
 
   const toggleCheck = (id) => {
-    setChecklist((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, done: true } : c)),
-    );
+    setChecklist((prev) => {
+      const next = prev.map((c) => (c.id === id ? { ...c, done: !c.done } : c));
+      localStorage.setItem("preExamChecklist", JSON.stringify(next));
+      return next;
+    });
     setTimeout(() => {
-      setChecklist((prev) => prev.filter((c) => c.id !== id));
+      setChecklist((curr) => {
+        const filtered = curr.filter((c) => c.id !== id);
+        localStorage.setItem("preExamChecklist", JSON.stringify(filtered));
+        return filtered;
+      });
     }, 400);
   };
 
@@ -424,14 +407,14 @@ export default function DashboardPage() {
     try {
       await addReviewItem({
         title: newReviewTitle,
-        content: newReviewSubtitle || "Review this",
+        content: newReviewNotes || "",
       });
       // fetchDashboard will return the real item from the backend, so
       // we don't need an optimistic entry — just refresh.
       await fetchDashboard();
       setShowReviewModal(false);
       setNewReviewTitle("");
-      setNewReviewSubtitle("");
+      setNewReviewNotes("");
     } catch (err) {
       console.error("Failed to add review item:", err);
     } finally {
@@ -453,32 +436,24 @@ export default function DashboardPage() {
     }
   };
 
-  const handleAddChecklistItem = async () => {
-    if (!newChecklistLabel.trim() || submittingChecklist) return;
-    setSubmittingChecklist(true);
-    try {
-      await addChecklistItem({
-        courseName: newChecklistLabel,
-        examDate: newChecklistSub,
-        difficulty: newChecklistDifficulty,
-        plannedHoursPerDay: newChecklistHours,
-      });
-      setChecklist(prev => [...prev, {
-        id: Date.now(),
-        label: newChecklistLabel,
-        sub: newChecklistSub,
-        done: false
-      }]);
-      // Refresh from API — this is what makes it persist on reload
-      await fetchDashboard();
-      setShowChecklistModal(false);
-      setNewChecklistLabel("");
-      setNewChecklistSub("");
-      setNewChecklistDifficulty("MEDIUM");
-      setNewChecklistHours(2);
-    } catch (err) {
-      console.error("Failed to add checklist item:", err);
-    }
+  const handleAddChecklistItem = () => {
+    if (!newChecklistLabel.trim()) return;
+    const newItem = {
+      id: Date.now(),
+      label: newChecklistLabel,
+      sub: newChecklistNote,
+      category: newChecklistCategory,
+      done: false
+    };
+    setChecklist(prev => {
+      const next = [...prev, newItem];
+      localStorage.setItem("preExamChecklist", JSON.stringify(next));
+      return next;
+    });
+    setShowChecklistModal(false);
+    setNewChecklistLabel("");
+    setNewChecklistNote("");
+    setNewChecklistCategory("Exam Logistics");
   };
 
   // ── Derived values from API response ─────────────────────────────────────
@@ -497,8 +472,7 @@ export default function DashboardPage() {
   const focusWeek = data?.focusWeek ?? [];
   const todaySchedule = data?.todaySchedule ?? [];
   
-  const baseQueue = data?.reviewQueue ?? [];
-  const reviewQueue = baseQueue.filter(item => !hiddenReviews.includes(item.id));
+  const reviewQueue = data?.reviewQueue ?? [];
 
   const maxFocus = Math.max(...focusWeek.map((d) => d.focusMinutes), 1);
 
@@ -723,12 +697,19 @@ export default function DashboardPage() {
 
                 {/* ── Review Queue + Checklist ── */}
                 <div className="flex gap-6">
-                  {/* Review Queue — from API */}
+                  {/* Review Queue — from API (read-only display) */}
                   <div className="bg-white rounded-3xl p-6 flex flex-col gap-4 flex-1 shadow-sm border border-gray-100">
                     <div className="flex items-center justify-between">
-                      <span className="text-[#484554] text-xs tracking-[1.2px] uppercase font-bold">
-                        Review Queue
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#484554] text-xs tracking-[1.2px] uppercase font-bold">
+                          Review Queue
+                        </span>
+                        {reviewQueue.length > 0 && (
+                          <span className="bg-[#e6deff] text-[#451ebb] text-[9px] font-black px-2 py-0.5 rounded-full">
+                            {reviewQueue.length}
+                          </span>
+                        )}
+                      </div>
                       <button
                         onClick={() => setShowReviewModal(true)}
                         className="flex items-center gap-1 text-[#451ebb] font-bold text-[10px] uppercase hover:opacity-80 transition-opacity"
@@ -736,43 +717,45 @@ export default function DashboardPage() {
                         <AddIcon /> Add Item
                       </button>
                     </div>
-                    <div className="flex flex-col gap-3 max-h-[180px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="flex flex-col gap-3 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
                       {reviewQueue.length > 0 ? (
                         reviewQueue.map((item) => (
                           <div
                             key={item.id}
-                            className="flex items-center gap-3 pl-3 pr-2 py-2 rounded-2xl border-l-4"
+                            className="flex items-center gap-3 pl-3 pr-2 py-2 rounded-2xl border-l-4 bg-[#f9f9ff]"
                             style={{
-                              borderLeftColor: item.urgent
-                                ? "#ba1a1a"
-                                : "#451ebb",
+                              borderLeftColor: item.urgent ? "#ba1a1a" : "#451ebb",
                             }}
                           >
                             <div className="flex-1 min-w-0">
-                              <p className="font-bold text-[#161c27] text-sm">
+                              <p className="font-bold text-[#161c27] text-sm leading-tight">
                                 {item.title}
                               </p>
-                              <p className="text-[#484554] text-[10px]">
-                                {item.subtitle}
-                              </p>
+                              {item.subtitle && (
+                                <p className="text-[#484554] text-[10px] mt-0.5 truncate">
+                                  {item.subtitle}
+                                </p>
+                              )}
                             </div>
-                            <button
-                              onClick={() => setHiddenReviews(prev => [...prev, item.id])}
-                              className={`flex items-center gap-1.5 rounded-full px-3 py-1 font-bold text-[10px] transition-all ${item.urgent ? "bg-[#451ebb] text-white" : "text-[#451ebb] border border-[#451ebb]"}`}
-                            >
-                              <CheckIcon
-                                color={item.urgent ? "white" : "#451ebb"}
-                              />{" "}
-                              Reviewed
-                            </button>
+                            <span className="flex-shrink-0 text-[9px] font-black uppercase tracking-wide px-2.5 py-1 rounded-full bg-[#e6deff] text-[#451ebb]">
+                              🔖 Review
+                            </span>
                           </div>
                         ))
                       ) : (
                         <p className="text-gray-400 text-xs text-center py-4">
-                          No items to review
+                          No items flagged for review
                         </p>
                       )}
                     </div>
+                    {reviewQueue.length > 0 && (
+                      <button
+                        onClick={() => navigate('/light-review')}
+                        className="text-[#451ebb] font-bold text-[10px] uppercase tracking-wide hover:opacity-80 transition-opacity text-left"
+                      >
+                        Open Light Review →
+                      </button>
+                    )}
                   </div>
 
                   {/* Pre-Exam Checklist — local state seeded from todaySchedule */}
@@ -814,15 +797,20 @@ export default function DashboardPage() {
                               >
                                 {item.label}
                               </p>
-                              <p className="text-[10px] text-gray-400">
-                                {item.sub}
-                              </p>
+                              <div className="text-[10px] text-gray-400 flex items-center gap-2 mt-0.5">
+                                {item.category && (
+                                  <span className={`px-1.5 py-0.5 rounded-md font-bold ${item.category === "Exam Logistics" ? "bg-[#e6f0ff] text-[#0066cc]" : item.category === "Required Documents" ? "bg-[#fff0e6] text-[#cc5500]" : "bg-[#e6ffe6] text-[#008000]"}`}>
+                                    {item.category}
+                                  </span>
+                                )}
+                                {item.sub && <span>{item.sub}</span>}
+                              </div>
                             </div>
                           </label>
                         ))
                       ) : (
                         <p className="text-gray-400 text-xs text-center py-4">
-                          No upcoming exams scheduled
+                          Your pre-exam checklist is clear!
                         </p>
                       )}
                     </div>
@@ -1041,33 +1029,42 @@ export default function DashboardPage() {
           {showReviewModal && (
             <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
               <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="font-bold text-xl">Add to Review Queue</h3>
-                  <button onClick={() => setShowReviewModal(false)}>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-bold text-xl text-[#161c27]">Flag Item for Review</h3>
+                  <button onClick={() => { setShowReviewModal(false); setNewReviewTitle(""); setNewReviewNotes(""); }}>
                     <CloseIcon />
                   </button>
                 </div>
+                <p className="text-[#484554] text-xs mb-6 leading-relaxed">
+                  Add a topic or concept you want to revisit. It will appear in your Light Review flashcard queue.
+                </p>
                 <div className="flex flex-col gap-4">
-                  <input
-                    type="text"
-                    placeholder="Title (e.g. Laplace Theory)"
-                    value={newReviewTitle}
-                    onChange={(e) => setNewReviewTitle(e.target.value)}
-                    className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb]"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Content / notes (optional)"
-                    value={newReviewSubtitle}
-                    onChange={(e) => setNewReviewSubtitle(e.target.value)}
-                    className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb]"
-                  />
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[#484554] text-xs font-bold uppercase tracking-wider">Topic / Title *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Laplace Transforms, Chapter 5 Summary..."
+                      value={newReviewTitle}
+                      onChange={(e) => setNewReviewTitle(e.target.value)}
+                      className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb] focus:ring-2 focus:ring-[#451ebb]/10 transition-all"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[#484554] text-xs font-bold uppercase tracking-wider">Key Notes / Summary</label>
+                    <textarea
+                      rows={4}
+                      placeholder="Write the key points, formulas, or concepts you want to remember when this card flips..."
+                      value={newReviewNotes}
+                      onChange={(e) => setNewReviewNotes(e.target.value)}
+                      className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb] focus:ring-2 focus:ring-[#451ebb]/10 transition-all resize-none"
+                    />
+                  </div>
                   <button
                     onClick={handleAddReviewItem}
-                    disabled={submittingReview}
+                    disabled={submittingReview || !newReviewTitle.trim()}
                     className="bg-[#451ebb] text-white font-bold py-3 rounded-xl hover:bg-[#5d3fd3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {submittingReview ? "Adding..." : "Add Item"}
+                    {submittingReview ? "Adding..." : "Add to Review Queue"}
                   </button>
                 </div>
               </div>
@@ -1080,92 +1077,51 @@ export default function DashboardPage() {
               <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="font-bold text-xl">
-                    Add Exam to Pre‑Exam Checklist
+                    Add Item to Pre‑Exam Checklist
                   </h3>
                   <button onClick={() => setShowChecklistModal(false)}>
                     <CloseIcon />
                   </button>
                 </div>
                 <div className="flex flex-col gap-4">
-                  <input
-                    type="text"
-                    placeholder="Course name (e.g. LA)"
-                    value={newChecklistLabel}
-                    onChange={(e) => setNewChecklistLabel(e.target.value)}
-                    className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb]"
-                  />
-                  <input
-                    type="date"
-                    value={newChecklistSub}
-                    min={
-                      new Date(Date.now() + 86400000)
-                        .toISOString()
-                        .split("T")[0]
-                    }
-                    onChange={(e) => {
-                      setNewChecklistSub(e.target.value);
-                      setChecklistError("");
-                    }}
-                    className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb]"
-                  />
-                  <select
-                    value={newChecklistDifficulty}
-                    onChange={(e) => setNewChecklistDifficulty(e.target.value)}
-                    className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb]"
-                  >
-                    <option value="EASY">Easy</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HARD">Hard</option>
-                  </select>
-                  <div className="border border-gray-200 rounded-xl p-3 flex flex-col gap-1">
-                    <span className="text-xs text-gray-400 font-medium">
-                      How many hours per day can you study for this subject?
-                    </span>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-sm font-bold text-[#161c27]">
-                        {newChecklistHours} hr
-                        {newChecklistHours !== 1 ? "s" : ""} / day
-                      </span>
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setNewChecklistHours((h) =>
-                              Math.max(0.5, parseFloat((h - 0.5).toFixed(1))),
-                            )
-                          }
-                          className="w-8 h-8 rounded-full bg-[#f1f3ff] text-[#451ebb] font-bold text-lg flex items-center justify-center hover:bg-[#e6deff] transition-colors"
-                        >
-                          −
-                        </button>
-                        <span className="text-[#451ebb] font-bold text-sm w-8 text-center">
-                          {newChecklistHours}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setNewChecklistHours((h) =>
-                              Math.min(12, parseFloat((h + 0.5).toFixed(1))),
-                            )
-                          }
-                          className="w-8 h-8 rounded-full bg-[#f1f3ff] text-[#451ebb] font-bold text-lg flex items-center justify-center hover:bg-[#e6deff] transition-colors"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[#484554] text-xs font-bold uppercase tracking-wider">Category</label>
+                    <select
+                      value={newChecklistCategory}
+                      onChange={(e) => setNewChecklistCategory(e.target.value)}
+                      className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb] bg-white"
+                    >
+                      <option value="Exam Logistics">Exam Logistics</option>
+                      <option value="Required Documents">Required Documents</option>
+                      <option value="Personal & Health">Personal & Health</option>
+                    </select>
                   </div>
-                  {checklistError && (
-                    <p className="text-[#ba1a1a] text-xs font-medium px-1">
-                      {checklistError}
-                    </p>
-                  )}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[#484554] text-xs font-bold uppercase tracking-wider">Task Label</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Know exam room/location"
+                      value={newChecklistLabel}
+                      onChange={(e) => setNewChecklistLabel(e.target.value)}
+                      className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[#484554] text-xs font-bold uppercase tracking-wider">Optional Note</label>
+                    <input
+                      type="text"
+                      placeholder="Any additional details..."
+                      value={newChecklistNote}
+                      onChange={(e) => setNewChecklistNote(e.target.value)}
+                      className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb]"
+                    />
+                  </div>
                   <button
                     onClick={handleAddChecklistItem}
-                    disabled={submittingChecklist}
-                    className="bg-[#451ebb] text-white font-bold py-3 rounded-xl hover:bg-[#5d3fd3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!newChecklistLabel.trim()}
+                    className="mt-2 bg-[#451ebb] text-white font-bold py-3 rounded-xl hover:bg-[#5d3fd3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {submittingChecklist ? "Adding..." : "Add Exam"}
+                    Add Item
                   </button>
                 </div>
               </div>
