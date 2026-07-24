@@ -144,9 +144,9 @@ const AchievementsPage = () => {
                     {badge.displayName}
                   </h4>
                   
-                  <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
+                  <span className={`text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded ${
                     badge.rarity === 'LEGENDARY' ? 'bg-amber-100 text-amber-700' :
-                    badge.rarity === 'EPIC' ? 'bg-purple-100 text-purple-700' :
+                    badge.rarity === 'EPIC' ? 'bg-purple-100 text-violet-700' :
                     badge.rarity === 'RARE' ? 'bg-blue-100 text-blue-700' : 'bg-zinc-100 text-zinc-600'
                   }`}>
                     {badge.rarity}
@@ -175,9 +175,9 @@ const AchievementsPage = () => {
                 )}
               </div>
 
-              <span className={`inline-block px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4 ${
+              <span className={`inline-block px-4 py-1 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-4 ${
                 selectedBadge.rarity === 'LEGENDARY' ? 'bg-amber-50 text-amber-600' :
-                selectedBadge.rarity === 'EPIC' ? 'bg-purple-50 text-purple-600' : 'bg-indigo-50 text-indigo-600'
+                selectedBadge.rarity === 'EPIC' ? 'bg-purple-50 text-violet-700' : 'bg-indigo-50 text-indigo-600'
               }`}>
                 {selectedBadge.rarity}
               </span>
@@ -242,8 +242,8 @@ const AchievementCard = ({ badge, onClick }) => (
     
     <div className="flex-1">
       <div className="flex items-center gap-3 mb-2">
-        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
-          badge.rarity === 'LEGENDARY' ? 'bg-amber-100 text-amber-700' : 'bg-purple-100 text-purple-700'
+        <span className={`px-2 py-0.5 rounded text-xs font-black uppercase tracking-wider ${
+          badge.rarity === 'LEGENDARY' ? 'bg-amber-100 text-amber-700' : 'bg-purple-100 text-violet-700'
         }`}>
           {badge.rarity}
         </span>

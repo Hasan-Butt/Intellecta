@@ -245,6 +245,7 @@ function DistractionLog({ summary, onLog }) {
           />
           <button
             type="button"
+            aria-label="Log Distraction"
             onClick={(e) => {
               e.preventDefault();
               handleLog(input);
@@ -278,14 +279,14 @@ function DistractionLog({ summary, onLog }) {
         <div className="h-[1px] bg-gray-100 w-full mb-3" />
         <div className="flex justify-between items-center mb-3">
           <div className="flex gap-2 items-center">
-            <span className="text-gray-400 text-[10px] uppercase font-bold">
+            <span className="text-[#767676] text-[10px] uppercase font-bold">
               Recent:
             </span>
             <span className="text-[#484554] text-xs font-semibold">
               {summary?.mostRecentReason ?? "None logged"}
             </span>
           </div>
-          <span className="text-gray-400 text-[10px]">
+          <span className="text-[#767676] text-[10px]">
             {summary?.mostRecentTimeAgo ?? ""}
           </span>
         </div>
