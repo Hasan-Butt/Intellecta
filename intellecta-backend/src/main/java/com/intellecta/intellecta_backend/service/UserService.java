@@ -42,6 +42,7 @@ public class UserService {
         if (dto.studyReminders() != null) user.setStudyReminders(dto.studyReminders());
         if (dto.achievementAlerts() != null) user.setAchievementAlerts(dto.achievementAlerts());
         if (dto.weeklyReports() != null) user.setWeeklyReports(dto.weeklyReports());
+        if (dto.anonymousMode() != null) user.setAnonymousMode(dto.anonymousMode());
 
         return toDto(userRepository.save(user));
     }
@@ -89,6 +90,7 @@ public class UserService {
                 .achievementAlerts(user.isAchievementAlerts())
                 .weeklyReports(user.isWeeklyReports())
                 .streakDays(user.getStreakDays())
+                .anonymousMode(user.isAnonymousMode())
                 .build();
     }
 }

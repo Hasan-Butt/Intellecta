@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Trash2 } from "lucide-react";
 import api from "../../services/api";
 import Avatar from "../../components/common/Avatar";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import "../../styles/global.css";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
@@ -324,13 +326,21 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [checklist, setChecklist] = useState(() => {
     const stored = localStorage.getItem("preExamChecklist");
-    if (stored) return JSON.parse(stored);
-    return [
+    const initialized = localStorage.getItem("preExamChecklist_initialized");
+    if (stored !== null || initialized) {
+      return stored ? JSON.parse(stored) : [];
+    }
+    const defaults = [
       { id: 1, category: "Exam Logistics", label: "Know exam room/location", done: false },
       { id: 2, category: "Required Documents", label: "Pack student ID", done: false },
       { id: 3, category: "Personal & Health", label: "Sleep 8 hours the night before", done: false }
     ];
+    localStorage.setItem("preExamChecklist", JSON.stringify(defaults));
+    localStorage.setItem("preExamChecklist_initialized", "true");
+    return defaults;
   });
+
+  const [checklistToDelete, setChecklistToDelete] = useState(null);
 
   // Modal states
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -349,7 +359,6 @@ export default function DashboardPage() {
 
   // Form states for checklist (exam)
   const [newChecklistLabel, setNewChecklistLabel] = useState("");
-  const [newChecklistNote, setNewChecklistNote] = useState("");
   const [newChecklistCategory, setNewChecklistCategory] = useState("Exam Logistics");
 
   // Add item to review queue (notes flagged for review)
@@ -384,13 +393,20 @@ export default function DashboardPage() {
       localStorage.setItem("preExamChecklist", JSON.stringify(next));
       return next;
     });
-    setTimeout(() => {
-      setChecklist((curr) => {
-        const filtered = curr.filter((c) => c.id !== id);
-        localStorage.setItem("preExamChecklist", JSON.stringify(filtered));
-        return filtered;
-      });
-    }, 400);
+  };
+
+  const confirmDeleteChecklist = (id) => {
+    setChecklistToDelete(id);
+  };
+
+  const handleDeleteChecklistConfirmed = () => {
+    if (!checklistToDelete) return;
+    setChecklist((prev) => {
+      const next = prev.filter((c) => c.id !== checklistToDelete);
+      localStorage.setItem("preExamChecklist", JSON.stringify(next));
+      return next;
+    });
+    setChecklistToDelete(null);
   };
 
   const handleLogDistraction = async (reason) => {
@@ -441,8 +457,7 @@ export default function DashboardPage() {
     if (!newChecklistLabel.trim()) return;
     const newItem = {
       id: Date.now(),
-      label: newChecklistLabel,
-      sub: newChecklistNote,
+      label: newChecklistLabel.trim(),
       category: newChecklistCategory,
       done: false
     };
@@ -453,7 +468,6 @@ export default function DashboardPage() {
     });
     setShowChecklistModal(false);
     setNewChecklistLabel("");
-    setNewChecklistNote("");
     setNewChecklistCategory("Exam Logistics");
   };
 
@@ -723,17 +737,17 @@ export default function DashboardPage() {
                         reviewQueue.map((item) => (
                           <div
                             key={item.id}
-                            className="flex items-center gap-3 pl-3 pr-2 py-2 rounded-2xl border-l-4 bg-[#f9f9ff]"
+                            className="flex items-center gap-3 pl-3 pr-2 py-2 rounded-2xl border-l-4 bg-[#f9f9ff] min-w-0"
                             style={{
                               borderLeftColor: item.urgent ? "#ba1a1a" : "#451ebb",
                             }}
                           >
                             <div className="flex-1 min-w-0">
-                              <p className="font-bold text-[#161c27] text-sm leading-tight">
+                              <p className="font-bold text-[#161c27] text-sm leading-tight truncate break-words max-w-full" title={item.title}>
                                 {item.title}
                               </p>
                               {item.subtitle && (
-                                <p className="text-[#484554] text-[10px] mt-0.5 truncate">
+                                <p className="text-[#484554] text-[10px] mt-0.5 truncate break-words max-w-full">
                                   {item.subtitle}
                                 </p>
                               )}
@@ -759,8 +773,8 @@ export default function DashboardPage() {
                     )}
                   </div>
 
-                  {/* Pre-Exam Checklist — local state seeded from todaySchedule */}
-                  <div className="bg-white rounded-3xl p-6 flex flex-col gap-4 flex-1 shadow-sm border border-gray-100">
+                  {/* Pre-Exam Checklist — local state with manual delete + confirmation */}
+                  <div className="bg-white rounded-3xl p-6 flex flex-col gap-4 flex-1 shadow-sm border border-gray-100 min-w-0">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-[#484554] text-xs tracking-[1.2px] uppercase font-bold leading-4">
@@ -782,32 +796,45 @@ export default function DashboardPage() {
                     <div className="flex flex-col gap-1 max-h-[180px] overflow-y-auto pr-2 pb-2 custom-scrollbar">
                       {checklist.length > 0 ? (
                         checklist.map((item) => (
-                          <label
+                          <div
                             key={item.id}
-                            className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors"
+                            className="flex items-center justify-between gap-3 p-3 rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors group min-w-0"
                             onClick={() => toggleCheck(item.id)}
                           >
-                            <div
-                              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${item.done ? "border-[#451ebb] bg-[#451ebb]/10" : "border-gray-400"}`}
-                            >
-                              {item.done && <CheckIcon color="#451ebb" />}
-                            </div>
-                            <div className="flex-1">
-                              <p
-                                className={`text-sm font-medium ${item.done ? "text-gray-400 line-through" : "text-[#161c27]"}`}
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div
+                                className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${item.done ? "border-[#451ebb] bg-[#451ebb]/10" : "border-gray-400"}`}
                               >
-                                {item.label}
-                              </p>
-                              <div className="text-[10px] text-gray-400 flex items-center gap-2 mt-0.5">
-                                {item.category && (
-                                  <span className={`px-1.5 py-0.5 rounded-md font-bold ${item.category === "Exam Logistics" ? "bg-[#e6f0ff] text-[#0066cc]" : item.category === "Required Documents" ? "bg-[#fff0e6] text-[#cc5500]" : "bg-[#e6ffe6] text-[#008000]"}`}>
-                                    {item.category}
-                                  </span>
-                                )}
-                                {item.sub && <span>{item.sub}</span>}
+                                {item.done && <CheckIcon color="#451ebb" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p
+                                  className={`text-sm font-medium truncate break-words ${item.done ? "text-gray-400 line-through" : "text-[#161c27]"}`}
+                                  title={item.label}
+                                >
+                                  {item.label}
+                                </p>
+                                <div className="text-[10px] text-gray-400 flex items-center gap-2 mt-0.5">
+                                  {item.category && (
+                                    <span className={`px-1.5 py-0.5 rounded-md font-bold flex-shrink-0 ${item.category === "Exam Logistics" ? "bg-[#e6f0ff] text-[#0066cc]" : item.category === "Required Documents" ? "bg-[#fff0e6] text-[#cc5500]" : "bg-[#e6ffe6] text-[#008000]"}`}>
+                                      {item.category}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </label>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                confirmDeleteChecklist(item.id);
+                              }}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 flex-shrink-0"
+                              title="Delete checklist item"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         ))
                       ) : (
                         <p className="text-gray-400 text-xs text-center py-4">
@@ -1026,6 +1053,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+
           {/* ── Add Review Item Modal ── */}
           {showReviewModal && (
             <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
@@ -1044,6 +1072,7 @@ export default function DashboardPage() {
                     <label className="text-[#484554] text-xs font-bold uppercase tracking-wider">Topic / Title *</label>
                     <input
                       type="text"
+                      maxLength={80}
                       placeholder="e.g. Laplace Transforms, Chapter 5 Summary..."
                       value={newReviewTitle}
                       onChange={(e) => setNewReviewTitle(e.target.value)}
@@ -1101,19 +1130,10 @@ export default function DashboardPage() {
                     <label className="text-[#484554] text-xs font-bold uppercase tracking-wider">Task Label</label>
                     <input
                       type="text"
+                      maxLength={100}
                       placeholder="e.g. Know exam room/location"
                       value={newChecklistLabel}
                       onChange={(e) => setNewChecklistLabel(e.target.value)}
-                      className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb]"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[#484554] text-xs font-bold uppercase tracking-wider">Optional Note</label>
-                    <input
-                      type="text"
-                      placeholder="Any additional details..."
-                      value={newChecklistNote}
-                      onChange={(e) => setNewChecklistNote(e.target.value)}
                       className="border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#451ebb]"
                     />
                   </div>
@@ -1128,6 +1148,7 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
           {/* ── Daily Goal Update Modal ── */}
           {showGoalModal && (
             <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
@@ -1188,6 +1209,15 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
+          {/* ── Confirmation Modal for Checklist Item Delete ── */}
+          <ConfirmDialog
+            isOpen={!!checklistToDelete}
+            onClose={() => setChecklistToDelete(null)}
+            onConfirm={handleDeleteChecklistConfirmed}
+            title="Delete Checklist Item?"
+            message="Are you sure you want to delete this item from your pre-exam checklist?"
+          />
         </main>
       </div>
     </div>

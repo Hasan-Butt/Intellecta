@@ -144,7 +144,7 @@ const EnrollForm = ({ onEnrolled }) => {
 
   const handleSubmit = async () => {
     if (!courseName.trim()) {
-      setError("Course name is required.");
+      setError("Subject name is required.");
       return;
     }
     if (!examDate) {
@@ -181,7 +181,7 @@ const EnrollForm = ({ onEnrolled }) => {
           className="font-bold text-[19px]"
           style={{ color: C.text, fontFamily: "Manrope, sans-serif" }}
         >
-          Enroll New Course
+          Add New Subject
         </h3>
       </div>
 
@@ -197,7 +197,7 @@ const EnrollForm = ({ onEnrolled }) => {
           className="block text-[9px] font-bold uppercase tracking-widest mb-2"
           style={{ color: C.muted }}
         >
-          Course Name
+          Subject Name
         </label>
         <input
           value={courseName}
@@ -358,7 +358,7 @@ const ScheduleGrid = ({ schedule, courses }) => {
         <div className="space-y-3">
           <CalendarCheck size={36} className="text-slate-300 mx-auto" />
           <p className="text-[15px] font-semibold text-slate-400">
-            No schedule generated yet. Enroll courses and click Generate.
+            No schedule generated yet. Add Subjects and click Generate.
           </p>
         </div>
       </div>
@@ -522,7 +522,7 @@ const GeneratePanel = ({ onGenerate, loading, hasCourses }) => {
           className="text-[13px] font-medium leading-relaxed opacity-80"
           style={{ color: "#d8ceff" }}
         >
-          Allocates study hours across your enrolled courses based on urgency,
+          Allocates study hours across your added subjects based on urgency,
           difficulty, and your availability.
         </p>
       </div>
@@ -676,7 +676,7 @@ export default function StudySchedulePage() {
   const handleEnrolled = () => {
     fetchCourses();
     setSchedule(null); // reset schedule when new course enrolled
-    setSuccessMsg("Course enrolled successfully!");
+    setSuccessMsg("Subject added successfully!");
     setTimeout(() => setSuccessMsg(""), 3000);
   };
 
@@ -719,7 +719,7 @@ export default function StudySchedulePage() {
                     className="text-[9px] font-bold tracking-[2px] uppercase"
                     style={{ color: C.subtle }}
                   >
-                    ENROLLED COURSES
+                    ENROLLED SUBJECTS
                   </span>
                   <span
                     className="text-[11px] font-bold"
@@ -744,7 +744,7 @@ export default function StudySchedulePage() {
                     >
                       <CalendarCheck size={32} className="text-slate-300" />
                       <p className="text-[14px] text-slate-400 font-medium">
-                        No courses enrolled yet. Add one on the left.
+                        No subjects enrolled yet. Add one on the left.
                       </p>
                     </div>
                   ) : (

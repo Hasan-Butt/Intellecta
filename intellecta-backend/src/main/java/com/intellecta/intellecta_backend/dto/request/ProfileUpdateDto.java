@@ -7,5 +7,6 @@ public record ProfileUpdateDto(
     String avatarUrl,
     Boolean studyReminders,
     Boolean achievementAlerts,
-    Boolean weeklyReports
+    Boolean weeklyReports,
+    Boolean anonymousMode
 ) {}

@@ -293,62 +293,64 @@ const NotesPage = () => {
               )}
             </div>
 
-            {/* Notes grid */}
+            {/* Notes grid wrapped in a scrollable container */}
             {loading ? (
               <p className="text-zinc-400 text-center mt-20">
                 Loading notes...
               </p>
             ) : (
-              <div
-                className={cn(
-                  viewMode === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 gap-6"
-                    : "flex flex-col gap-4",
-                )}
-              >
-                {displayedNotes.map((note) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    onRefresh={getNotes}
-                    isSelected={selectedIds.includes(note.id)}
-                    onSelect={handleSelect}
-                    onEdit={handleEditNote}  // ← THIS WAS MISSING
-                  />
-                ))}
+              <div className="max-h-[calc(100vh-300px)] min-h-[450px] overflow-y-auto pr-3 custom-scrollbar">
+                <div
+                  className={cn(
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 gap-6"
+                      : "flex flex-col gap-4",
+                  )}
+                >
+                  {displayedNotes.map((note) => (
+                    <NoteCard
+                      key={note.id}
+                      note={note}
+                      onRefresh={getNotes}
+                      isSelected={selectedIds.includes(note.id)}
+                      onSelect={handleSelect}
+                      onEdit={handleEditNote}
+                    />
+                  ))}
 
-                {activeTab === "all" && (
-                  <button
-                    onClick={() => openModal(true)}
-                    className="border-2 border-dashed border-zinc-200 rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-zinc-400 min-h-[320px] bg-zinc-50/30 hover:bg-zinc-50 transition-all group"
-                  >
-                    <div className="bg-white p-4 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
-                      <FileEdit className="h-6 w-6 text-zinc-400" />
-                    </div>
-                    <p className="text-xs font-bold tracking-widest uppercase">
-                      New Sanctuary Entry
-                    </p>
-                    <p className="text-[10px] mt-2 opacity-60 max-w-[180px] text-center">
-                      Top-down mastery template for complex subjects
-                    </p>
-                  </button>
-                )}
+                  {activeTab === "all" && (
+                    <button
+                      onClick={() => openModal(true)}
+                      className="border-2 border-dashed border-zinc-200 rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-zinc-400 min-h-[320px] bg-zinc-50/30 hover:bg-zinc-50 transition-all group"
+                    >
+                      <div className="bg-white p-4 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
+                        <FileEdit className="h-6 w-6 text-zinc-400" />
+                      </div>
+                      <p className="text-xs font-bold tracking-widest uppercase">
+                        New Sanctuary Entry
+                      </p>
+                      <p className="text-[10px] mt-2 opacity-60 max-w-[180px] text-center">
+                        Top-down mastery template for complex subjects
+                      </p>
+                    </button>
+                  )}
 
-                {displayedNotes.length === 0 && activeTab === "review" && (
-                  <p className="text-zinc-400 text-center mt-20 col-span-2">
-                    No notes in review queue yet.
-                  </p>
-                )}
-                {displayedNotes.length === 0 && activeTab === "pinned" && (
-                  <p className="text-zinc-400 text-center mt-20 col-span-2">
-                    No pinned notes yet. Click the bookmark icon on any note to pin it.
-                  </p>
-                )}
-                {displayedNotes.length === 0 && activeTab === "all" && (
-                  <p className="text-zinc-400 text-center mt-20 col-span-2">
-                    No notes found. Create your first note!
-                  </p>
-                )}
+                  {displayedNotes.length === 0 && activeTab === "review" && (
+                    <p className="text-zinc-400 text-center mt-20 col-span-2">
+                      No notes in review queue yet.
+                    </p>
+                  )}
+                  {displayedNotes.length === 0 && activeTab === "pinned" && (
+                    <p className="text-zinc-400 text-center mt-20 col-span-2">
+                      No pinned notes yet. Click the bookmark icon on any note to pin it.
+                    </p>
+                  )}
+                  {displayedNotes.length === 0 && activeTab === "all" && (
+                    <p className="text-zinc-400 text-center mt-20 col-span-2">
+                      No notes found. Create your first note!
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </div>

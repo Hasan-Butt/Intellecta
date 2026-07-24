@@ -22,13 +22,54 @@ const GlobalLeaderboard = () => {
   const [showPeerDropdown, setShowPeerDropdown] = useState(false);
   const [nextAchievement, setNextAchievement] = useState(null);
 
+  const fetchGlobal = async () => {
+    try {
+      const userId = getUserId();
+      if (!userId) return;
+      const globalRes = await api.get(`/leaderboards/global/${userId}`);
+      setGlobalData(globalRes.data || []);
+    } catch (err) {
+      console.error('Error fetching global leaderboard:', err);
+    }
+  };
+
+  const fetchSectional = async () => {
+    if (!selectedCategory) return;
+    setLoading(true);
+    try {
+      const userId = getUserId();
+      if (!userId) return;
+      const sectionalRes = await api.get(`/leaderboards/sectional/${userId}?category=${encodeURIComponent(selectedCategory)}`);
+      setSectionalData(sectionalRes.data || []);
+    } catch (err) {
+      console.error('Error fetching sectional leaderboard:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const userId = getUserId();
+        if (!userId) return;
+        const res = await api.get(`/users/${userId}/profile`);
+        if (res.data && res.data.anonymousMode !== undefined) {
+          setIsAnonymous(res.data.anonymousMode);
+        }
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+      }
+    };
+    fetchUserProfile();
+  }, []);
+
   useEffect(() => {
     const fetchAchievements = async () => {
       try {
         const userId = getUserId();
         if (!userId) return;
         const res = await api.get(`/achievements/user/${userId}/all`);
-        // Find the first unearned achievement
         const unearned = res.data.find(a => !a.earned);
         setNextAchievement(unearned);
       } catch (err) {
@@ -37,7 +78,6 @@ const GlobalLeaderboard = () => {
     };
     fetchAchievements();
   }, []);
-
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -56,39 +96,26 @@ const GlobalLeaderboard = () => {
   }, []);
 
   useEffect(() => {
-    const fetchGlobal = async () => {
-      try {
-        const userId = getUserId();
-        if (!userId) return;
-        const globalRes = await api.get(`/leaderboards/global/${userId}`);
-        setGlobalData(globalRes.data || []);
-      } catch (err) {
-        console.error('Error fetching global leaderboard:', err);
-      }
-    };
     fetchGlobal();
   }, []);
 
   useEffect(() => {
-    const fetchSectional = async () => {
-      if (!selectedCategory) return;
-      setLoading(true);
-      try {
-        const userId = getUserId();
-        if (!userId) return;
-        const sectionalRes = await api.get(`/leaderboards/sectional/${userId}?category=${encodeURIComponent(selectedCategory)}`);
-        setSectionalData(sectionalRes.data || []);
-      } catch (err) {
-        console.error('Error fetching sectional leaderboard:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchSectional();
   }, [selectedCategory]);
 
-  // Reset visible count whenever the board or category changes
-  // (no longer needed — scroll is used instead)
+  const handleToggleAnonymous = async () => {
+    const nextVal = !isAnonymous;
+    setIsAnonymous(nextVal);
+    try {
+      const userId = getUserId();
+      if (!userId) return;
+      await api.put(`/users/${userId}/profile`, { anonymousMode: nextVal });
+      await fetchGlobal();
+      if (selectedCategory) await fetchSectional();
+    } catch (err) {
+      console.error("Failed to update anonymous mode:", err);
+    }
+  };
 
   const currentLeaderboard = viewMode === 'global' ? globalData : sectionalData;
   const visibleLeaderboard = currentLeaderboard;
@@ -97,7 +124,7 @@ const GlobalLeaderboard = () => {
   const top2 = currentLeaderboard[1] || { username: 'TBD', level: 1, xp: 0, discipline: 'General' };
   const top3 = currentLeaderboard[2] || { username: 'TBD', level: 1, xp: 0, discipline: 'General' };
 
-  const getDisplayName = (row) => (isAnonymous && row.currentUser) ? "Anonymous" : (row.username || 'TBD');
+  const getDisplayName = (row) => row.username || 'TBD';
 
   const resolveLevelTitle = (level) => {
     const l = level || 1;
@@ -180,7 +207,7 @@ const GlobalLeaderboard = () => {
                 <div className="flex items-center gap-2 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-slate-200 shadow-sm text-[12px] font-bold">
                   <span className="text-slate-600">Anonymous Mode</span>
                   <button
-                    onClick={() => setIsAnonymous(!isAnonymous)}
+                    onClick={handleToggleAnonymous}
                     className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${isAnonymous ? 'bg-indigo-600' : 'bg-slate-200'}`}
                   >
                     <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform ${isAnonymous ? 'translate-x-5' : 'translate-x-1'}`} />
