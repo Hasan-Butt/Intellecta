@@ -66,6 +66,10 @@ public class User {
     @ColumnDefault("6.0")
     private double dailyGoalHours = 6.0;
 
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private boolean anonymousMode = false;
+
     // Constructors
     public User() {}
 
@@ -210,5 +214,13 @@ public class User {
 
     public void setDailyGoalHours(double dailyGoalHours) {
         this.dailyGoalHours = dailyGoalHours;
+    }
+
+    public boolean isAnonymousMode() {
+        return anonymousMode;
+    }
+
+    public void setAnonymousMode(boolean anonymousMode) {
+        this.anonymousMode = anonymousMode;
     }
 }

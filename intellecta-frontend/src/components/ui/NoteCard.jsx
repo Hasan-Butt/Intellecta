@@ -76,17 +76,17 @@ const NoteCard = ({ note, onRefresh, isSelected, onSelect, onEdit }) => {
         </div>
 
         {/* Title */}
-        <h3 className="text-xl font-bold text-zinc-900 mb-3 leading-tight">
+        <h3 className="text-xl font-bold text-zinc-900 mb-3 leading-tight line-clamp-2 break-words max-w-full" title={note.title}>
           {note.title}
         </h3>
 
         {/* Tags */}
         {note.tags && note.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
+          <div className="flex flex-wrap gap-1.5 mb-3 max-w-full overflow-hidden">
             {note.tags.map((tag) => (
               <span
                 key={tag}
-                className="bg-[#F5F3FF] text-[#7C3AED] px-2 py-0.5 rounded-full text-[10px] font-bold border border-[#DDD6FE]"
+                className="bg-[#F5F3FF] text-[#7C3AED] px-2 py-0.5 rounded-full text-[10px] font-bold border border-[#DDD6FE] break-all max-w-[150px] truncate"
               >
                 #{tag}
               </span>
@@ -96,7 +96,7 @@ const NoteCard = ({ note, onRefresh, isSelected, onSelect, onEdit }) => {
 
         {/* Content preview */}
         <div
-          className="text-zinc-500 leading-relaxed mb-8 line-clamp-3 flex-grow text-sm"
+          className="text-zinc-500 leading-relaxed mb-8 line-clamp-3 flex-grow text-sm break-words overflow-hidden"
           dangerouslySetInnerHTML={{ __html: note.content || "" }}
         />
 

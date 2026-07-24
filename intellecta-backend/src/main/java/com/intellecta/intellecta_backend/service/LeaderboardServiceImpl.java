@@ -59,17 +59,22 @@ public class LeaderboardServiceImpl implements LeaderboardService {
             int xpPct = (int) Math.min(100,
                 ((u.getXp() - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
 
+            boolean isMe = u.getId().equals(userId);
+            boolean isAnon = u.isAnonymousMode();
+            String displayName = isAnon ? (isMe ? u.getUsername() + " (Anonymous)" : "Anonymous") : u.getUsername();
+            String displayAvatar = (isAnon && !isMe) ? null : u.getAvatarUrl();
+
             board.add(LeaderboardEntryDTO.builder()
                 .rank(displayRank)
                 .userId(u.getId())
-                .username(u.getUsername())
+                .username(displayName)
                 .focusHours(focusHours)
                 .xp(u.getXp())
                 .level(level)
                 .xpProgressPct(xpPct)
                 .discipline("General")
-                .avatarUrl(u.getAvatarUrl())
-                .isCurrentUser(u.getId().equals(userId))
+                .avatarUrl(displayAvatar)
+                .isCurrentUser(isMe)
                 .build());
             currentRank++;
         }
@@ -101,17 +106,22 @@ public class LeaderboardServiceImpl implements LeaderboardService {
             int xpPct = (int) Math.min(100,
                 ((sxp.getXp() - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
 
+            boolean isMe = u.getId().equals(userId);
+            boolean isAnon = u.isAnonymousMode();
+            String displayName = isAnon ? (isMe ? u.getUsername() + " (Anonymous)" : "Anonymous") : u.getUsername();
+            String displayAvatar = (isAnon && !isMe) ? null : u.getAvatarUrl();
+
             board.add(LeaderboardEntryDTO.builder()
                 .rank(displayRank)
                 .userId(u.getId())
-                .username(u.getUsername())
+                .username(displayName)
                 .focusHours(0)
                 .xp(sxp.getXp())
                 .level(level)
                 .xpProgressPct(xpPct)
                 .discipline(sxp.getCategory())
-                .avatarUrl(u.getAvatarUrl())
-                .isCurrentUser(u.getId().equals(userId))
+                .avatarUrl(displayAvatar)
+                .isCurrentUser(isMe)
                 .build());
             currentRank++;
         }

@@ -18,4 +18,5 @@ public class UserResponseDto {
     private boolean achievementAlerts;
     private boolean weeklyReports;
     private int streakDays;
+    private boolean anonymousMode;
 }
