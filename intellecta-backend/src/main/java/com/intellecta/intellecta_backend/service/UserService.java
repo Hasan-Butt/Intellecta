@@ -25,6 +25,7 @@ public class UserService {
 
     private final String uploadDir = "uploads/avatars";
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public UserResponseDto getProfile(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -82,8 +83,6 @@ public class UserService {
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .role(user.getRole() != null ? user.getRole().name() : null)
-                .status(user.getStatus())
                 .bio(user.getBio())
                 .avatarUrl(user.getAvatarUrl())
                 .studyReminders(user.isStudyReminders())

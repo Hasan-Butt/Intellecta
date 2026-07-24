@@ -245,6 +245,7 @@ function DistractionLog({ summary, onLog }) {
           />
           <button
             type="button"
+            aria-label="Log Distraction"
             onClick={(e) => {
               e.preventDefault();
               handleLog(input);
@@ -278,14 +279,14 @@ function DistractionLog({ summary, onLog }) {
         <div className="h-[1px] bg-gray-100 w-full mb-3" />
         <div className="flex justify-between items-center mb-3">
           <div className="flex gap-2 items-center">
-            <span className="text-gray-400 text-[10px] uppercase font-bold">
+            <span className="text-[#767676] text-[10px] uppercase font-bold">
               Recent:
             </span>
             <span className="text-[#484554] text-xs font-semibold">
               {summary?.mostRecentReason ?? "None logged"}
             </span>
           </div>
-          <span className="text-gray-400 text-[10px]">
+          <span className="text-[#767676] text-[10px]">
             {summary?.mostRecentTimeAgo ?? ""}
           </span>
         </div>
@@ -504,10 +505,11 @@ export default function DashboardPage() {
 
   // Badge display — prioritized real images with rounded fill styling
   const badgeDisplay = recentBadges.length > 0
-    ? recentBadges.map((badgeKey) => ({
-        key: badgeKey,
-        imageUrl: `${api.defaults.baseURL}/badges/${badgeKey}/image`,
-        fallback: badgeIconMap[badgeKey] || defaultBadges[0]
+    ? recentBadges.map((badgeObj) => ({
+        key: badgeObj.key,
+        imageUrl: badgeObj.imageUrl,
+        fallback: badgeIconMap[badgeObj.key] || defaultBadges[0],
+        isPlaceholder: !badgeObj.imageUrl
       }))
     : defaultBadges.map(b => ({ ...b, isPlaceholder: true }));
 
@@ -816,7 +818,7 @@ export default function DashboardPage() {
                                 </p>
                                 <div className="text-[10px] text-gray-400 flex items-center gap-2 mt-0.5">
                                   {item.category && (
-                                    <span className={`px-1.5 py-0.5 rounded-md font-bold flex-shrink-0 ${item.category === "Exam Logistics" ? "bg-[#e6f0ff] text-[#0066cc]" : item.category === "Required Documents" ? "bg-[#fff0e6] text-[#cc5500]" : "bg-[#e6ffe6] text-[#008000]"}`}>
+                                    <span className={`px-1.5 py-0.5 rounded-md font-bold flex-shrink-0 ${item.category === "Exam Logistics" ? "bg-[#e6f0ff] text-[#0066cc]" : item.category === "Required Documents" ? "bg-[#fff0e6] text-[#ae4900]" : "bg-[#e6ffe6] text-[#008000]"}`}>
                                       {item.category}
                                     </span>
                                   )}
@@ -999,7 +1001,7 @@ export default function DashboardPage() {
                               <p className="font-bold text-[#451ebb] text-sm">
                                 {entry.username} (You)
                               </p>
-                              <p className="text-[10px] text-[#451ebb]/70">
+                              <p className="text-[10px] text-[#451ebb]">
                                 {entry.focusHours} hrs focused
                               </p>
                             </div>
@@ -1018,7 +1020,7 @@ export default function DashboardPage() {
                               <p className="font-bold text-sm">
                                 {entry.username}
                               </p>
-                              <p className="text-[10px] text-gray-500">
+                              <p className="text-[10px] text-gray-600">
                                 {entry.focusHours} hrs focused
                               </p>
                             </div>

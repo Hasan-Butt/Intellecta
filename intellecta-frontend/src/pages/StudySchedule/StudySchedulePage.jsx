@@ -4,27 +4,20 @@ import Sidebar from "../../components/dashboard/StudentSidebar";
 import api from "../../services/api";
 import { getUserId } from "../../utils/auth";
 import {
-  UploadCloud,
-  MoreVertical,
   Clock,
   BarChart2,
-  FileText,
-  Plus,
-  Pause,
   CheckCircle2,
   Zap,
-  Circle,
   Flame,
   Timer,
   Trash2,
   AlertTriangle,
   ChevronDown,
   ChevronUp,
+  Plus,
   Lightbulb,
   CalendarCheck,
   RefreshCw,
-  Save,
-  X,
   Info,
 } from "lucide-react";
 

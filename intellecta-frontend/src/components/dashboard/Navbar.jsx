@@ -197,7 +197,7 @@ const Navbar = () => {
 
         {/* Right Section: Actions & Profile */}
         <div className="flex items-center gap-2 ml-auto">
-          <button className={`p-2.5 rounded-full bg-transparent transition-all relative group border border-transparent ${
+          <button aria-label="View Streak" className={`p-2.5 rounded-full bg-transparent transition-all relative group border border-transparent ${
             userData.streakDays > 0 
               ? 'text-orange-500 hover:bg-orange-50/50 hover:border-orange-100' 
               : 'text-gray-400 hover:bg-gray-50/50 hover:border-gray-200'
@@ -218,7 +218,7 @@ const Navbar = () => {
             )}
           </button>
 
-          <button className="p-2.5 rounded-full hover:bg-gray-100 transition-all text-[#6B7280] border border-transparent hover:border-gray-200">
+          <button aria-label="View Notifications" className="p-2.5 rounded-full hover:bg-gray-100 transition-all text-[#6B7280] border border-transparent hover:border-gray-200">
             <Bell size={24} />
           </button>
 
@@ -227,6 +227,7 @@ const Navbar = () => {
           {/* Profile Section with Popover */}
           <div className="relative" ref={menuRef}>
             <button 
+              aria-label="Toggle Profile Menu"
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className={`flex items-center gap-1 p-0.5 rounded-full ring-2 transition-all ${
                 showProfileMenu ? 'ring-indigo-500' : 'ring-transparent hover:ring-indigo-100'
