@@ -36,8 +36,8 @@ public class DashboardResponse {
     private long totalSessions;
     private int  totalPomodoros;
 
-    // Recent achievements (up to 3 badge names)
-    private List<String> recentBadges;
+    // Recent achievements (up to 3 badges with image availability)
+    private List<BadgeDTO> recentBadges;
 
     // Focus chart — 7 entries Mon→Sun
     private List<FocusDayDTO> focusWeek;
@@ -64,5 +64,11 @@ public class DashboardResponse {
         private double hours;
         private int    percentage;
         private String color;
+    }
+
+    @Data @Builder
+    public static class BadgeDTO {
+        private String key;
+        private String imageUrl;
     }
 }

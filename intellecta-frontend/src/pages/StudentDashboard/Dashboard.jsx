@@ -504,10 +504,11 @@ export default function DashboardPage() {
 
   // Badge display — prioritized real images with rounded fill styling
   const badgeDisplay = recentBadges.length > 0
-    ? recentBadges.map((badgeKey) => ({
-        key: badgeKey,
-        imageUrl: `${api.defaults.baseURL}/badges/${badgeKey}/image`,
-        fallback: badgeIconMap[badgeKey] || defaultBadges[0]
+    ? recentBadges.map((badgeObj) => ({
+        key: badgeObj.key,
+        imageUrl: badgeObj.imageUrl,
+        fallback: badgeIconMap[badgeObj.key] || defaultBadges[0],
+        isPlaceholder: !badgeObj.imageUrl
       }))
     : defaultBadges.map(b => ({ ...b, isPlaceholder: true }));
 
@@ -816,7 +817,7 @@ export default function DashboardPage() {
                                 </p>
                                 <div className="text-[10px] text-gray-400 flex items-center gap-2 mt-0.5">
                                   {item.category && (
-                                    <span className={`px-1.5 py-0.5 rounded-md font-bold flex-shrink-0 ${item.category === "Exam Logistics" ? "bg-[#e6f0ff] text-[#0066cc]" : item.category === "Required Documents" ? "bg-[#fff0e6] text-[#cc5500]" : "bg-[#e6ffe6] text-[#008000]"}`}>
+                                    <span className={`px-1.5 py-0.5 rounded-md font-bold flex-shrink-0 ${item.category === "Exam Logistics" ? "bg-[#e6f0ff] text-[#0066cc]" : item.category === "Required Documents" ? "bg-[#fff0e6] text-[#ae4900]" : "bg-[#e6ffe6] text-[#008000]"}`}>
                                       {item.category}
                                     </span>
                                   )}
@@ -999,7 +1000,7 @@ export default function DashboardPage() {
                               <p className="font-bold text-[#451ebb] text-sm">
                                 {entry.username} (You)
                               </p>
-                              <p className="text-[10px] text-[#451ebb]/70">
+                              <p className="text-[10px] text-[#451ebb]">
                                 {entry.focusHours} hrs focused
                               </p>
                             </div>
@@ -1018,7 +1019,7 @@ export default function DashboardPage() {
                               <p className="font-bold text-sm">
                                 {entry.username}
                               </p>
-                              <p className="text-[10px] text-gray-500">
+                              <p className="text-[10px] text-gray-600">
                                 {entry.focusHours} hrs focused
                               </p>
                             </div>

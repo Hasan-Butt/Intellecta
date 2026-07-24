@@ -51,6 +51,10 @@ public class DashboardServiceImpl implements DashboardService {
     private final AchievementRepository   achievementRepository;
     private final DistractionRepository   distractionRepository;
     private final GamificationService     gamificationService;
+    private final com.intellecta.intellecta_backend.repository.BadgeDefinitionRepository badgeDefinitionRepository;
+
+    @org.springframework.beans.factory.annotation.Value("${badge.serve.base-url:http://localhost:8080/api/badges}")
+    private String serveBaseUrl;
 
     @Override
     public DashboardResponse getDashboard(Long userId) {
@@ -98,9 +102,18 @@ public class DashboardServiceImpl implements DashboardService {
         String levelTitle = resolveLevelTitle(level);
 
         // ── Recent badges ─────────────────────────────────────────────────────
-        List<String> recentBadges = achievementRepository
+        List<DashboardResponse.BadgeDTO> recentBadges = achievementRepository
             .findTop3ByUserIdOrderByEarnedAtDesc(userId)
-            .stream().map(Achievement::getBadgeName)
+            .stream().map(a -> {
+                String key = a.getBadgeName();
+                String imageUrl = badgeDefinitionRepository.findByBadgeKey(key)
+                        .map(def -> def.getImageFilePath() != null ? serveBaseUrl + "/" + key + "/image" : null)
+                        .orElse(null);
+                return DashboardResponse.BadgeDTO.builder()
+                        .key(key)
+                        .imageUrl(imageUrl)
+                        .build();
+            })
             .collect(Collectors.toList());
 
         // ── Focus week chart ──────────────────────────────────────────────────
