@@ -18,6 +18,8 @@ import com.intellecta.intellecta_backend.enums.UserRoles;
 import com.intellecta.intellecta_backend.repository.UserRepository;
 import com.intellecta.intellecta_backend.util.JwtUtil;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Map;
 
 @Service
@@ -33,6 +35,7 @@ public class AuthServiceImpl implements AuthService {
     private JwtUtil jwtUtil;
 
     @Override
+    @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail());
 

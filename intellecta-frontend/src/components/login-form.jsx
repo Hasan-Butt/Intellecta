@@ -10,6 +10,8 @@ import { useGoogleLogin } from "@react-oauth/google";
 import Swal from "sweetalert2";
 import { ArrowLeft } from "lucide-react";
 
+import { setAuthData } from "../utils/auth";
+
 export function LoginForm({ className, ...props }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +21,7 @@ export function LoginForm({ className, ...props }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
 
     try {
@@ -28,7 +31,9 @@ export function LoginForm({ className, ...props }) {
       });
 
       if (res.status === 200) {
-
+        if (res.data?.userId && res.data?.role) {
+          setAuthData(res.data.userId, res.data.role);
+        }
         if (res.data.role === "ADMIN") {
           navigate("/dashboard");
         } else {

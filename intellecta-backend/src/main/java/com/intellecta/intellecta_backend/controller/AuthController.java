@@ -1,5 +1,6 @@
 package com.intellecta.intellecta_backend.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -28,12 +29,14 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @Value("${app.security.cookie-secure:false}")
+    private boolean cookieSecure;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         try {
             LoginResponse loginResponse = authService.login(request);
             setTokenCookie(response, loginResponse.getToken());
-            loginResponse.setToken(null); // Clear from response body for extra security
             return ResponseEntity.ok(loginResponse);
         } catch (Exception e) {
             System.out.println("Login Error: " + e.getMessage());
@@ -46,7 +49,6 @@ public class AuthController {
         try {
             LoginResponse loginResponse = authService.googleLogin(request);
             setTokenCookie(response, loginResponse.getToken());
-            loginResponse.setToken(null);
             return ResponseEntity.ok(loginResponse);
         } catch (Exception e) {
             System.out.println("Google Login Error: " + e.getMessage());
@@ -59,7 +61,6 @@ public class AuthController {
         try {
             LoginResponse loginResponse = authService.register(request);
             setTokenCookie(response, loginResponse.getToken());
-            loginResponse.setToken(null);
             return ResponseEntity.ok(loginResponse);
         } catch (Exception e) {
             System.out.println("Register Error: " + e.getMessage());
@@ -71,7 +72,7 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("token", "")
                 .httpOnly(true)
-                .secure(false) // Set to true in prod/HTTPS
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(0) // Immediately clear cookie
                 .sameSite("Lax")
@@ -97,7 +98,7 @@ public class AuthController {
     private void setTokenCookie(HttpServletResponse response, String token) {
         ResponseCookie cookie = ResponseCookie.from("token", token)
                 .httpOnly(true)
-                .secure(false) // Set to true in prod/HTTPS
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(24 * 60 * 60) // 24 hours
                 .sameSite("Lax")
