@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
-    private final SystemAlertRepository       systemAlertRepository;
     private final UserRepository              userRepository;
     private final StudySessionRepository      studySessionRepository;
     private final QuizAttemptRepository       quizAttemptRepository;
@@ -33,7 +32,6 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        seedAlerts();
         seedRichTestData();
         seedActiveSessions();
         seedSystemConfig();
@@ -131,36 +129,6 @@ public class DataSeeder implements CommandLineRunner {
                     .type("BLACKLIST").createdAt(LocalDateTime.now().minusDays(2)).build()
         ));
         System.out.println("[DataSeeder] Seeded app governance rules.");
-    }
-
-    // ── System alerts ─────────────────────────────────────────────────────────
-
-    private void seedAlerts() {
-        if (systemAlertRepository.count() > 0) return;
-        systemAlertRepository.saveAll(List.of(
-            alert("Unusual login pattern detected for user sara.khan",
-                  "Unusual login pattern detected for user sara.khan.",
-                  2, "CRITICAL", "ANOMALY"),
-            alert("Peak concurrent sessions hit 47 — 18% above weekly average",
-                  "Peak concurrent sessions hit 47 — 18% above weekly average.",
-                  14, "WARNING", "PERFORMANCE"),
-            alert("Quiz failure rate for Data Structures exceeded 70% threshold",
-                  "Quiz failure rate for Data Structures exceeded 70% threshold.",
-                  60, "RESOLVED", "PERFORMANCE"),
-            alert("3 students flagged for 12+ consecutive study hours",
-                  "3 students flagged for 12+ consecutive study hours.",
-                  180, "WARNING", "ANOMALY"),
-            alert("Storage utilization crossed 80% on document upload server",
-                  "Storage utilization crossed 80% on document upload server.",
-                  300, "RESOLVED", "SYSTEM")
-        ));
-    }
-
-    private SystemAlert alert(String title, String desc, int minutesAgo, String type, String icon) {
-        return SystemAlert.builder()
-            .title(title).description(desc)
-            .alertTime(LocalDateTime.now().minusMinutes(minutesAgo))
-            .alertType(type).iconType(icon).build();
     }
 
     // ── Rich test data ────────────────────────────────────────────────────────
