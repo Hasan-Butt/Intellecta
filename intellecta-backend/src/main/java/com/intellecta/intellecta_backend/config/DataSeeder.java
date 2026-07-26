@@ -29,6 +29,7 @@ public class DataSeeder implements CommandLineRunner {
     private final PasswordEncoder             passwordEncoder;
     private final SystemConfigRepository      systemConfigRepository;
     private final AppGovernanceRuleRepository appGovernanceRuleRepository;
+    private final SubjectRepository           subjectRepository;
 
     @Override
     public void run(String... args) {
@@ -55,12 +56,15 @@ public class DataSeeder implements CommandLineRunner {
         }
         if (pool.isEmpty()) return;
 
-        String[] subjects   = {"Data Structures", "OOP", "Database Systems"};
-        long[]   minutesAgo = {90L, 45L, 120L};
+        long[] minutesAgo = {90L, 45L, 120L};
         for (int i = 0; i < pool.size(); i++) {
+            User u = pool.get(i);
+            List<String> userSubjects = subjectRepository.findByUserIdOrderBySemesterAscNameAsc(u.getId())
+                    .stream().map(Subject::getName).collect(Collectors.toList());
+            String subject = userSubjects.isEmpty() ? "General" : userSubjects.get(i % userSubjects.size());
             studySessionRepository.save(StudySession.builder()
-                    .user(pool.get(i))
-                    .subject(subjects[i])
+                    .user(u)
+                    .subject(subject)
                     .startTime(LocalDateTime.now().minusMinutes(minutesAgo[i]))
                     .pomodorosCompleted((int) (minutesAgo[i] / 25))
                     .deepWork(minutesAgo[i] >= 60)
@@ -162,9 +166,13 @@ public class DataSeeder implements CommandLineRunner {
     // ── Rich test data ────────────────────────────────────────────────────────
 
     private static final String[] SUBJECTS = {
-        "Data Structures", "OOP", "Database Systems", "Calculus", "Linear Algebra", 
-        "Software Engineering", "Operating Systems", "Computer Networks", 
+        "Data Structures", "OOP", "Database Systems", "Calculus", "Linear Algebra",
+        "Software Engineering", "Operating Systems", "Computer Networks",
         "Discrete Mathematics", "English Communication"
+    };
+
+    private static final String[] SUBJECT_COLORS = {
+        "#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"
     };
 
     private static final String[] DISTRACTIONS = {
@@ -183,9 +191,12 @@ public class DataSeeder implements CommandLineRunner {
         List<User> students = seedStudents();
         if (students.isEmpty()) return;
 
+        // Always ensure each student has Subject entities — must run before sessions
+        Map<Long, List<String>> studentSubjects = seedSubjectsForStudents(students);
+
         // Seed sessions only if sparse (first-time or fresh DB)
         if (studySessionRepository.count() < 200) {
-            seedStudySessions(students);
+            seedStudySessions(students, studentSubjects);
             if (distractionRepository.count() == 0) seedDistractions(students);
             if (achievementRepository.count() == 0) seedAchievements(students);
             System.out.println("[DataSeeder] Seeded sessions + activities for " + students.size() + " students.");
@@ -261,9 +272,36 @@ public class DataSeeder implements CommandLineRunner {
                 .collect(Collectors.toList());
     }
 
+    // ── Subjects — one Subject entity per student per subject name ────────────
+
+    private Map<Long, List<String>> seedSubjectsForStudents(List<User> students) {
+        Map<Long, List<String>> result = new HashMap<>();
+        for (int i = 0; i < students.size(); i++) {
+            User student = students.get(i);
+            if (subjectRepository.countByUserId(student.getId()) == 0) {
+                int count = 4 + (i % 2); // 4 or 5 subjects per student
+                List<Subject> toSave = new ArrayList<>();
+                for (int j = 0; j < count; j++) {
+                    // stride-3 index ensures each student gets a distinct, non-repeating subset
+                    toSave.add(Subject.builder()
+                        .user(student)
+                        .name(SUBJECTS[(i * 3 + j) % SUBJECTS.length])
+                        .semester("Fall 2025")
+                        .color(SUBJECT_COLORS[j % SUBJECT_COLORS.length])
+                        .build());
+                }
+                subjectRepository.saveAll(toSave);
+            }
+            List<String> names = subjectRepository.findByUserIdOrderBySemesterAscNameAsc(student.getId())
+                .stream().map(Subject::getName).collect(Collectors.toList());
+            result.put(student.getId(), names);
+        }
+        return result;
+    }
+
     // ── Study sessions — 90-day programmatic generation ───────────────────────
 
-    private void seedStudySessions(List<User> students) {
+    private void seedStudySessions(List<User> students, Map<Long, List<String>> studentSubjects) {
         Random rng = new Random(42L);
         List<StudySession> batch = new ArrayList<>();
         int[] durations = {45, 90, 120};
@@ -274,7 +312,8 @@ public class DataSeeder implements CommandLineRunner {
         for (User student : students) {
             int profile = (int) (student.getId() % 3); // 0=heavy, 1=moderate, 2=light
             double studyChance = profile == 0 ? 0.80 : profile == 1 ? 0.55 : 0.35;
-            
+            List<String> subjectPool = studentSubjects.getOrDefault(student.getId(), List.of("General"));
+
             // Assign a preferred study time pattern
             int timePattern = rng.nextInt(3);
 
@@ -290,9 +329,9 @@ public class DataSeeder implements CommandLineRunner {
                     } else {
                         startHour = nightHours[rng.nextInt(nightHours.length)];
                     }
-                    
+
                     int durationMins = durations[rng.nextInt(durations.length)];
-                    String subject   = SUBJECTS[rng.nextInt(SUBJECTS.length)];
+                    String subject   = subjectPool.get(rng.nextInt(subjectPool.size()));
                     LocalDateTime start = LocalDateTime.now()
                             .minusDays(daysBack)
                             .withHour(startHour)

@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class MonthlyScoreDto {
     private String month;
-    private double score;
+    private Double score;
 }

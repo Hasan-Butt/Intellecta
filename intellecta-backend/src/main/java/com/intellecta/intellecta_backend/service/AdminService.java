@@ -441,22 +441,14 @@ public class AdminService {
                     .average();
             performanceOverTime.add(MonthlyScoreDto.builder()
                     .month(ym.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH))
-                    .score(monthAvg.isPresent() ? Math.round(monthAvg.getAsDouble() * 10) / 10.0 : 0.0)
+                    .score(monthAvg.isPresent() ? Math.round(monthAvg.getAsDouble() * 10) / 10.0 : null)
                     .build());
         }
 
-        // Weak topics computation
-        System.out.println("[WEAK_TOPICS_DEBUG] allAttempts.size()=" + allAttempts.size());
-        int skipped = 0;
-        if (!allAttempts.isEmpty()) {
-            QuizAttempt sample = allAttempts.get(0);
-            System.out.println("[WEAK_TOPICS_DEBUG] sample score=" + sample.getScore()
-                    + " totalQ=" + sample.getTotalQuestions()
-                    + " quiz=" + (sample.getQuiz() != null ? sample.getQuiz().getTopic() : "null"));
-        }
+        // Group attempts by topic and compute per-topic average score
         Map<String, List<Double>> scoresByTopic = new HashMap<>();
         for (QuizAttempt a : allAttempts) {
-            if (a.getScore() == null || a.getTotalQuestions() == null || a.getTotalQuestions() == 0) { skipped++; continue; }
+            if (a.getScore() == null || a.getTotalQuestions() == null || a.getTotalQuestions() == 0) continue;
             String topic;
             try {
                 String cat   = (a.getQuiz() != null) ? a.getQuiz().getCategory() : null;
@@ -470,13 +462,13 @@ public class AdminService {
             double pct = (double) a.getScore() / a.getTotalQuestions() * 100;
             scoresByTopic.computeIfAbsent(topic, k -> new ArrayList<>()).add(pct);
         }
-        // DEBUG response: encode diagnostic info directly in the list
-        List<String> weakTopics = new ArrayList<>();
-        weakTopics.add("allAttempts=" + allAttempts.size() + " skipped=" + skipped + " topics=" + scoresByTopic.size());
-        for (Map.Entry<String, List<Double>> e : scoresByTopic.entrySet()) {
-            double avg = e.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(-1);
-            weakTopics.add(e.getKey() + ": avg=" + Math.round(avg) + "% n=" + e.getValue().size());
-        }
+        // Topics where average score < 60% — sorted worst first
+        List<String> weakTopics = scoresByTopic.entrySet().stream()
+                .filter(e -> e.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(100.0) < 60.0)
+                .sorted(Comparator.comparingDouble(e ->
+                        e.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(100.0)))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
 
         return PerformanceTrendDto.builder()
                 .totalStudents(allStudents.size())

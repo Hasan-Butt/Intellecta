@@ -14,7 +14,6 @@ import "../../styles/global.css";
 const today = new Date().toISOString().split("T")[0];
 const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-const SUBJECTS = ["Mathematics", "Physics", "Computer Science", "Chemistry"];
 
 export default function PerformanceTrends() {
   const [activeTab, setActiveTab] = useState("Analytics");
@@ -116,6 +115,8 @@ export default function PerformanceTrends() {
     setSelectedSubjects((prev) =>
       prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
     );
+
+  const availableSubjects = data?.subjectBreakdown?.map((s) => s.subjectName) ?? [];
 
   const displayedSubjects =
     data?.subjectBreakdown?.filter(
@@ -255,7 +256,7 @@ export default function PerformanceTrends() {
               <div className="h-56 mt-6">
                 {!data ? (
                   <div className="h-full flex items-center justify-center text-sm font-bold text-gray-400">Loading...</div>
-                ) : !data.performanceOverTime || data.performanceOverTime.every(m => m.score === 0) ? (
+                ) : !data.performanceOverTime || data.performanceOverTime.every(m => !m.score) ? (
                   <div className="h-full flex flex-col items-center justify-center">
                     <p className="text-center text-xs font-bold text-gray-400 mt-6 uppercase tracking-widest">
                       Performance data will appear here as students complete quizzes
@@ -284,9 +285,9 @@ export default function PerformanceTrends() {
             <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm p-10">
               <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
                 <div>
-                  <h3 className="text-2xl font-black">Subject Comparison</h3>
+                  <h3 className="text-2xl font-black">Study Time Distribution</h3>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">
-                    Compare performance across subjects
+                    Percentage of total study time per subject
                   </p>
                 </div>
                 {/* Multi-subject selector */}
@@ -300,7 +301,9 @@ export default function PerformanceTrends() {
                   </button>
                   {subjectDropdownOpen && (
                     <div className="absolute right-0 top-11 z-20 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 w-52">
-                      {SUBJECTS.map((s) => (
+                      {availableSubjects.length === 0 ? (
+                        <p className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest">No subjects yet</p>
+                      ) : availableSubjects.map((s) => (
                         <label key={s} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 cursor-pointer">
                           <input type="checkbox" checked={selectedSubjects.includes(s)}
                             onChange={() => toggleSubject(s)}
@@ -342,7 +345,7 @@ export default function PerformanceTrends() {
                           <Cell key={`cell-${index}`} fill={entry.color || '#6C5DD3'} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} formatter={(value) => `${value}%`} />
+                      <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} formatter={(value, name) => [`${value}% of study time`, name]} />
                       <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#4B5563' }} />
                     </PieChart>
                   </ResponsiveContainer>
