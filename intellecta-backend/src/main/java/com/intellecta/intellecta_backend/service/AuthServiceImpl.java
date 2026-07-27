@@ -48,6 +48,10 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("This account is linked with Google. Please use 'Login with Google'.");
         }
 
+        if (request.getPassword().length() > 128) {
+            throw new RuntimeException("Invalid email or password.");
+        }
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid email or password.");
         }
@@ -124,6 +128,10 @@ public class AuthServiceImpl implements AuthService {
         // Validate email not already taken
         if (userRepository.findByEmail(request.getEmail()) != null) {
             throw new RuntimeException("An account with this email already exists.");
+        }
+
+        if (request.getPassword().length() > 128) {
+            throw new RuntimeException("Password exceeds maximum length.");
         }
 
         // Create new student user

@@ -20,6 +20,7 @@ import com.intellecta.intellecta_backend.security.SecurityUtils;
 import com.intellecta.intellecta_backend.security.UserPrincipal;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import java.util.Map;
 
 @RestController
@@ -33,7 +34,7 @@ public class AuthController {
     private boolean cookieSecure;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
         try {
             LoginResponse loginResponse = authService.login(request);
             setTokenCookie(response, loginResponse.getToken());
@@ -45,7 +46,7 @@ public class AuthController {
     }
 
     @PostMapping("/google")
-    public ResponseEntity<?> googleLogin(@RequestBody GoogleLoginRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleLoginRequest request, HttpServletResponse response) {
         try {
             LoginResponse loginResponse = authService.googleLogin(request);
             setTokenCookie(response, loginResponse.getToken());
@@ -57,7 +58,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
         try {
             LoginResponse loginResponse = authService.register(request);
             setTokenCookie(response, loginResponse.getToken());
