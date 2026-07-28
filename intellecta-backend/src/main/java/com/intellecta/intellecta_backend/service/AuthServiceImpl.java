@@ -37,6 +37,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
+        if (request.getPassword().length() > 128) {
+            throw new RuntimeException("Invalid email or password.");
+        }
+
         User user = userRepository.findByEmail(request.getEmail());
 
         if (user == null) {
@@ -46,10 +50,6 @@ public class AuthServiceImpl implements AuthService {
         // Handle Google users who haven't set a password
         if (user.getPassword() == null) {
             throw new RuntimeException("This account is linked with Google. Please use 'Login with Google'.");
-        }
-
-        if (request.getPassword().length() > 128) {
-            throw new RuntimeException("Invalid email or password.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
