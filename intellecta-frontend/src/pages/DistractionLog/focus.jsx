@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Clock,
   AlertTriangle,
@@ -82,13 +83,15 @@ const MasteryItem = ({ title, subtitle, percentage, type }) => {
 // --- Main Dashboard Component ---
 
 const PerformanceDashboard = () => {
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [attempts, setAttempts] = useState([]);
   const [distractions, setDistractions] = useState([]);
 
   useEffect(() => {
-    const userId = getUserId() || "2";
+    const userId = getUserId();
+    if (!userId) { navigate('/login'); return; }
     
     // Fetch sessions
     api.get(`/sessions/user/${userId}`)

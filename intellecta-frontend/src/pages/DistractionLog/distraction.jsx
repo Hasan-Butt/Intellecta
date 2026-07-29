@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
   ChevronDown, 
@@ -112,6 +113,7 @@ const WeeklyBarChart = ({ data }) => {
 // --- Main Dashboard ---
 
 const AnalyticsDashboard = () => {
+  const navigate = useNavigate();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [dateRange, setDateRange] = useState(() => {
     const end = new Date();
@@ -128,7 +130,8 @@ const AnalyticsDashboard = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const userId = getUserId() || '2';
+        const userId = getUserId();
+        if (!userId) { navigate('/login'); return; }
         const res = await api.get(`/distractions/user/${userId}/logs`);
         const formattedLogs = res.data.map((item) => {
            const label = item.reason || "Unknown";
