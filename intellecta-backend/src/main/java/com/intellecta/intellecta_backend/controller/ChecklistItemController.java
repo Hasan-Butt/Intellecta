@@ -3,6 +3,7 @@ package com.intellecta.intellecta_backend.controller;
 import com.intellecta.intellecta_backend.dto.request.ChecklistItemRequest;
 import com.intellecta.intellecta_backend.dto.response.ChecklistItemResponse;
 import com.intellecta.intellecta_backend.service.ChecklistItemService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class ChecklistItemController {
     @PostMapping("/exam/{examId}")
     public ResponseEntity<ChecklistItemResponse> createItem(
             @PathVariable Long examId,
-            @RequestBody ChecklistItemRequest request) {
+            @Valid @RequestBody ChecklistItemRequest request) {
         return ResponseEntity.ok(checklistItemService.createItem(examId, request));
     }
 

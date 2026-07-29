@@ -4,6 +4,7 @@ import com.intellecta.intellecta_backend.dto.request.QuizSubmissionRequest;
 import com.intellecta.intellecta_backend.model.Quiz;
 import com.intellecta.intellecta_backend.model.QuizAttempt;
 import com.intellecta.intellecta_backend.service.QuizService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,7 @@ public class QuizController {
     }
 
     @PostMapping("/submit")
-    public ResponseEntity<QuizAttempt> submitQuiz(@RequestBody QuizSubmissionRequest request) {
+    public ResponseEntity<QuizAttempt> submitQuiz(@Valid @RequestBody QuizSubmissionRequest request) {
         if (request != null && request.getUserId() != null) {
             SecurityUtils.validateUser(request.getUserId());
         }

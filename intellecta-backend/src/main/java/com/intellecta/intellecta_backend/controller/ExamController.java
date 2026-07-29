@@ -3,6 +3,7 @@ package com.intellecta.intellecta_backend.controller;
 import com.intellecta.intellecta_backend.dto.request.ExamRequest;
 import com.intellecta.intellecta_backend.dto.response.ExamResponse;
 import com.intellecta.intellecta_backend.service.ExamService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class ExamController {
     private final ExamService examService;
 
     @PostMapping
-    public ResponseEntity<ExamResponse> createExam(@RequestBody ExamRequest request) {
+    public ResponseEntity<ExamResponse> createExam(@Valid @RequestBody ExamRequest request) {
         return ResponseEntity.ok(examService.createExam(request));
     }
 

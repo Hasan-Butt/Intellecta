@@ -5,6 +5,7 @@ import com.intellecta.intellecta_backend.dto.response.BadgeDefinitionResponse;
 import com.intellecta.intellecta_backend.model.BadgeDefinition;
 import com.intellecta.intellecta_backend.repository.BadgeDefinitionRepository;
 import com.intellecta.intellecta_backend.service.BadgeDefinitionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -41,14 +42,14 @@ public class BadgeController {
 
     @PostMapping("/api/admin/badges")
     public ResponseEntity<BadgeDefinitionResponse> createBadge(
-            @RequestBody BadgeDefinitionRequest req) {
+            @Valid @RequestBody BadgeDefinitionRequest req) {
         return ResponseEntity.ok(badgeService.createBadge(req));
     }
 
     @PutMapping("/api/admin/badges/{badgeKey}")
     public ResponseEntity<BadgeDefinitionResponse> updateBadge(
             @PathVariable String badgeKey,
-            @RequestBody BadgeDefinitionRequest req) {
+            @Valid @RequestBody BadgeDefinitionRequest req) {
         return ResponseEntity.ok(badgeService.updateBadge(badgeKey, req));
     }
 

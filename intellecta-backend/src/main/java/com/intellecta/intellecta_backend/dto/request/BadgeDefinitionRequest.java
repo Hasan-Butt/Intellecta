@@ -1,17 +1,22 @@
 package com.intellecta.intellecta_backend.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 public class BadgeDefinitionRequest {
+    @NotBlank @Size(max = 100)
     private String displayName;
+
+    @Size(max = 500)
     private String description;
-    /** COMMON | RARE | EPIC | LEGENDARY */
+
+    @NotBlank
     private String rarity;
+
     private Double targetPercentage;
-    /** Rule type — see BadgeDefinition.ruleType javadoc */
     private String ruleType;
     private int    ruleThreshold;
-    /** Required only for creating new badges (not for updates) */
     private String badgeKey;
 }

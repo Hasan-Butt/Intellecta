@@ -3,6 +3,7 @@ package com.intellecta.intellecta_backend.controller;
 import com.intellecta.intellecta_backend.dto.request.DocumentTagRequest;
 import com.intellecta.intellecta_backend.dto.response.DocumentResponse;
 import com.intellecta.intellecta_backend.service.DocumentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -62,7 +63,7 @@ public class DocumentController {
     public ResponseEntity<DocumentResponse> tagDocument(
             @PathVariable Long userId,
             @PathVariable Long documentId,
-            @RequestBody DocumentTagRequest request) {
+            @Valid @RequestBody DocumentTagRequest request) {
         SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(documentService.tagDocument(userId, documentId, request));
     }

@@ -6,6 +6,7 @@ import com.intellecta.intellecta_backend.dto.request.UserCreateRequestDto;
 import com.intellecta.intellecta_backend.dto.request.UserUpdateRequestDto;
 import com.intellecta.intellecta_backend.dto.response.*;
 import com.intellecta.intellecta_backend.service.AdminService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +35,7 @@ public class AdminController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity<?> createUser(@RequestBody UserCreateRequestDto dto) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody UserCreateRequestDto dto) {
         try {
             return ResponseEntity.ok(adminService.createUser(dto));
         } catch (IllegalArgumentException e) {
@@ -44,7 +45,7 @@ public class AdminController {
 
     @PutMapping("/users/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id,
-                                        @RequestBody UserUpdateRequestDto dto) {
+                                        @Valid @RequestBody UserUpdateRequestDto dto) {
         try {
             return ResponseEntity.ok(adminService.updateUser(id, dto));
         } catch (RuntimeException e) {
@@ -174,7 +175,7 @@ public class AdminController {
     }
 
     @PatchMapping("/config/deploy")
-    public ResponseEntity<?> deployConfig(@RequestBody ConfigDeployRequestDto dto) {
+    public ResponseEntity<?> deployConfig(@Valid @RequestBody ConfigDeployRequestDto dto) {
         try {
             return ResponseEntity.ok(adminService.deployConfig(dto));
         } catch (Exception e) {
@@ -200,7 +201,7 @@ public class AdminController {
     }
 
     @PostMapping("/config/governance")
-    public ResponseEntity<?> addAppRule(@RequestBody AddAppRuleRequestDto dto) {
+    public ResponseEntity<?> addAppRule(@Valid @RequestBody AddAppRuleRequestDto dto) {
         try {
             return ResponseEntity.ok(adminService.addAppRule(dto));
         } catch (IllegalArgumentException e) {

@@ -35,38 +35,23 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
-        try {
-            LoginResponse loginResponse = authService.login(request);
-            setTokenCookie(response, loginResponse.getToken());
-            return ResponseEntity.ok(loginResponse);
-        } catch (Exception e) {
-            System.out.println("Login Error: " + e.getMessage());
-            return ResponseEntity.status(401).body(e.getMessage());
-        }
+        LoginResponse loginResponse = authService.login(request);
+        setTokenCookie(response, loginResponse.getToken());
+        return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/google")
     public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleLoginRequest request, HttpServletResponse response) {
-        try {
-            LoginResponse loginResponse = authService.googleLogin(request);
-            setTokenCookie(response, loginResponse.getToken());
-            return ResponseEntity.ok(loginResponse);
-        } catch (Exception e) {
-            System.out.println("Google Login Error: " + e.getMessage());
-            return ResponseEntity.status(401).body(e.getMessage());
-        }
+        LoginResponse loginResponse = authService.googleLogin(request);
+        setTokenCookie(response, loginResponse.getToken());
+        return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
-        try {
-            LoginResponse loginResponse = authService.register(request);
-            setTokenCookie(response, loginResponse.getToken());
-            return ResponseEntity.ok(loginResponse);
-        } catch (Exception e) {
-            System.out.println("Register Error: " + e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
-        }
+        LoginResponse loginResponse = authService.register(request);
+        setTokenCookie(response, loginResponse.getToken());
+        return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/logout")
@@ -84,16 +69,12 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getMe() {
-        try {
-            UserPrincipal principal = SecurityUtils.getAuthenticatedUser();
-            return ResponseEntity.ok(Map.of(
-                "userId", principal.getId(),
-                "email", principal.getUsername(),
-                "role", principal.getRole()
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(401).body("Not authenticated");
-        }
+        UserPrincipal principal = SecurityUtils.getAuthenticatedUser();
+        return ResponseEntity.ok(Map.of(
+            "userId", principal.getId(),
+            "email", principal.getUsername(),
+            "role", principal.getRole()
+        ));
     }
 
     private void setTokenCookie(HttpServletResponse response, String token) {
