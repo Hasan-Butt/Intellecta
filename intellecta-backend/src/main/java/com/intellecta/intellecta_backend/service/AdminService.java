@@ -560,7 +560,7 @@ public class AdminService {
         List<Integer> peakStudyTimes = computePeakStudyTimes(allSessions);
 
         List<AlertSummaryDto> alerts = systemAlertRepository
-                .findTop10ByOrderByAlertTimeDesc()
+                .findTop10ByResolvedFalseOrderByAlertTimeDesc()
                 .stream().map(this::toAlertDto).collect(Collectors.toList());
 
         // Real week-over-week engagement trend

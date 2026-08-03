@@ -1,6 +1,7 @@
 package com.intellecta.intellecta_backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,6 +14,7 @@ import com.intellecta.intellecta_backend.dto.request.GoogleLoginRequest;
 import com.intellecta.intellecta_backend.dto.request.LoginRequest;
 import com.intellecta.intellecta_backend.dto.request.RegisterRequest;
 import com.intellecta.intellecta_backend.dto.response.LoginResponse;
+import com.intellecta.intellecta_backend.event.UserLoginEvent;
 import com.intellecta.intellecta_backend.model.User;
 import com.intellecta.intellecta_backend.enums.UserRoles;
 import com.intellecta.intellecta_backend.repository.UserRepository;
@@ -20,6 +22,7 @@ import com.intellecta.intellecta_backend.util.JwtUtil;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
@@ -33,6 +36,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -57,6 +63,9 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getRole().name());
+
+        // Fire login event for alert detection (off-hours check runs asynchronously in its own transaction)
+        eventPublisher.publishEvent(new UserLoginEvent(this, user, LocalDateTime.now()));
 
         return new LoginResponse(token, user.getId(), user.getEmail(), user.getRole());
     }
