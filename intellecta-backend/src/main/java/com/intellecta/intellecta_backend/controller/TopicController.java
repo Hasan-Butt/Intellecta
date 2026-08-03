@@ -4,6 +4,7 @@ import com.intellecta.intellecta_backend.dto.request.TopicBulkSaveRequest;
 import com.intellecta.intellecta_backend.dto.request.TopicRequest;
 import com.intellecta.intellecta_backend.dto.response.TopicResponse;
 import com.intellecta.intellecta_backend.service.TopicService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class TopicController {
     @PostMapping("/subject/{subjectId}")
     public ResponseEntity<TopicResponse> createTopic(
             @PathVariable Long subjectId,
-            @RequestBody TopicRequest request) {
+            @Valid @RequestBody TopicRequest request) {
         return ResponseEntity.ok(topicService.createTopic(subjectId, request));
     }
 
@@ -36,7 +37,7 @@ public class TopicController {
     }
 
     @PutMapping("/bulk-status")
-    public ResponseEntity<Void> bulkUpdateStatuses(@RequestBody TopicBulkSaveRequest request) {
+    public ResponseEntity<Void> bulkUpdateStatuses(@Valid @RequestBody TopicBulkSaveRequest request) {
         topicService.bulkUpdateStatuses(request);
         return ResponseEntity.ok().build();
     }

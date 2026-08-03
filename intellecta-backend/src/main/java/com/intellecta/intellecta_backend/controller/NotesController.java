@@ -3,6 +3,7 @@ package com.intellecta.intellecta_backend.controller;
 import com.intellecta.intellecta_backend.dto.request.NoteRequest;
 import com.intellecta.intellecta_backend.dto.response.NoteResponse;
 import com.intellecta.intellecta_backend.service.NotesService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class NotesController {
     @PostMapping("/user/{userId}")
     public ResponseEntity<NoteResponse> createNote(
             @PathVariable Long userId,
-            @RequestBody NoteRequest request) {
+            @Valid @RequestBody NoteRequest request) {
         SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(notesService.createNote(userId, request));
     }
@@ -44,7 +45,7 @@ public class NotesController {
     public ResponseEntity<NoteResponse> updateNote(
             @PathVariable Long userId,
             @PathVariable Long noteId,
-            @RequestBody NoteRequest request) {
+            @Valid @RequestBody NoteRequest request) {
         SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(notesService.updateNote(userId, noteId, request));
     }

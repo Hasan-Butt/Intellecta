@@ -1,6 +1,9 @@
 package com.intellecta.intellecta_backend.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class GoogleLoginRequest {
+    @NotBlank
     private String idToken;
 
     public GoogleLoginRequest() {}

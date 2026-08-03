@@ -3,6 +3,7 @@ package com.intellecta.intellecta_backend.controller;
 import com.intellecta.intellecta_backend.dto.request.CourseRequest;
 import com.intellecta.intellecta_backend.dto.response.CourseResponse;
 import com.intellecta.intellecta_backend.service.CourseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class CourseController {
     @PostMapping("/user/{userId}")
     public ResponseEntity<CourseResponse> addCourse(
         @PathVariable Long userId,
-        @RequestBody CourseRequest request
+        @Valid @RequestBody CourseRequest request
     ) {
         SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(courseService.addCourse(userId, request));

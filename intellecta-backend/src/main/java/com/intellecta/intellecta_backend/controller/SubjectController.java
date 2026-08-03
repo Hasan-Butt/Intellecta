@@ -4,6 +4,7 @@ import com.intellecta.intellecta_backend.dto.request.SubjectRequest;
 import com.intellecta.intellecta_backend.dto.response.SubjectResponse;
 import com.intellecta.intellecta_backend.service.SubjectService;
 import com.intellecta.intellecta_backend.security.SecurityUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class SubjectController {
     @PostMapping("/user/{userId}")
     public ResponseEntity<SubjectResponse> createSubject(
             @PathVariable Long userId,
-            @RequestBody SubjectRequest request) {
+            @Valid @RequestBody SubjectRequest request) {
         SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(subjectService.createSubject(userId, request));
     }

@@ -12,6 +12,7 @@ import com.intellecta.intellecta_backend.dto.request.GeneratesSchedulerRequest;
 import com.intellecta.intellecta_backend.dto.response.GeneratesSchedulerResponse;
 import com.intellecta.intellecta_backend.service.ScheduleService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,7 +26,7 @@ public class ScheduleController {
     @PostMapping("/user/{userId}/generate")
     public ResponseEntity<GeneratesSchedulerResponse> generate(
         @PathVariable Long userId,
-        @RequestBody GeneratesSchedulerRequest request
+        @Valid @RequestBody GeneratesSchedulerRequest request
     ) {
         SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(scheduleService.generate(userId, request));

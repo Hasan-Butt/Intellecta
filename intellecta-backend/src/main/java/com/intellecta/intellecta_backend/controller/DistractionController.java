@@ -5,6 +5,7 @@ import com.intellecta.intellecta_backend.model.DistractionEntry;
 import com.intellecta.intellecta_backend.model.User;
 import com.intellecta.intellecta_backend.repository.DistractionRepository;
 import com.intellecta.intellecta_backend.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class DistractionController {
     @PostMapping("/user/{userId}")
     public ResponseEntity<DistractionEntry> log(
         @PathVariable Long userId,
-        @RequestBody DistractionRequest request
+        @Valid @RequestBody DistractionRequest request
     ) {
         SecurityUtils.validateUser(userId);
         User user = userRepository.findById(userId)

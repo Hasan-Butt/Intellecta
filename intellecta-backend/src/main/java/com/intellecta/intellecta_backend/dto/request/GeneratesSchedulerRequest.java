@@ -1,8 +1,11 @@
 package com.intellecta.intellecta_backend.dto.request;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import lombok.Data;
 
 @Data
 public class GeneratesSchedulerRequest {
-    private double availableHoursPerDay; // student's daily availability
+    @DecimalMin("0") @DecimalMax("24")
+    private double availableHoursPerDay;
 }
