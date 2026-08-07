@@ -18,7 +18,10 @@ import com.intellecta.intellecta_backend.dto.response.LoginResponse;
 import com.intellecta.intellecta_backend.service.AuthService;
 import com.intellecta.intellecta_backend.security.SecurityUtils;
 import com.intellecta.intellecta_backend.security.UserPrincipal;
+import com.intellecta.intellecta_backend.security.TokenBlacklistService;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -29,6 +32,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
 
     @Value("${app.security.cookie-secure:false}")
     private boolean cookieSecure;
@@ -55,7 +61,10 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        String token = extractToken(request);
+        tokenBlacklistService.blacklist(token);
+
         ResponseCookie cookie = ResponseCookie.from("token", "")
                 .httpOnly(true)
                 .secure(cookieSecure)
@@ -75,6 +84,22 @@ public class AuthController {
             "email", principal.getUsername(),
             "role", principal.getRole()
         ));
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
     }
 
     private void setTokenCookie(HttpServletResponse response, String token) {

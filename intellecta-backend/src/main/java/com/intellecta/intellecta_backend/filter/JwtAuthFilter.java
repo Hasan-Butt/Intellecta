@@ -1,6 +1,7 @@
 package com.intellecta.intellecta_backend.filter;
 
 import com.intellecta.intellecta_backend.util.JwtUtil;
+import com.intellecta.intellecta_backend.security.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +23,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -64,7 +68,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtUtil.validateToken(token, username)) {
+            if (jwtUtil.validateToken(token, username) && !tokenBlacklistService.isBlacklisted(token)) {
                 UserPrincipal principal = new UserPrincipal(userId, username, role);
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         principal, null, principal.getAuthorities());
