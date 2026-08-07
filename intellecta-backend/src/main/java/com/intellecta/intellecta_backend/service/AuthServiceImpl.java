@@ -50,12 +50,12 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(request.getEmail());
 
         if (user == null) {
-            throw new RuntimeException("No account found with this email.");
+            throw new RuntimeException("Invalid email or password.");
         }
 
         // Handle Google users who haven't set a password
         if (user.getPassword() == null) {
-            throw new RuntimeException("This account is linked with Google. Please use 'Login with Google'.");
+            throw new RuntimeException("Invalid email or password.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {

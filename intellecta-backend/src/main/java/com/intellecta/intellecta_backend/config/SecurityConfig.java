@@ -16,12 +16,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import com.intellecta.intellecta_backend.filter.JwtAuthFilter;
+import com.intellecta.intellecta_backend.security.RateLimitingFilter;
 
 @Configuration
 public class SecurityConfig {
 
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
+
+    @Autowired
+    private RateLimitingFilter rateLimitingFilter;
 
     @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins:http://localhost:3000}")
     private List<String> allowedOrigins;
@@ -44,9 +48,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/content/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/content/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/quizzes").hasRole("ADMIN")
+                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )
+            .addFilterBefore(rateLimitingFilter, JwtAuthFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .formLogin(form -> form.disable())
             .httpBasic(h -> h.disable());

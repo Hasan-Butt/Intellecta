@@ -22,6 +22,7 @@
     "recharts": "^3.8.1",
     "sweetalert2": "^11.26.24",
     "tailwind-merge": "^3.5.0",
+    "validator": "^13.15.35",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import Swal from "sweetalert2";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import validator from "validator";
 
 export function SignupForm({ className, ...props }) {
   const [username, setUsername] = useState("");
@@ -33,7 +34,7 @@ export function SignupForm({ className, ...props }) {
       return;
     }
 
-    if (password.length < 6) {
+    if (!validator.isLength(password, { min: 6 })) {
       await Swal.fire({
         icon: "error",
         title: "Password Too Short",
@@ -85,9 +86,10 @@ export function SignupForm({ className, ...props }) {
 
   const passwordStrength = () => {
     if (!password) return { label: "", color: "bg-gray-200", width: "0%" };
-    if (password.length < 6) return { label: "Too short", color: "bg-red-400", width: "25%" };
-    if (password.length < 8) return { label: "Weak", color: "bg-orange-400", width: "50%" };
-    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) return { label: "Fair", color: "bg-yellow-400", width: "75%" };
+    if (!validator.isLength(password, { min: 6 })) return { label: "Too short", color: "bg-red-400", width: "25%" };
+    if (!validator.isLength(password, { min: 8 })) return { label: "Weak", color: "bg-orange-400", width: "50%" };
+    if (!validator.isStrongPassword(password, { minLength: 0, minLowercase: 0, minUppercase: 1, minNumbers: 1, minSymbols: 0 }))
+      return { label: "Fair", color: "bg-yellow-400", width: "75%" };
     return { label: "Strong", color: "bg-green-500", width: "100%" };
   };
 

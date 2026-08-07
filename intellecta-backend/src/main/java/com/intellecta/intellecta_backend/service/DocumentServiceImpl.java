@@ -18,6 +18,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,29 +33,51 @@ public class DocumentServiceImpl implements DocumentService {
     // Files saved here on the server
     private final String UPLOAD_DIR = "uploads/";
 
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("pdf", "doc", "docx", "png", "jpg", "jpeg");
+    private static final Set<String> ALLOWED_MIME_TYPES = Set.of(
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "image/png", "image/jpeg"
+    );
+    private static final long MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+    private static final long MAX_DOCUMENT_BYTES = 50 * 1024 * 1024;
+
     @Override
     public DocumentResponse uploadDocument(Long userId, MultipartFile file,
                                            String subject, String semester) throws IOException {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Create directory if it doesn't exist: uploads/user_1/Physics/
-        String dirPath = UPLOAD_DIR + "user_" + userId + "/" + subject + "/";
+        String originalName = file.getOriginalFilename();
+        String extension = originalName != null && originalName.contains(".")
+                ? originalName.substring(originalName.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT)
+                : "";
+
+        validateUpload(file, originalName, extension);
+
+        String fileType = mapFileType(extension);
+
+        long maxBytes = "image".equals(fileType) ? MAX_IMAGE_BYTES : MAX_DOCUMENT_BYTES;
+        if (file.getSize() > maxBytes) {
+            throw new RuntimeException("File exceeds the maximum allowed size.");
+        }
+
+        // Sanitize subject: keep only alphanumerics, spaces, underscores, dashes -> no path traversal
+        String safeSubject = sanitizePathSegment(subject);
+        if (safeSubject.isEmpty()) {
+            safeSubject = "General";
+        }
+
+        // Create directory if it doesn't exist: uploads/user_123/Physics/
+        String dirPath = UPLOAD_DIR + "user_" + userId + "/" + safeSubject + "/";
         Path directory = Paths.get(dirPath);
         Files.createDirectories(directory);
 
-        // Save file to disk
-        String originalName = file.getOriginalFilename();
-        Path filePath = directory.resolve(originalName);
+        // Save file with a UUID-prefixed sanitized name -> no path traversal, no collisions
+        String safeName = UUID.randomUUID() + "_" + sanitizeFileName(originalName);
+        Path filePath = directory.resolve(safeName);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-        // Determine file type from extension
-        String fileType = "file";
-        if (originalName != null) {
-            if (originalName.endsWith(".pdf")) fileType = "pdf";
-            else if (originalName.matches(".*\\.(doc|docx)$")) fileType = "doc";
-            else if (originalName.matches(".*\\.(png|jpg|jpeg)$")) fileType = "image";
-        }
 
         Document document = Document.builder()
             .fileName(originalName)
@@ -66,6 +91,41 @@ public class DocumentServiceImpl implements DocumentService {
             .build();
 
         return toResponse(documentRepository.save(document));
+    }
+
+    private void validateUpload(MultipartFile file, String originalName, String extension) {
+        if (file.isEmpty()) {
+            throw new RuntimeException("Please select a file to upload.");
+        }
+        if (originalName == null || originalName.isBlank()) {
+            throw new RuntimeException("File name is required.");
+        }
+        if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new RuntimeException("File type not allowed.");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_MIME_TYPES.contains(contentType.toLowerCase(Locale.ROOT))) {
+            throw new RuntimeException("File type not allowed.");
+        }
+    }
+
+    private String mapFileType(String extension) {
+        if ("pdf".equals(extension)) return "pdf";
+        if ("doc".equals(extension) || "docx".equals(extension)) return "doc";
+        return "image";
+    }
+
+    private String sanitizeFileName(String name) {
+        String cleaned = name.replaceAll("[^a-zA-Z0-9._-]", "_");
+        while (cleaned.contains("..")) {
+            cleaned = cleaned.replace("..", ".");
+        }
+        return cleaned;
+    }
+
+    private String sanitizePathSegment(String segment) {
+        if (segment == null) return "";
+        return segment.replaceAll("[^a-zA-Z0-9 _-]", "").trim();
     }
 
     @Override
