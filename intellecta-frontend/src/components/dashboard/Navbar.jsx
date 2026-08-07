@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, Flame, Bell, User, Mail, BookOpen, LogOut, Settings as SettingsIcon,
   Home, Calendar, Zap, FileText, Folder, ClipboardCheck, Target, BarChart3, Trophy,
-  LayoutDashboard, Users as UsersIcon, TrendingUp, Award, ChevronRight
+  LayoutDashboard, Users as UsersIcon, TrendingUp, Award, ChevronRight, History
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import intellectaLogo from '../../assets/intellectaLogo.jpeg';
@@ -41,6 +41,7 @@ const Navbar = () => {
     { name: 'My Notes', path: '/notes', icon: FileText, category: 'Student' },
     { name: 'Subject Folders', path: '/folders', icon: Folder, category: 'Student' },
     { name: 'Attempt Quiz', path: '/quiz', icon: ClipboardCheck, category: 'Student' },
+    { name: 'Quiz Results', path: '/results', icon: History, category: 'Student' },
     { name: 'Coverage Tracker', path: '/coverage', icon: Target, category: 'Student' },
     { name: 'Leaderboard', path: '/leaderboard', icon: BarChart3, category: 'Student' },
     { name: 'Achievements', path: '/achievements', icon: Trophy, category: 'Student' },
@@ -49,6 +50,7 @@ const Navbar = () => {
     { name: 'Manage Users', path: '/users', icon: UsersIcon, category: 'Admin' },
     { name: 'Content Repository', path: '/content', icon: BookOpen, category: 'Admin' },
     { name: 'Create New Quiz', path: '/create-quiz', icon: ClipboardCheck, category: 'Admin' },
+    { name: 'Quiz Submissions', path: '/quiz-submissions', icon: History, category: 'Admin' },
     { name: 'Global Analytics', path: '/analytics', icon: BarChart3, category: 'Admin' },
     { name: 'Performance Trends', path: '/trends', icon: TrendingUp, category: 'Admin' },
     { name: 'Rewards System', path: '/rewards', icon: Award, category: 'Admin' },
@@ -67,7 +69,8 @@ const Navbar = () => {
                          location.pathname.startsWith('/analytics') || 
                          location.pathname.startsWith('/trends') || 
                          location.pathname.startsWith('/rewards') ||
-                         location.pathname.startsWith('/create-quiz');
+                         location.pathname.startsWith('/create-quiz') ||
+                         location.pathname.startsWith('/quiz-submissions');
       
       const roleFilter = isAdminPath ? 'Admin' : 'Student';
 

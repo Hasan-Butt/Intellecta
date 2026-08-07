@@ -35,6 +35,9 @@ const Sidebar = () => {
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(
     location.pathname === '/distractions' || location.pathname === '/focusSession'
   );
+  const [isQuizOpen, setIsQuizOpen] = useState(
+    location.pathname === '/quiz' || location.pathname === '/results'
+  );
   const [avatarUrl, setAvatarUrl] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
   const [showHelpBox, setShowHelpBox] = useState(false);
 
@@ -76,7 +79,15 @@ const Sidebar = () => {
     { name: 'Focus Sessions', icon: Zap, path: '/focus' },
     { name: 'All Notes', icon: FileText, path: '/notes' },
     { name: 'Subject Folders', icon: Folder, path: '/folders' },
-    { name: 'Attempt Quiz', icon: ClipboardCheck, path: '/quiz' },
+    { 
+      name: 'Quiz', 
+      icon: ClipboardCheck, 
+      isParent: true,
+      subItems: [
+        { name: 'Attempt Quiz', path: '/quiz' },
+        { name: 'Results', path: '/results' }
+      ]
+    },
     { name: 'Coverage Tracker', icon: Target, path: '/coverage' },
     { 
       name: 'Analytics', 
@@ -116,14 +127,16 @@ const Sidebar = () => {
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           
-          // Special handling for Analytics (Dropdown)
+          // Special handling for parent menus (Analytics, Quiz dropdowns)
           if (item.isParent) {
             const hasActiveChild = item.subItems.some(sub => location.pathname === sub.path);
+            const isOpen = item.name === 'Quiz' ? isQuizOpen : isAnalyticsOpen;
+            const toggle = () => item.name === 'Quiz' ? setIsQuizOpen(!isQuizOpen) : setIsAnalyticsOpen(!isAnalyticsOpen);
             
             return (
               <div key={item.name} className="space-y-1">
                 <button
-                  onClick={() => setIsAnalyticsOpen(!isAnalyticsOpen)}
+                  onClick={toggle}
                   className={`
                     w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group
                     ${hasActiveChild ? 'bg-[#F5F6FF] text-[#451ebb]' : 'text-gray-500 hover:bg-gray-50'}
@@ -138,10 +151,10 @@ const Sidebar = () => {
                       {item.name}
                     </span>
                   </div>
-                  {isAnalyticsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                  {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                 </button>
                 
-                {isAnalyticsOpen && (
+                {isOpen && (
                   <div className="pl-12 space-y-1 animate-in slide-in-from-top-2 duration-200">
                     {item.subItems.map(sub => {
                       const isSubActive = location.pathname === sub.path;

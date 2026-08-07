@@ -17,7 +17,7 @@ import { logout } from '../../utils/auth';
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isContentOpen, setIsContentOpen] = useState(location.pathname === '/content' || location.pathname === '/create-quiz');
+  const [isContentOpen, setIsContentOpen] = useState(location.pathname === '/content' || location.pathname === '/create-quiz' || location.pathname === '/quiz-submissions');
 
   const handleLogout = () => {
     logout();
@@ -33,7 +33,8 @@ const Sidebar = () => {
       hasSubmenu: true,
       subItems: [
         { name: 'Repository', path: '/content' },
-        { name: 'Create Quiz', path: '/create-quiz' }
+        { name: 'Create Quiz', path: '/create-quiz' },
+        { name: 'Quiz Submissions', path: '/quiz-submissions' }
       ]
     },
     { name: 'Analytics', icon: BarChart3, path: '/analytics' },

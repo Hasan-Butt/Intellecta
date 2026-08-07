@@ -10,14 +10,10 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuizSubmissionRequest {
+public class GradeSubmissionRequest {
     @NotNull
-    private Long userId;
+    private Long attemptId;
 
     @NotNull
-    private Long quizId;
-
-    private Map<Long, Integer> answers; // questionId -> selectedOptionIndex
-
-    private Map<Long, String> textAnswers; // questionId -> raw student text (descriptive)
+    private Map<Long, Integer> questionMarks; // questionId -> awarded marks (descriptive only)
 }

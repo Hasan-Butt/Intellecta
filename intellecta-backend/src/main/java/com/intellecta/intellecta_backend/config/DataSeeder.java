@@ -369,8 +369,12 @@ public class DataSeeder implements CommandLineRunner {
                     batch.add(QuizAttempt.builder()
                             .user(student).quiz(quiz)
                             .score(score).totalQuestions(totalQ)
+                            .totalMarks(score)
+                            .graded(true)
                             .startTime(start).endTime(start.plusMinutes(15 + rng.nextInt(25)))
                             .status("COMPLETED").userAnswers(new HashMap<>())
+                            .textAnswers(new HashMap<>())
+                            .questionMarks(new HashMap<>())
                             .build());
                 }
             }

@@ -41,7 +41,10 @@ const CreateQuiz = () => {
       {
         text: "",
         options: ["", "", "", ""],
-        correctOptionIndex: 0
+        correctOptionIndex: 0,
+        questionType: "OBJECTIVE",
+        maxMarks: 1,
+        modelAnswer: ""
       }
     ]
   });
@@ -141,7 +144,7 @@ const CreateQuiz = () => {
       ...prev,
       questions: [
         ...prev.questions,
-        { text: "", options: ["", "", "", ""], correctOptionIndex: 0 }
+        { text: "", options: ["", "", "", ""], correctOptionIndex: 0, questionType: "OBJECTIVE", maxMarks: 1, modelAnswer: "" }
       ]
     }));
   };
@@ -205,10 +208,18 @@ const CreateQuiz = () => {
       if (!q.text.trim()) {
         missingParts.push("Question Text");
       }
-      
-      for (let j = 0; j < q.options.length; j++) {
-        if (!q.options[j].trim()) {
-          missingParts.push(`Option ${j + 1}`);
+
+      const isDescriptive = q.questionType === "DESCRIPTIVE";
+
+      if (isDescriptive) {
+        if (!q.maxMarks || q.maxMarks < 1) {
+          missingParts.push("Max Marks (≥ 1)");
+        }
+      } else {
+        for (let j = 0; j < q.options.length; j++) {
+          if (!q.options[j].trim()) {
+            missingParts.push(`Option ${j + 1}`);
+          }
         }
       }
 
@@ -222,16 +233,18 @@ const CreateQuiz = () => {
         return;
       }
 
-      const trimmedOptions = q.options.map(opt => opt.trim());
-      const uniqueOptions = new Set(trimmedOptions);
-      if (uniqueOptions.size !== q.options.length) {
-        Swal.fire({
-          title: 'Duplicate Options',
-          text: `Question ${i + 1} has duplicate options. Please ensure all 4 options are unique.`,
-          icon: 'error',
-          confirmButtonColor: '#6C5DD3'
-        });
-        return;
+      if (!isDescriptive) {
+        const trimmedOptions = q.options.map(opt => opt.trim());
+        const uniqueOptions = new Set(trimmedOptions);
+        if (uniqueOptions.size !== q.options.length) {
+          Swal.fire({
+            title: 'Duplicate Options',
+            text: `Question ${i + 1} has duplicate options. Please ensure all 4 options are unique.`,
+            icon: 'error',
+            confirmButtonColor: '#6C5DD3'
+          });
+          return;
+        }
       }
     }
 
@@ -493,6 +506,53 @@ const CreateQuiz = () => {
                           />
                         </div>
 
+                        <div className="flex items-center gap-3 mt-2">
+                          <span className="text-xs font-black uppercase tracking-widest text-gray-400">Question Type</span>
+                          {["OBJECTIVE", "DESCRIPTIVE"].map((type) => (
+                            <button
+                              key={type}
+                              type="button"
+                              onClick={() => {
+                                const newQuestions = [...quizData.questions];
+                                newQuestions[qIndex].questionType = type;
+                                if (type === "DESCRIPTIVE") newQuestions[qIndex].modelAnswer = "";
+                                setQuizData(prev => ({ ...prev, questions: newQuestions }));
+                              }}
+                              className={`px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest transition-all border ${
+                                question.questionType === type
+                                ? 'bg-[#6C5DD3] text-white border-[#6C5DD3] shadow-lg shadow-indigo-100'
+                                : 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-white'
+                              }`}
+                            >
+                              {type === "OBJECTIVE" ? "Multiple Choice" : "Descriptive"}
+                            </button>
+                          ))}
+                        </div>
+
+                        {question.questionType === "DESCRIPTIVE" ? (
+                          <div className="mt-6 space-y-4">
+                            <div className="space-y-2">
+                              <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Max Marks (auto-graded as 0 until you grade)</label>
+                              <input 
+                                type="number" 
+                                min="1"
+                                value={question.maxMarks || 1}
+                                onChange={(e) => handleQuestionChange(qIndex, "maxMarks", parseInt(e.target.value, 10) || 1)}
+                                className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-[#6C5DD3]/20 focus:border-[#6C5DD3] outline-none transition-all font-bold text-sm"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Model Answer (for the grader)</label>
+                              <textarea 
+                                rows="4"
+                                value={question.modelAnswer || ''}
+                                onChange={(e) => handleQuestionChange(qIndex, "modelAnswer", e.target.value)}
+                                placeholder="Provide the expected answer the admin will compare against..."
+                                className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-4 focus:ring-2 focus:ring-[#6C5DD3]/20 focus:border-[#6C5DD3] outline-none transition-all font-bold text-sm"
+                              />
+                            </div>
+                          </div>
+                        ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
                           {question.options.map((option, oIndex) => (
                             <div 
@@ -516,6 +576,7 @@ const CreateQuiz = () => {
                             </div>
                           ))}
                         </div>
+                        )}
                       </div>
                     </div>
                   ))}

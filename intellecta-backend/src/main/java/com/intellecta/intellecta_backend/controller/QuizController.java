@@ -1,8 +1,11 @@
 package com.intellecta.intellecta_backend.controller;
 
 import com.intellecta.intellecta_backend.dto.request.QuizSubmissionRequest;
+import com.intellecta.intellecta_backend.dto.response.SubmissionDetailResponse;
 import com.intellecta.intellecta_backend.model.Quiz;
 import com.intellecta.intellecta_backend.model.QuizAttempt;
+import com.intellecta.intellecta_backend.repository.QuizAttemptRepository;
+import com.intellecta.intellecta_backend.service.QuizGradingService;
 import com.intellecta.intellecta_backend.service.QuizService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,8 @@ import com.intellecta.intellecta_backend.security.SecurityUtils;
 public class QuizController {
     
     private final QuizService quizService;
+    private final QuizGradingService quizGradingService;
+    private final QuizAttemptRepository quizAttemptRepository;
 
     @GetMapping
     public ResponseEntity<List<Quiz>> getAllQuizzes(@RequestParam(required = false) Long userId) {
@@ -50,5 +55,25 @@ public class QuizController {
     public ResponseEntity<List<QuizAttempt>> getAttemptsByUserId(@PathVariable Long userId) {
         SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(quizService.getAttemptsByUserId(userId));
+    }
+
+    @GetMapping("/submissions/{attemptId}")
+    public ResponseEntity<SubmissionDetailResponse> getSubmissionForStudent(@PathVariable Long attemptId) {
+        QuizAttempt attempt = quizAttemptRepository.findById(attemptId)
+                .orElseThrow(() -> new RuntimeException("Attempt not found: " + attemptId));
+        if (attempt.getUser() != null) {
+            SecurityUtils.validateUser(attempt.getUser().getId());
+        }
+        SubmissionDetailResponse detail = quizGradingService.getSubmissionDetail(attemptId);
+        if (!detail.isGraded()) {
+            detail.getQuestions().forEach(q -> {
+                q.setCorrectOptionIndex(null);
+                q.setModelAnswer(null);
+                q.setAwardedMarks(null);
+                q.setIsCorrect(null);
+                q.setMaxMarks(null);
+            });
+        }
+        return ResponseEntity.ok(detail);
     }
 }

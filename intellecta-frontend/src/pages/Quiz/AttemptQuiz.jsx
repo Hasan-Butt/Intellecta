@@ -17,6 +17,7 @@ const FullAssessmentInterface = () => {
   const [quiz, setQuiz] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({}); // questionId -> optionIndex
+  const [textAnswers, setTextAnswers] = useState({}); // questionId -> text
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(true);
   const [markedForReview, setMarkedForReview] = useState({});
@@ -79,6 +80,10 @@ const FullAssessmentInterface = () => {
     setAnswers({ ...answers, [currentQuestion.id]: optionIndex });
   };
 
+  const handleTextChange = (value) => {
+    setTextAnswers({ ...textAnswers, [currentQuestion.id]: value });
+  };
+
   const handleSubmit = async () => {
     try {
       const userId = getUserId();
@@ -86,9 +91,17 @@ const FullAssessmentInterface = () => {
       const response = await api.post('/quizzes/submit', {
         userId: parseInt(userId),
         quizId: quiz.id,
-        answers: answersRef.current // Use ref for guaranteed fresh answers
+        answers: answersRef.current, // Use ref for guaranteed fresh answers
+        textAnswers
       });
-      navigate(`/Result`, { state: { attempt: response.data, quiz: quiz } });
+      Swal.fire({
+        title: 'Quiz Submitted!',
+        text: 'Your answers have been recorded. Results will appear once grading is complete.',
+        icon: 'success',
+        confirmButtonColor: '#6C5DD3'
+      }).then(() => {
+        navigate(`/results`);
+      });
     } catch (error) {
       console.error("Error submitting quiz:", error);
       Swal.fire({
@@ -212,7 +225,7 @@ const FullAssessmentInterface = () => {
                     <p className="text-slate-500 text-lg font-medium tracking-wide">{quiz.topic}</p>
                   </div>
                   <div className="bg-slate-50 text-slate-600 px-6 py-2 rounded-full text-sm font-bold border border-slate-100">
-                    +1.0 Marks
+                    {currentQuestion.questionType === 'DESCRIPTIVE' ? `+${currentQuestion.maxMarks || 1}.0 Marks` : '+1.0 Marks'}
                   </div>
                 </div>
               </section>
@@ -237,35 +250,50 @@ const FullAssessmentInterface = () => {
                     {currentQuestion.text}
                   </h2>
                   <div className="space-y-4">
-                    {currentQuestion.options.map((option, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleOptionSelect(index)}
-                        className={`w-full flex items-center p-3.5 rounded-xl border-2 transition-all text-left group ${
-                          answers[currentQuestion.id] === index 
-                          ? 'border-indigo-600 bg-indigo-50/30' 
-                          : 'border-slate-50 bg-slate-50/50 hover:border-slate-200 hover:bg-slate-50/80'
-                        }`}
-                      >
-                        <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-lg mr-5 shrink-0 transition-all ${
-                          answers[currentQuestion.id] === index 
-                          ? 'bg-indigo-600 text-white scale-110 shadow-lg shadow-indigo-200' 
-                          : 'bg-white text-slate-400 border border-slate-200'
-                        }`}>
-                          {String.fromCharCode(65 + index)}
-                        </span>
-                        <p className={`flex-1 text-base font-medium leading-relaxed ${answers[currentQuestion.id] === index ? 'text-slate-900' : 'text-slate-600'}`}>
-                          {option}
-                        </p>
-                        {answers[currentQuestion.id] === index && (
-                          <CheckCircle2 className="text-indigo-600 w-6 h-6 ml-4" strokeWidth={2.5} />
+                        {currentQuestion.questionType === 'DESCRIPTIVE' ? (
+                          <div className="space-y-3">
+                            <textarea
+                              value={textAnswers[currentQuestion.id] || ''}
+                              onChange={(e) => handleTextChange(e.target.value)}
+                              rows="6"
+                              placeholder="Type your answer here..."
+                              className="w-full bg-slate-50/50 border-2 border-slate-100 focus:border-indigo-600 focus:bg-indigo-50/10 rounded-xl p-5 text-base font-medium leading-relaxed text-slate-700 outline-none transition-all"
+                            />
+                            <p className="text-xs font-semibold text-slate-400">
+                              {textAnswers[currentQuestion.id]?.length || 0} characters &bull; Worth up to {currentQuestion.maxMarks || 1} mark{currentQuestion.maxMarks > 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        ) : (
+                          currentQuestion.options.map((option, index) => (
+                            <button
+                              key={index}
+                              onClick={() => handleOptionSelect(index)}
+                              className={`w-full flex items-center p-3.5 rounded-xl border-2 transition-all text-left group ${
+                                answers[currentQuestion.id] === index
+                                ? 'border-indigo-600 bg-indigo-50/30'
+                                : 'border-slate-50 bg-slate-50/50 hover:border-slate-200 hover:bg-slate-50/80'
+                              }`}
+                            >
+                              <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-lg mr-5 shrink-0 transition-all ${
+                                answers[currentQuestion.id] === index
+                                ? 'bg-indigo-600 text-white scale-110 shadow-lg shadow-indigo-200'
+                                : 'bg-white text-slate-400 border border-slate-200'
+                              }`}>
+                                {String.fromCharCode(65 + index)}
+                              </span>
+                              <p className={`flex-1 text-base font-medium leading-relaxed ${answers[currentQuestion.id] === index ? 'text-slate-900' : 'text-slate-600'}`}>
+                                {option}
+                              </p>
+                              {answers[currentQuestion.id] === index && (
+                                <CheckCircle2 className="text-indigo-600 w-6 h-6 ml-4" strokeWidth={2.5} />
+                              )}
+                            </button>
+                          ))
                         )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                      </div>
+                    </div>
 
-                {/* Navigation Buttons */}
+                    {/* Navigation Buttons */}
                 <div className="flex items-center justify-between">
                   <button 
                     disabled={currentQuestionIndex === 0}
@@ -378,7 +406,7 @@ const FullAssessmentInterface = () => {
                       'bg-slate-200 border-slate-300 text-slate-600 hover:bg-slate-300 hover:border-slate-400'
                     }`}
                   >
-                    {i + 1}
+{i + 1}
                   </button>
                 ))}
               </div>
