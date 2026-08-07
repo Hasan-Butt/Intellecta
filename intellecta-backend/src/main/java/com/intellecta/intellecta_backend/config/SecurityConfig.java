@@ -53,7 +53,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )
-            .addFilterBefore(rateLimitingFilter, JwtAuthFilter.class)
+            // RateLimitingFilter runs first, then JwtAuthFilter, both before
+            // UsernamePasswordAuthenticationFilter (a registered Spring Security filter).
+            // Spring Security 7 requires the anchor class to have a registered order;
+            // JwtAuthFilter is custom and has none, so we cannot use it as an anchor.
+            .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .formLogin(form -> form.disable())
             .httpBasic(h -> h.disable());
