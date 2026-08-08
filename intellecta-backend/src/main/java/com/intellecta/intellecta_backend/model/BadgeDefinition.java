@@ -38,9 +38,9 @@ public class BadgeDefinition {
     @Column
     private Double targetPercentage;
 
-    /** Relative path to uploaded image file; null = use generic fallback */
+    /** UploadThing CDN URL e.g. https://utfs.io/f/... ; null = use generic fallback */
     @Column
-    private String imageFilePath;
+    private String imageUrl;
 
     // ── Rule configuration ────────────────────────────────────────────────────
     /**

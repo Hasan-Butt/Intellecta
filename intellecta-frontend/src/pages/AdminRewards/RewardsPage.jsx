@@ -19,6 +19,7 @@ import {
   X
 } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { uploadFile, validateImageFile } from '../../utils/uploadthing';
 
 const RewardsPage = () => {
   const [badges, setBadges] = useState([]);
@@ -91,8 +92,10 @@ const RewardsPage = () => {
       await badgeService.createBadgeDef(newBadge);
       
       if (newBadgeImage) {
+        validateImageFile(newBadgeImage);
+        const fileUrl = await uploadFile(newBadgeImage);
         const finalKey = newBadge.badgeKey.toUpperCase().replace(/ /g, "_");
-        await badgeService.uploadBadgeImage(finalKey, newBadgeImage);
+        await badgeService.uploadBadgeImage(finalKey, fileUrl);
       }
 
       setIsCreating(false);
@@ -101,7 +104,7 @@ const RewardsPage = () => {
       setNewBadgeImagePreview(null);
       fetchBadges();
     } catch (error) {
-      setCreateError(error?.response?.data?.message || 'Failed to create badge. Badge key may already exist.');
+      setCreateError(error?.response?.data?.message || error.message || 'Failed to create badge.');
     } finally {
       setUploading(false);
     }
@@ -124,21 +127,17 @@ const RewardsPage = () => {
 
     try {
       setUploading(true);
-      await badgeService.uploadBadgeImage(editingBadge.badgeKey, file);
+      validateImageFile(file);
+      const fileUrl = await uploadFile(file);
+      
+      await badgeService.uploadBadgeImage(editingBadge.badgeKey, fileUrl);
       
       // Fetch fresh data
       const updated = await badgeService.getAllBadgeDefs();
       const currentBadgeKey = editingBadge.badgeKey;
       
-      // Add cache buster to URLs to force browser to reload changed assets if the URL is static
-      const cacheBuster = `?t=${Date.now()}`;
-      const processedBadges = updated.map(b => ({
-        ...b,
-        imageUrl: b.imageUrl ? `${b.imageUrl}${b.imageUrl.includes('?') ? '&' : '?'}${Date.now()}` : null
-      }));
-      
-      setBadges(processedBadges);
-      const newBadge = processedBadges.find(b => b.badgeKey === currentBadgeKey);
+      setBadges(updated);
+      const newBadge = updated.find(b => b.badgeKey === currentBadgeKey);
       if (newBadge) {
         setEditingBadge(normalizeBadgeForEdit(newBadge));
       }
@@ -147,7 +146,7 @@ const RewardsPage = () => {
       e.target.value = '';
     } catch (error) {
       console.error("Upload failed", error);
-      alert("Image upload failed");
+      alert("Image upload failed: " + error.message);
     } finally {
       setUploading(false);
     }

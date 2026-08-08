@@ -8,13 +8,6 @@ import com.intellecta.intellecta_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,8 +15,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    private final String uploadDir = "uploads/avatars";
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public UserResponseDto getProfile(Long userId) {
@@ -60,22 +51,17 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public UserResponseDto uploadAvatar(Long userId, MultipartFile file) {
+    /**
+     * Update the user's avatar URL to an UploadThing CDN URL.
+     * The frontend uploads the file to UploadThing first, then calls this.
+     */
+    public UserResponseDto updateAvatarUrl(Long userId, String avatarUrl) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        try {
-            Path root = Paths.get(uploadDir);
-            if (!Files.exists(root)) Files.createDirectories(root);
-
-            String filename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-            Files.copy(file.getInputStream(), root.resolve(filename));
-
-            user.setAvatarUrl("/api/users/avatar/" + filename);
-            return toDto(userRepository.save(user));
-        } catch (IOException e) {
-            throw new RuntimeException("Could not store file: " + e.getMessage());
-        }
+        if (avatarUrl == null || avatarUrl.isBlank())
+            throw new RuntimeException("avatarUrl is required");
+        user.setAvatarUrl(avatarUrl);
+        return toDto(userRepository.save(user));
     }
 
     private UserResponseDto toDto(User user) {

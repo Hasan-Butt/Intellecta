@@ -10,9 +10,12 @@ import Sidebar from "../../components/dashboard/StudentSidebar";
 import { useLocation } from "react-router-dom";
 import {
   getSubjects, createSubject, deleteSubject,
-  getDocumentsBySubject, uploadDocument, updateDocumentTags,
-  deleteDocument, searchDocuments,
+  getDocumentsBySubject, searchDocuments, updateDocumentTags,
+  deleteDocument,
 } from "../../services/documentService";
+import { uploadFile, validateDocumentFile } from "../../utils/uploadthing";
+import api from "../../services/api";
+import { getUserId } from "../../utils/auth";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -58,14 +61,8 @@ const getRecentFiles = () => {
 };
 
 const openFile = (file) => {
-  const path = file.filePath;
-  if (!path) return;
-  const normalized = path.replace(/\\/g, "/");
-  const relative = normalized.includes("uploads/")
-    ? normalized.substring(normalized.indexOf("uploads/"))
-    : normalized;
-  const url = `http://localhost:8080/${relative}`;
-  window.open(url, "_blank");
+  if (!file.fileUrl) return;
+  window.open(file.fileUrl, "_blank");
 };
 
 const suggestTagFromFilename = (filename) => {
@@ -530,10 +527,31 @@ const SubjectFolderpage = () => {
       alert("Please select a subject folder first.");
       return;
     }
+    setLoading(true);
     try {
       let lastUploaded = null;
       for (const file of newFiles) {
-        const res = await uploadDocument(file, activeSubject, activeSemester);
+        try {
+          validateDocumentFile(file);
+        } catch (e) {
+          alert(`Skipping ${file.name}: ${e.message}`);
+          continue;
+        }
+
+        // 1. Upload to UploadThing directly from browser
+        const fileUrl = await uploadFile(file);
+        
+        // 2. Register metadata with backend
+        const userId = getUserId();
+        const res = await api.post(`/documents/register/user/${userId}`, {
+          fileUrl,
+          fileName: file.name,
+          fileType: file.type.includes("pdf") ? "pdf" : file.type.includes("image") ? "image" : "doc",
+          fileSize: file.size,
+          subject: activeSubject,
+          semester: activeSemester
+        });
+        
         lastUploaded = res.data;
       }
       await fetchFiles();
@@ -546,7 +564,9 @@ const SubjectFolderpage = () => {
       }
     } catch (err) {
       console.error("Upload failed:", err);
-      alert("Upload failed. Is the backend running?");
+      alert("Upload failed: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -2,7 +2,6 @@ package com.intellecta.intellecta_backend.service;
 
 import com.intellecta.intellecta_backend.dto.request.BadgeDefinitionRequest;
 import com.intellecta.intellecta_backend.dto.response.BadgeDefinitionResponse;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,8 +16,11 @@ public interface BadgeDefinitionService {
     /** Update editable fields of a badge */
     BadgeDefinitionResponse updateBadge(String badgeKey, BadgeDefinitionRequest req);
 
-    /** Upload image for a badge, returns updated response */
-    BadgeDefinitionResponse uploadImage(String badgeKey, MultipartFile file);
+    /**
+     * Set the badge image to an UploadThing CDN URL.
+     * Replaces the old uploadImage(MultipartFile) method.
+     */
+    BadgeDefinitionResponse setImageUrl(String badgeKey, String imageUrl);
 
     /** Delete a custom (non-system) badge */
     void deleteBadge(String badgeKey);

@@ -18,6 +18,7 @@ import intellectaLogo from "../../assets/intellectaLogo.jpeg";
 import quizService from "../../services/quizService";
 import api from "../../services/api";
 import Swal from 'sweetalert2';
+import { uploadFile, validateImageFile } from '../../utils/uploadthing';
 
 const CreateQuiz = () => {
   const navigate = useNavigate();
@@ -86,12 +87,10 @@ const CreateQuiz = () => {
     if (!file) return;
 
     setUploadingImage(true);
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const response = await api.post("/upload/image", formData);
-      setQuizData(prev => ({ ...prev, imageUrl: response.data.url }));
+      validateImageFile(file);
+      const fileUrl = await uploadFile(file);
+      setQuizData(prev => ({ ...prev, imageUrl: fileUrl }));
       Swal.fire({
         title: 'Uploaded!',
         text: 'Image successfully uploaded.',
@@ -104,7 +103,7 @@ const CreateQuiz = () => {
       console.error("Error uploading image:", error);
       Swal.fire({
         title: 'Upload Failed',
-        text: 'Could not upload the image. Please try again or use a URL.',
+        text: `Could not upload the image: ${error.message}`,
         icon: 'error',
         confirmButtonColor: '#6C5DD3'
       });
