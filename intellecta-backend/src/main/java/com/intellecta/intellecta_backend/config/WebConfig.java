@@ -1,24 +1,15 @@
 package com.intellecta.intellecta_backend.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-// CORS is handled exclusively in SecurityConfig (Security Fix #13).
-// WebConfig is intentionally limited to static resource serving only.
+/**
+ * WebConfig — previously served static files from disk via /uploads/**.
+ * Now that all file storage is on UploadThing CDN, local file serving
+ * is no longer needed. This class is retained as a placeholder.
+ *
+ * CORS is handled exclusively in SecurityConfig (Security Fix #13).
+ */
 @Configuration
 public class WebConfig {
-
-    @Bean
-    public WebMvcConfigurer resourceHandlerConfigurer() {
-        return new WebMvcConfigurer() {
-            // Serves files from the uploads/ folder on disk
-            @Override
-            public void addResourceHandlers(ResourceHandlerRegistry registry) {
-                registry.addResourceHandler("/uploads/**")
-                        .addResourceLocations("file:uploads/");
-            }
-        };
-    }
+    // No resource handlers needed — files are served from UploadThing CDN.
 }

@@ -10,7 +10,7 @@ import java.util.List;
 public class DocumentResponse {
     private Long id;
     private String fileName;
-    private String filePath;
+    private String fileUrl;
     private String subject;
     private String semester;
     private DocumentCategory category;
