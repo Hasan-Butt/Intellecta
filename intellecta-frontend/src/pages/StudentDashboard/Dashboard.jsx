@@ -229,7 +229,7 @@ function DistractionLog({ summary, onLog }) {
   const maxCount = Math.max(...counts, 1);
 
   return (
-    <div className="bg-white rounded-3xl p-6 flex flex-col justify-between shadow-lg border border-gray-100 h-[281px] w-full">
+    <div className="neu p-6 flex flex-col justify-between h-[281px] w-full">
       <div>
         <h3 className="font-bold text-[#161c27] text-sm uppercase tracking-wider mb-4">
           Distraction Log
@@ -241,7 +241,7 @@ function DistractionLog({ summary, onLog }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleLog(input)}
             placeholder="What broke your focus?"
-            className="w-full bg-[#f4f7ff] border-none rounded-2xl py-3 pr-12 pl-4 text-xs outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-[#451ebb]/20 transition-all"
+            className="w-full neu-inset border-none rounded-2xl py-3 pr-12 pl-4 text-xs outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-[var(--color-primary)] transition-all"
           />
           <button
             type="button"
@@ -571,7 +571,7 @@ export default function DashboardPage() {
                     setNewDailyGoal(data?.dailyGoalHours || 6);
                     setShowGoalModal(true);
                   }}
-                  className="flex gap-3 items-center px-5 py-7 rounded-3xl bg-white/70 backdrop-blur-[10px] shadow-lg border-b-4 border-[#451ebb] cursor-pointer hover:scale-105 transition-all group min-w-[160px]"
+                  className="glass-card flex gap-3 items-center px-5 py-7 cursor-pointer hover:scale-105 transition-all group min-w-[160px]"
                 >
                   <CircularProgress pct={dailyGoalPct} size={80} />
                   <div className="flex flex-col gap-1">
@@ -591,9 +591,9 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Streak card */}
-                <div className="flex gap-3 items-center px-5 py-7 rounded-3xl bg-white/70 backdrop-blur-[10px] shadow-lg border-b-4 border-[#fbbc00] min-w-[160px]">
+                <div className="glass-card flex gap-3 items-center px-5 py-7 min-w-[160px]">
                   <div className="w-[80px] h-[80px] flex items-center justify-center flex-shrink-0">
-                    <div className="bg-[#ffdfa0] rounded-full w-10 h-14 flex items-center justify-center">
+                    <div className="bg-[#ffdfa0] rounded-full w-10 h-14 flex items-center justify-center animate-fire">
                       <FireIcon />
                     </div>
                   </div>
@@ -625,13 +625,13 @@ export default function DashboardPage() {
                     <div className="flex gap-4">
                       <button 
                         onClick={() => navigate('/focus')}
-                        className="flex items-center gap-3 bg-white px-8 py-[17px] rounded-3xl font-bold text-[#451ebb] hover:opacity-90 transition-opacity"
+                        className="flex items-center gap-3 neu-btn px-8 py-[17px] font-bold text-[#451ebb]"
                       >
                         <PlayIcon /> Start Deep Work
                       </button>
                       <button 
                         onClick={() => navigate('/light-review')}
-                        className="flex items-center gap-3 px-8 py-[17px] rounded-3xl font-bold text-white border border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all"
+                        className="flex items-center gap-3 btn-ghost-glass text-white border-white/40"
                       >
                         <TimerIcon /> Light Review
                       </button>
@@ -640,7 +640,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ── Focus Chart — driven by API focusWeek ── */}
-                <div className="bg-[#f1f3ff] rounded-3xl p-8 flex flex-col gap-10">
+                <div className="neu p-8 flex flex-col gap-10">
                   <div className="flex items-center justify-between">
                     <span className="font-['Inter',sans-serif] text-[#484554] text-xs tracking-[1.2px] uppercase">
                       Focus Intensity Over Time
@@ -715,7 +715,7 @@ export default function DashboardPage() {
                 {/* ── Review Queue + Checklist ── */}
                 <div className="flex gap-6">
                   {/* Review Queue — from API (read-only display) */}
-                  <div className="bg-white rounded-3xl p-6 flex flex-col gap-4 flex-1 shadow-sm border border-gray-100">
+                  <div className="neu p-6 flex flex-col gap-4 flex-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-[#484554] text-xs tracking-[1.2px] uppercase font-bold">
@@ -776,7 +776,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Pre-Exam Checklist — local state with manual delete + confirmation */}
-                  <div className="bg-white rounded-3xl p-6 flex flex-col gap-4 flex-1 shadow-sm border border-gray-100 min-w-0">
+                  <div className="neu p-6 flex flex-col gap-4 flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-[#484554] text-xs tracking-[1.2px] uppercase font-bold leading-4">

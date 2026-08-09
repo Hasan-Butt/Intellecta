@@ -2,36 +2,23 @@ package com.intellecta.intellecta_backend.controller;
 
 import com.intellecta.intellecta_backend.dto.request.BadgeDefinitionRequest;
 import com.intellecta.intellecta_backend.dto.response.BadgeDefinitionResponse;
-import com.intellecta.intellecta_backend.model.BadgeDefinition;
-import com.intellecta.intellecta_backend.repository.BadgeDefinitionRepository;
 import com.intellecta.intellecta_backend.service.BadgeDefinitionService;
+import com.intellecta.intellecta_backend.service.GamificationService;
+import com.intellecta.intellecta_backend.security.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-
-import com.intellecta.intellecta_backend.security.SecurityUtils;
 
 @RestController
 @RequiredArgsConstructor
 public class BadgeController {
 
     private final BadgeDefinitionService badgeService;
-    private final BadgeDefinitionRepository badgeRepo;
-    private final com.intellecta.intellecta_backend.service.GamificationService gamificationService;
-
-    @Value("${badge.upload.dir:uploads/badges}")
-    private String uploadDir;
+    private final GamificationService gamificationService;
 
     // ── Admin endpoints ───────────────────────────────────────────────────────
 
@@ -53,11 +40,18 @@ public class BadgeController {
         return ResponseEntity.ok(badgeService.updateBadge(badgeKey, req));
     }
 
+    /**
+     * Set badge image URL — accepts JSON with the UploadThing CDN URL.
+     * Frontend uploads to UploadThing first, then POSTs the URL here.
+     *
+     * Body: { "imageUrl": "https://utfs.io/f/..." }
+     */
     @PostMapping("/api/admin/badges/{badgeKey}/image")
-    public ResponseEntity<BadgeDefinitionResponse> uploadImage(
+    public ResponseEntity<BadgeDefinitionResponse> setImageUrl(
             @PathVariable String badgeKey,
-            @RequestParam("file") MultipartFile file) {
-        return ResponseEntity.ok(badgeService.uploadImage(badgeKey, file));
+            @RequestBody Map<String, String> body) {
+        String imageUrl = body.get("imageUrl");
+        return ResponseEntity.ok(badgeService.setImageUrl(badgeKey, imageUrl));
     }
 
     @DeleteMapping("/api/admin/badges/{badgeKey}")
@@ -66,33 +60,12 @@ public class BadgeController {
         return ResponseEntity.ok(Map.of("message", "Badge deleted"));
     }
 
-    // ── Public: serve badge image ─────────────────────────────────────────────
-
-    @GetMapping("/api/badges/{badgeKey}/image")
-    public ResponseEntity<Resource> getBadgeImage(@PathVariable String badgeKey) {
-        BadgeDefinition def = badgeRepo.findByBadgeKey(badgeKey).orElse(null);
-        if (def == null || def.getImageFilePath() == null) {
-            return ResponseEntity.notFound().build();
-        }
-        Path filePath = Paths.get(uploadDir).resolve(def.getImageFilePath());
-        Resource resource = new FileSystemResource(filePath);
-        if (!resource.exists()) {
-            return ResponseEntity.notFound().build();
-        }
-        String contentType = def.getImageFilePath().endsWith(".svg")
-                ? "image/svg+xml" : "image/png";
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .body(resource);
-    }
-
     // ── Student: all badges with earned status ────────────────────────────────
 
     @GetMapping("/api/achievements/user/{userId}/all")
     public ResponseEntity<List<BadgeDefinitionResponse>> getAllForStudent(
             @PathVariable Long userId) {
         SecurityUtils.validateUser(userId);
-        // Sync achievements before fetching
         gamificationService.checkAndAwardBadges(userId);
         return ResponseEntity.ok(badgeService.getAllBadgesForStudent(userId));
     }

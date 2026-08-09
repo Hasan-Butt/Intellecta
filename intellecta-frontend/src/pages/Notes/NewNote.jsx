@@ -11,6 +11,7 @@ import {
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 import { createNote } from "../../services/notesService";
+import { uploadFile, validateImageFile } from "../../utils/uploadthing";
 
 const NewNote = ({ isOpen, onClose, isSanctuaryMode = false, onSaved }) => {
   const [title, setTitle] = useState("");
@@ -102,21 +103,25 @@ const NewNote = ({ isOpen, onClose, isSanctuaryMode = false, onSaved }) => {
     updateActiveFormats();
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      setImagePreview(ev.target.result);
+    
+    try {
+      validateImageFile(file);
+      const url = await uploadFile(file);
+      setImagePreview(url);
       restoreSelection();
       editorRef.current?.focus();
       document.execCommand(
         "insertHTML",
         false,
-        `<img src="${ev.target.result}" style="max-width:100%;border-radius:12px;margin:8px 0;" />`,
+        `<img src="${url}" style="max-width:100%;border-radius:12px;margin:8px 0;" />`,
       );
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      alert("Failed to upload image: " + err.message);
+    }
   };
 
   const handleAddTag = (e) => {

@@ -91,7 +91,7 @@ const QuizPlatform = () => {
                     onClick={() => quizzes.length > 0 && handleStartQuiz(quizzes[0].id)}
                     className={`group flex items-center gap-4 px-10 py-5 rounded-2xl font-bold text-lg transition-all active:scale-95 shadow-2xl ${
                       quizzes.length > 0 
-                      ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/40' 
+                      ? 'btn-primary' 
                       : 'bg-slate-700 text-slate-400 cursor-not-allowed shadow-none'
                     }`}
                   >
@@ -103,13 +103,13 @@ const QuizPlatform = () => {
             </section>
 
             {/* --- SEARCH & FILTERS --- */}
-            <section className="mb-20 p-3 bg-slate-200/50 rounded-[2.5rem] flex flex-col md:flex-row gap-3">
+            <section className="mb-20 p-3 neu-inset flex flex-col md:flex-row gap-3">
               <div className="relative flex-grow flex items-center">
                 <Search className="absolute left-7 w-6 h-6 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search for subjects..."
-                  className="w-full h-20 pl-16 pr-8 bg-white rounded-[2rem] text-lg text-slate-700 font-medium placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
+                  className="w-full h-20 pl-16 pr-8 bg-transparent text-lg text-slate-700 font-medium placeholder:text-slate-400 outline-none"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -139,7 +139,7 @@ const QuizPlatform = () => {
             ) : (
               <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-20">
                 {filteredQuizzes.map((quiz) => (
-                  <article key={quiz.id} className="group bg-white rounded-[3rem] border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500 flex flex-col">
+                  <article key={quiz.id} className="group neu overflow-hidden transition-all duration-500 flex flex-col hover:scale-[1.02]">
                     <div className="w-full aspect-[16/10] overflow-hidden">
                       <img
                         src={quiz.imageUrl || "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&q=80&w=800"}
@@ -175,7 +175,7 @@ const QuizPlatform = () => {
                         </div>
                         <button 
                           onClick={() => handleStartQuiz(quiz.id)}
-                          className="w-full bg-[#0F172A] text-white py-3.5 rounded-xl font-bold hover:bg-indigo-600 transition-all active:scale-95 text-sm shadow-md"
+                          className="w-full btn-primary py-3.5 font-bold transition-all active:scale-95 text-sm"
                         >
                           Start Quiz
                         </button>

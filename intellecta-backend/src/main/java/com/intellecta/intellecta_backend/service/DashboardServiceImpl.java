@@ -107,7 +107,7 @@ public class DashboardServiceImpl implements DashboardService {
             .stream().map(a -> {
                 String key = a.getBadgeName();
                 String imageUrl = badgeDefinitionRepository.findByBadgeKey(key)
-                        .map(def -> def.getImageFilePath() != null ? serveBaseUrl + "/" + key + "/image" : null)
+                        .map(def -> def.getImageUrl())
                         .orElse(null);
                 return DashboardResponse.BadgeDTO.builder()
                         .key(key)

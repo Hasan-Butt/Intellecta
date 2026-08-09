@@ -5,7 +5,6 @@ import { getUserId } from '../../utils/auth';
 import { 
   User, 
   Lock, 
-  Bell, 
   Monitor, 
   ShieldCheck, 
   Save, 
@@ -17,6 +16,7 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import Avatar from '../../components/common/Avatar';
+import { uploadFile, validateImageFile } from '../../utils/uploadthing';
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -137,21 +137,33 @@ const SettingsPage = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    try {
+      validateImageFile(file);
+    } catch (err) {
+      setError(err.message);
+      return;
+    }
+
     setSaving(true);
     const userId = getUserId();
-    if (!userId) return;
-    const formData = new FormData();
-    formData.append('file', file);
+    if (!userId) {
+      setSaving(false);
+      return;
+    }
 
     try {
-      const res = await api.post(`/users/${userId}/avatar`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      // 1. Upload direct to UploadThing
+      const fileUrl = await uploadFile(file);
+      
+      // 2. Register new URL with backend
+      const res = await api.post(`/users/${userId}/avatar`, { avatarUrl: fileUrl });
+      
       setProfileData({ ...profileData, avatarUrl: res.data.avatarUrl });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError("Failed to upload image");
+      console.error(err);
+      setError(err.message || "Failed to upload image");
     } finally {
       setSaving(false);
     }

@@ -3,15 +3,14 @@ package com.intellecta.intellecta_backend.controller;
 import com.intellecta.intellecta_backend.dto.request.DocumentTagRequest;
 import com.intellecta.intellecta_backend.dto.response.DocumentResponse;
 import com.intellecta.intellecta_backend.service.DocumentService;
+import com.intellecta.intellecta_backend.security.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.util.List;
 
-import com.intellecta.intellecta_backend.security.SecurityUtils;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/documents")
@@ -20,16 +19,36 @@ public class DocumentController {
 
     private final DocumentService documentService;
 
-    // Upload a file — multipart form data
-    @PostMapping("/upload/user/{userId}")
-    public ResponseEntity<DocumentResponse> uploadDocument(
+    /**
+     * Register a document that was already uploaded to UploadThing by the frontend.
+     * Replaces the old multipart POST /upload/user/{userId}.
+     *
+     * Body: {
+     *   "fileUrl":   "https://utfs.io/f/...",
+     *   "fileName":  "lecture-notes.pdf",
+     *   "fileType":  "pdf",
+     *   "fileSize":  204800,
+     *   "subject":   "Physics",
+     *   "semester":  "Semester 1"
+     * }
+     */
+    @PostMapping("/register/user/{userId}")
+    public ResponseEntity<DocumentResponse> registerDocument(
             @PathVariable Long userId,
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("subject") String subject,
-            @RequestParam(value = "semester", defaultValue = "Semester 1") String semester)
-            throws IOException {
+            @RequestBody Map<String, Object> body) {
         SecurityUtils.validateUser(userId);
-        return ResponseEntity.ok(documentService.uploadDocument(userId, file, subject, semester));
+
+        String fileUrl  = (String) body.get("fileUrl");
+        String fileName = (String) body.get("fileName");
+        String fileType = (String) body.get("fileType");
+        Number fileSize = (Number) body.get("fileSize");
+        String subject  = (String) body.getOrDefault("subject", "General");
+        String semester = (String) body.getOrDefault("semester", "Semester 1");
+
+        return ResponseEntity.ok(documentService.registerDocument(
+                userId, fileUrl, fileName, fileType,
+                fileSize != null ? fileSize.longValue() : 0L,
+                subject, semester));
     }
 
     // Get all documents for user
@@ -72,7 +91,7 @@ public class DocumentController {
     @DeleteMapping("/user/{userId}/{documentId}")
     public ResponseEntity<Void> deleteDocument(
             @PathVariable Long userId,
-            @PathVariable Long documentId) throws IOException {
+            @PathVariable Long documentId) {
         SecurityUtils.validateUser(userId);
         documentService.deleteDocument(userId, documentId);
         return ResponseEntity.noContent().build();

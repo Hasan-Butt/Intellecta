@@ -112,6 +112,15 @@ const StudySessionDashboard = () => {
   const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
 
   useEffect(() => {
+    if (ambientMode) {
+      document.body.classList.add("focus-mode");
+    } else {
+      document.body.classList.remove("focus-mode");
+    }
+    return () => document.body.classList.remove("focus-mode");
+  }, [ambientMode]);
+
+  useEffect(() => {
     let timer;
     if (showAchievementModal && earnedBadges.length > 0) {
       // 5 seconds delay per badge, except if we are on the last badge (then wait indefinitely or auto close, but let's wait indefinitely so they can click "Awesome!")
@@ -130,7 +139,7 @@ const StudySessionDashboard = () => {
     const fetchData = async () => {
       try {
 
-        const [dashRes, subjectsRes, sessionsRes, coursesRes, profileRes] = await Promise.all([
+        const results = await Promise.allSettled([
           api.get(`/dashboard/user/${userId}`),
           api.get(`/subjects/user/${userId}`),
           api.get(`/sessions/user/${userId}`),
@@ -138,28 +147,45 @@ const StudySessionDashboard = () => {
           api.get(`/users/${userId}/profile`),
         ]);
         
-        setUserAvatar(profileRes.data.avatarUrl || "");
-        setUserName(profileRes.data.username || "Scholar");
+        const [dashRes, subjectsRes, sessionsRes, coursesRes, profileRes] = results;
 
-        setLevel(dashRes.data.level ?? 1);
-        setCurrentXp(dashRes.data.currentXp ?? 0);
-        setNextLevelXp(dashRes.data.nextLevelXp ?? 141);
-        setXpProgressPct(dashRes.data.xpProgressPct ?? 0);
-        setStreakDays(dashRes.data.streakDays ?? 0);
-        setTodayFocusTotal(dashRes.data.todayStudyHours ?? 0);
-        setFocusWeek(dashRes.data.focusWeek || []);
-
-        const combined = [
-          ...(subjectsRes.data || []),
-          ...(coursesRes.data || []).map(c => ({ id: `c-${c.id}`, name: c.courseName }))
-        ];
-        
-        setSubjects(combined);
-        if (combined.length > 0) {
-          setSelectedSubject(combined[0].name);
+        if (profileRes.status === 'fulfilled') {
+          setUserAvatar(profileRes.value.data.avatarUrl || "");
+          setUserName(profileRes.value.data.username || "Scholar");
+        } else {
+          setUserAvatar("");
+          setUserName("Scholar");
         }
 
-        setRecentSessions(sessionsRes.data || []);
+        if (dashRes.status === 'fulfilled') {
+          setLevel(dashRes.value.data.level ?? 1);
+          setCurrentXp(dashRes.value.data.currentXp ?? 0);
+          setNextLevelXp(dashRes.value.data.nextLevelXp ?? 141);
+          setXpProgressPct(dashRes.value.data.xpProgressPct ?? 0);
+          setStreakDays(dashRes.value.data.streakDays ?? 0);
+          setTodayFocusTotal(dashRes.value.data.todayStudyHours ?? 0);
+          setFocusWeek(dashRes.value.data.focusWeek || []);
+        }
+
+        let combinedSubjects = [];
+        if (subjectsRes.status === 'fulfilled') {
+          combinedSubjects = [...combinedSubjects, ...(subjectsRes.value.data || [])];
+        }
+        if (coursesRes.status === 'fulfilled') {
+          combinedSubjects = [
+            ...combinedSubjects,
+            ...(coursesRes.value.data || []).map(c => ({ id: `c-${c.id}`, name: c.courseName }))
+          ];
+        }
+        
+        setSubjects(combinedSubjects);
+        if (combinedSubjects.length > 0) {
+          setSelectedSubject(combinedSubjects[0].name);
+        }
+
+        if (sessionsRes.status === 'fulfilled') {
+          setRecentSessions(sessionsRes.value.data || []);
+        }
       } catch (err) {}
     };
     fetchData();
@@ -321,7 +347,7 @@ const StudySessionDashboard = () => {
   };
 
   const TimerCard = ({ zen = false }) => (
-    <section className={`bg-[#F1F3FF] rounded-[2.5rem] p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-1000 ${zen ? "bg-white/5 border border-white/10 w-full max-w-3xl py-20 shadow-2xl backdrop-blur-xl scale-110" : "col-span-12 lg:col-span-7"}`}>
+    <section className={`p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-1000 ${zen ? "glass-card w-full max-w-3xl py-20 scale-110" : "glass-neu col-span-12 lg:col-span-7"}`}>
       {zen && (
         <button 
           onClick={() => setAmbientMode(false)}
@@ -367,7 +393,7 @@ const StudySessionDashboard = () => {
           </button>
           <button
             onClick={isActive ? handlePause : handleStartResume}
-            className={`w-24 h-24 rounded-full flex items-center justify-center transition-all ${zen ? "bg-white text-indigo-900 shadow-[0_0_50px_rgba(255,255,255,0.25)]" : "bg-indigo-600 text-white shadow-[0_20px_40px_rgba(69,30,187,0.4)] hover:scale-105"}`}
+            className={`w-24 h-24 rounded-full flex items-center justify-center transition-all ${zen ? "bg-white text-indigo-900 shadow-[0_0_50px_rgba(255,255,255,0.25)]" : "bg-indigo-600 text-white shadow-[0_20px_40px_rgba(69,30,187,0.4)] hover:scale-105"} ${isActive ? "focus-ring" : ""}`}
           >
             {isActive ? (
               <Pause size={32} fill="currentColor" />
@@ -489,7 +515,7 @@ const StudySessionDashboard = () => {
             <div className="grid grid-cols-12 gap-6">
               <TimerCard />
 
-              <section className="col-span-12 lg:col-span-5 bg-white rounded-[2.5rem] p-7 border border-slate-100 shadow-sm space-y-6">
+              <section className="col-span-12 lg:col-span-5 neu p-7 space-y-6">
                 <div className="flex items-center gap-3">
                   <Settings2 className="text-indigo-600" size={20} />
                   <h3 className="text-xl font-bold font-['Manrope']">
@@ -503,7 +529,7 @@ const StudySessionDashboard = () => {
                       Active Subject
                     </label>
                     <div
-                      className="bg-[#F1F3FF] p-4 px-6 rounded-3xl flex items-center justify-between cursor-pointer group"
+                      className="neu-inset p-4 px-6 flex items-center justify-between cursor-pointer group"
                       onClick={() =>
                         !isActive && setIsDropdownOpen(!isDropdownOpen)
                       }
@@ -539,7 +565,7 @@ const StudySessionDashboard = () => {
                       <label className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">
                         Work Duration
                       </label>
-                      <div className="bg-[#F1F3FF] p-2 px-4 rounded-3xl flex items-center gap-2">
+                      <div className="neu-inset p-2 px-4 flex items-center gap-2">
                         <input
                           type="number"
                           value={workDuration}
@@ -585,7 +611,7 @@ const StudySessionDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="bg-indigo-600/5 p-5 px-6 rounded-[2rem] flex items-center justify-between border border-indigo-100">
+                  <div className="neu-inset p-5 px-6 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-indigo-600 shadow-sm">
                         <BellOff size={18} />
@@ -611,7 +637,7 @@ const StudySessionDashboard = () => {
                 </div>
               </section>
 
-              <section className="col-span-12 lg:col-span-4 bg-[#E3E8F9] rounded-[2.5rem] p-8 flex flex-col justify-between min-h-[400px]">
+              <section className="col-span-12 lg:col-span-4 neu p-8 flex flex-col justify-between min-h-[400px]">
                 <div className="flex justify-between items-center">
                   <h3 className="font-['Manrope'] font-bold text-lg tracking-tight">
                     Focus Insights
@@ -669,7 +695,7 @@ const StudySessionDashboard = () => {
                 </div>
               </section>
 
-              <section className="col-span-12 lg:col-span-8 bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm flex flex-col justify-between">
+              <section className="col-span-12 lg:col-span-8 neu p-8 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="font-['Manrope'] font-bold text-lg tracking-tight">
                     Recent Sessions
@@ -702,7 +728,7 @@ const StudySessionDashboard = () => {
               </section>
             </div>
 
-            <footer className="mt-8 bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-3xl p-6 flex items-center gap-8 border border-white">
+            <footer className="mt-8 glass-card p-6 flex items-center gap-8">
               <div className="flex items-center gap-4 min-w-[200px]">
                 <Avatar 
                   src={userAvatar}
@@ -727,9 +753,9 @@ const StudySessionDashboard = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div className="flex-1 xp-track">
                 <div
-                  className="h-full bg-indigo-600 rounded-full shadow-[0_0_10px_rgba(79,70,229,0.4)] transition-all duration-700"
+                  className="xp-fill"
                   style={{
                     width: `${xpProgressPct}%`,
                   }}

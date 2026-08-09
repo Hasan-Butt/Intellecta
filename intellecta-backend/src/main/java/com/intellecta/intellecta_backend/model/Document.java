@@ -17,9 +17,9 @@ public class Document {
     @Column(nullable = false)
     private String fileName;
 
-    // Path on disk where file is stored e.g. uploads/user_1/physics/file.pdf
+    // UploadThing CDN URL e.g. https://utfs.io/f/<key>
     @Column(nullable = false)
-    private String filePath;
+    private String fileUrl;
 
     // Subject name e.g. "Physics", "Mathematics"
     private String subject;

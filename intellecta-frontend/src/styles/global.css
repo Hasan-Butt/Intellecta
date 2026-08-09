@@ -1,48 +1,413 @@
+/* ==========================================================================
+   INTELLECTA — GLOBAL STYLES
+   Design language: "Focus Lab"
+   - Neumorphism   → calm dashboard surfaces (schedule, notes, documents)
+   - Glassmorphism → floating/overlay elements (timer, XP bar, modals, nav)
+   - Playful energy is spent in ONE place: the gamification layer
+     (streak flame, XP shimmer, badge glow, level-up pulse) — everything
+     else stays quiet and disciplined.
+   ========================================================================== */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* --------------------------------------------------------------------------
+   FONTS
+   Add these to public/index.html <head>, or @import them here.
+   Space Grotesk  → display / headings / XP + timer numbers
+   Plus Jakarta Sans → body copy, UI labels
+   JetBrains Mono → stats, timestamps, countdowns
+-------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* ---- shadcn/ui compatibility layer (kept in HSL) ---- */
+    --background: 230 45% 96%;
+    --foreground: 256 30% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%; /* This makes the Login button black */
-    --primary-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.75rem;
+    --card-foreground: 256 30% 12%;
+    --primary: 248 74% 58%;              /* indigo #4C3AE3 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 172 82% 39%;            /* teal #14B8A6 */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 230 35% 92%;
+    --muted-foreground: 256 15% 42%;
+    --accent: 25 100% 63%;               /* flame #FF8A3D */
+    --accent-foreground: 256 30% 12%;
+    --border: 230 30% 87%;
+    --input: 230 30% 87%;
+    --ring: 248 74% 58%;
+    --radius: 1.25rem;
+
+    /* ---- raw token palette (named, for direct use) ---- */
+    --color-base:        #EEF0F9;   /* neumorphic light bg */
+    --color-base-shadow-d: #C7CCDE; /* neumorphic dark shadow */
+    --color-base-shadow-l: #FFFFFF; /* neumorphic light shadow */
+    --color-ink:          #1E1B2E;  /* deep violet-black text */
+    --color-primary:      #4C3AE3;  /* indigo */
+    --color-primary-soft: #EDEBFD;
+    --color-teal:         #14B8A6;  /* active / success */
+    --color-flame:        #FF8A3D;  /* XP / streak accent */
+    --color-flame-hot:    #FB923C;
+    --color-glass-tint:   255, 255, 255;
+    --color-glass-border: 255, 255, 255;
+
+    /* ---- neumorphism shadow recipes ---- */
+    --neu-raised: 8px 8px 16px var(--color-base-shadow-d),
+                  -8px -8px 16px var(--color-base-shadow-l);
+    --neu-raised-sm: 4px 4px 8px var(--color-base-shadow-d),
+                     -4px -4px 8px var(--color-base-shadow-l);
+    --neu-pressed: inset 4px 4px 8px var(--color-base-shadow-d),
+                   inset -4px -4px 8px var(--color-base-shadow-l);
+
+    /* ---- glass recipe ---- */
+    --glass-bg: rgba(var(--color-glass-tint), 0.55);
+    --glass-border: rgba(var(--color-glass-border), 0.6);
+    --glass-blur: 16px;
+    --glass-shadow: 0 8px 32px rgba(76, 58, 227, 0.14);
+  }
+
+  /* ------------------------------------------------------------------------
+     FOCUS MODE — dark "night lab" variant.
+     Apply `.focus-mode` to <body> (or a session container) while a
+     Pomodoro / study session is active. The surface itself communicates
+     "you are in deep work" — this is the one deliberate risk in the system.
+  ------------------------------------------------------------------------ */
+  .focus-mode {
+    --background: 256 38% 8%;
+    --foreground: 230 40% 96%;
+    --card: 256 32% 12%;
+    --card-foreground: 230 40% 96%;
+    --muted: 256 25% 16%;
+    --muted-foreground: 230 15% 70%;
+    --border: 256 25% 20%;
+
+    --color-base: #171225;
+    --color-base-shadow-d: #0C0916;
+    --color-base-shadow-l: #241C3A;
+    --color-ink: #F1EFFB;
+    --color-glass-tint: 30, 24, 56;
+    --color-glass-border: 140, 120, 255;
+    --glass-bg: rgba(30, 24, 56, 0.45);
+    --glass-border: rgba(140, 120, 255, 0.25);
+    --glass-shadow: 0 8px 40px rgba(76, 58, 227, 0.35);
+
+    background: radial-gradient(circle at 20% 0%, rgba(76, 58, 227, 0.25), transparent 45%),
+                radial-gradient(circle at 85% 100%, rgba(20, 184, 166, 0.15), transparent 50%),
+                var(--color-base);
+  }
+
+  body {
+    background: var(--color-base);
+    color: var(--color-ink);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    transition: background 0.5s ease, color 0.5s ease;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  .font-mono, .stat-number, .timer-digits {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Accessible focus ring everywhere — never remove outline without replacing */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 }
 
-/* Custom sleek scrollbar for your dashboard cards */
+/* ==========================================================================
+   NEUMORPHISM — soft, quiet dashboard surfaces
+   ========================================================================== */
+
+@layer components {
+  .neu {
+    background: var(--color-base);
+    border-radius: var(--radius);
+    box-shadow: var(--neu-raised);
+    border: none;
+  }
+
+  .neu-sm {
+    background: var(--color-base);
+    border-radius: calc(var(--radius) * 0.7);
+    box-shadow: var(--neu-raised-sm);
+  }
+
+  /* Pressed / inset state — used for inputs, active toggles, the timer well */
+  .neu-inset {
+    background: var(--color-base);
+    border-radius: var(--radius);
+    box-shadow: var(--neu-pressed);
+  }
+
+  /* Neumorphic button with tactile press feedback */
+  .neu-btn {
+    background: var(--color-base);
+    border-radius: 999px;
+    box-shadow: var(--neu-raised-sm);
+    border: none;
+    color: var(--color-ink);
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .neu-btn:hover {
+    box-shadow: 6px 6px 12px var(--color-base-shadow-d),
+                -6px -6px 12px var(--color-base-shadow-l);
+    transform: translateY(-1px);
+  }
+  .neu-btn:active {
+    box-shadow: var(--neu-pressed);
+    transform: translateY(0);
+  }
+
+  input.neu-inset, textarea.neu-inset {
+    padding: 0.75rem 1rem;
+    color: var(--color-ink);
+  }
+  input.neu-inset:focus, textarea.neu-inset:focus {
+    box-shadow: var(--neu-pressed), 0 0 0 2px var(--color-primary);
+  }
+}
+
+/* ==========================================================================
+   GLASSMORPHISM — floating layers: nav, timer overlay, modals, XP bar
+   ========================================================================== */
+
+@layer components {
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-nav {
+    background: rgba(var(--color-glass-tint), 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  /* Hybrid: neumorphic base peeking through a glass sheet — use for
+     the Pomodoro timer card, where it sits "in" the dashboard but
+     floats "above" a session. */
+  .glass-neu {
+    background: linear-gradient(145deg, rgba(var(--color-glass-tint), 0.65), rgba(var(--color-glass-tint), 0.35));
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: calc(var(--radius) * 1.2);
+    box-shadow: var(--neu-raised), var(--glass-shadow);
+  }
+}
+
+/* ==========================================================================
+   GAMIFICATION — this is where the personality lives
+   ========================================================================== */
+
+@layer components {
+  /* --- XP bar with a shimmer sweep on gain --- */
+  .xp-track {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--color-base);
+    box-shadow: var(--neu-pressed);
+    overflow: hidden;
+    position: relative;
+  }
+  .xp-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-teal));
+    position: relative;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .xp-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    transform: translateX(-100%);
+    animation: xp-shimmer 2.2s ease-in-out infinite;
+  }
+  @keyframes xp-shimmer {
+    0%, 30% { transform: translateX(-100%); }
+    70%, 100% { transform: translateX(100%); }
+  }
+
+  /* --- Streak flame (upgraded from your original) --- */
+  @keyframes fire {
+    0%   { transform: scale(1) translateY(0); filter: drop-shadow(0 0 3px var(--color-flame)); }
+    25%  { transform: scale(1.05) translateY(-1px) rotate(-1deg); filter: drop-shadow(0 0 6px var(--color-flame-hot)); }
+    50%  { transform: scale(1.1) translateY(-2px) rotate(1deg); filter: drop-shadow(0 0 10px var(--color-flame)); }
+    75%  { transform: scale(1.05) translateY(-1px) rotate(-1deg); filter: drop-shadow(0 0 6px var(--color-flame-hot)); }
+    100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 3px var(--color-flame)); }
+  }
+  .animate-fire { animation: fire 1.5s ease-in-out infinite; }
+
+  /* Neumorphic badge base with a glass halo — used for streak / achievement chips */
+  .badge-glow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-base);
+    box-shadow: var(--neu-raised-sm);
+    border-radius: 999px;
+    position: relative;
+  }
+  .badge-glow::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(255,138,61,0.35), transparent 70%);
+    z-index: -1;
+    animation: badge-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes badge-pulse {
+    0%, 100% { opacity: 0.5; transform: scale(0.96); }
+    50% { opacity: 1; transform: scale(1.06); }
+  }
+
+  /* Level-up celebration — trigger by toggling this class on for ~900ms */
+  @keyframes level-up-pop {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.15) rotate(-2deg); }
+    55%  { transform: scale(0.97) rotate(1deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .level-up { animation: level-up-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+  /* Focus-mode ambient pulse ring around an active Pomodoro dial */
+  @keyframes focus-ring {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(76, 58, 227, 0.35); }
+    50% { box-shadow: 0 0 0 14px rgba(76, 58, 227, 0); }
+  }
+  .focus-ring { animation: focus-ring 2.6s ease-in-out infinite; border-radius: 999px; }
+}
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+
+@layer components {
+  .btn-primary {
+    background: linear-gradient(145deg, var(--color-primary), #3E2FC7);
+    color: white;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.7rem 1.5rem;
+    box-shadow: 0 6px 18px rgba(76, 58, 227, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    border: none;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(76, 58, 227, 0.42);
+  }
+  .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(76, 58, 227, 0.35);
+  }
+
+  .btn-ghost-glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    color: var(--color-ink);
+    font-weight: 500;
+    padding: 0.65rem 1.4rem;
+    transition: background 0.2s ease;
+  }
+  .btn-ghost-glass:hover {
+    background: rgba(var(--color-glass-tint), 0.8);
+  }
+}
+
+/* ==========================================================================
+   SCROLLBAR
+   ========================================================================== */
+
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent; 
+  background: transparent;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1; /* slate-300 */
+  background: rgba(76, 58, 227, 0.25);
   border-radius: 10px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; /* slate-400 */
+  background: rgba(76, 58, 227, 0.45);
 }
 
-@keyframes fire {
-  0% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 3px #f97316); }
-  25% { transform: scale(1.05) translateY(-1px) rotate(-1deg); filter: drop-shadow(0 0 6px #fb923c); }
-  50% { transform: scale(1.1) translateY(-2px) rotate(1deg); filter: drop-shadow(0 0 10px #f97316); }
-  75% { transform: scale(1.05) translateY(-1px) rotate(-1deg); filter: drop-shadow(0 0 6px #fb923c); }
-  100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 3px #f97316); }
+/* ==========================================================================
+   AMBIENT BACKGROUND BLOBS
+   Optional: drop a <div class="bg-blobs"> as the first child of a page
+   to give glass cards something to blur against.
+   ========================================================================== */
+
+.bg-blobs {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+}
+.bg-blobs::before,
+.bg-blobs::after {
+  content: '';
+  position: absolute;
+  width: 42vw;
+  height: 42vw;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+}
+.bg-blobs::before {
+  top: -10%;
+  left: -10%;
+  background: var(--color-primary);
+}
+.bg-blobs::after {
+  bottom: -15%;
+  right: -10%;
+  background: var(--color-teal);
 }
 
-.animate-fire {
-  animation: fire 1.5s ease-in-out infinite;
+/* ==========================================================================
+   MOTION & ACCESSIBILITY
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fire,
+  .xp-fill::after,
+  .badge-glow::before,
+  .level-up,
+  .focus-ring {
+    animation: none !important;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
 }
