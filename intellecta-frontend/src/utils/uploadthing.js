@@ -12,19 +12,6 @@
 
 import api from "../services/api";
 
-const TOKEN = process.env.REACT_APP_UPLOADTHING_TOKEN;
-
-function decodeToken(token) {
-  if (!token) throw new Error("REACT_APP_UPLOADTHING_TOKEN is not set.");
-  try {
-    // base64url → base64 → JSON
-    const base64 = token.replace(/-/g, "+").replace(/_/g, "/");
-    return JSON.parse(atob(base64));
-  } catch {
-    // Fallback: treat the token itself as the API key
-    return { apiKey: token };
-  }
-}
 
 /**
  * Upload a single File object to UploadThing.
@@ -54,7 +41,7 @@ export async function uploadFile(file) {
   // UploadThing returns either { data: [...] } or [...]
   const fileData = Array.isArray(presignJson)
     ? presignJson[0]
-    : presignJson.data?.[0];
+    : (presignJson.data?.[0] || presignJson);
 
   if (!fileData) {
     throw new Error("UploadThing returned no upload data.");
@@ -62,26 +49,18 @@ export async function uploadFile(file) {
 
   const { presignedUrl, fields, key, fileUrl } = fileData;
 
-  // ── Step 2: Upload the file ────────────────────────────────────────────────
-  if (fields && Object.keys(fields).length > 0) {
-    // Multipart POST (older presigned S3 flow)
-    const form = new FormData();
-    Object.entries(fields).forEach(([k, v]) => form.append(k, v));
-    form.append("file", file);
-    const uploadRes = await fetch(presignedUrl, { method: "POST", body: form });
-    if (!uploadRes.ok) {
-      throw new Error(`S3 upload failed (${uploadRes.status})`);
-    }
-  } else {
-    // Direct PUT (newer flow)
-    const uploadRes = await fetch(presignedUrl, {
-      method: "PUT",
-      body: file,
-      headers: { "Content-Type": file.type || "application/octet-stream" },
-    });
-    if (!uploadRes.ok) {
-      throw new Error(`UploadThing PUT failed (${uploadRes.status})`);
-    }
+  // ── Step 2: Upload the file — always as multipart/form-data ────────────────
+  // Let the browser set Content-Type + boundary automatically; do NOT set it manually.
+  const form = new FormData();
+  form.append("file", file);
+
+  const uploadRes = await fetch(presignedUrl, {
+    method: "PUT",
+    body: form,
+  });
+
+  if (!uploadRes.ok) {
+    throw new Error(`UploadThing PUT failed (${uploadRes.status})`);
   }
 
   // ── Step 3: Return the public URL ──────────────────────────────────────────
