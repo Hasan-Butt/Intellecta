@@ -169,7 +169,7 @@ const GlobalLeaderboard = () => {
     : 100;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] font-['Inter',_sans-serif] text-slate-900 antialiased flex flex-col">
+    <div className="min-h-screen bg-[var(--color-base)] font-['Inter',_sans-serif] text-slate-900 antialiased flex flex-col">
       <Navbar />
 
       <div className="flex flex-1 relative items-start">
@@ -214,7 +214,7 @@ const GlobalLeaderboard = () => {
                   </button>
                 </div>
 
-                <div className="flex p-1 bg-slate-200/50 rounded-xl">
+                <div className="flex p-1 neu-inset rounded-xl">
                   {['global', 'sectional'].map((mode) => (
                     <button
                       key={mode}
@@ -241,7 +241,7 @@ const GlobalLeaderboard = () => {
                 </div>
 
                 {/* TABLE SECTION */}
-                <section className="bg-white rounded-[32px] p-6 md:p-8 shadow-xl border border-slate-200/50">
+                <section className="neu p-6 md:p-8">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
                       <h2 className="text-xl font-black text-slate-900 tracking-tight">{viewMode === 'global' ? 'Community Rankings' : `Full Leaderboard: ${selectedCategory}`}</h2>
@@ -294,8 +294,8 @@ const GlobalLeaderboard = () => {
                             )}
                             <td className="px-4 py-4 w-40 lg:w-48">
                               <div className="flex items-center gap-3">
-                                <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
-                                    <div className="h-full bg-indigo-500 transition-all" style={{width: `${row.xpProgressPct || 0}%`}} />
+                                <div className="flex-1 xp-track">
+                                    <div className="xp-fill" style={{width: `${row.xpProgressPct || 0}%`}} />
                                 </div>
                                 <span className="text-[11px] font-black text-slate-400">Lv.{row.level || 1} {resolveLevelTitle(row.level)}</span>
                               </div>
@@ -311,7 +311,7 @@ const GlobalLeaderboard = () => {
               {/* RIGHT ASIDE */}
               <aside className="space-y-6 sticky top-6">
                 {/* Peer Comparison */}
-                <section className="bg-white rounded-[24px] p-6 shadow-lg border border-slate-200/60">
+                <section className="neu p-6">
                   <div className="flex items-center gap-2 mb-6">
                     <BarChart3 size={18} className="text-indigo-600" />
                     <h3 className="font-black text-[15px] tracking-tight">Peer Comparison</h3>
@@ -385,9 +385,9 @@ const GlobalLeaderboard = () => {
 
                 {/* Your Standing */}
                 {globalCurrentUser && (
-                  <section className="bg-slate-900 rounded-[24px] p-6 text-white shadow-xl">
+                  <section className="neu p-6 text-slate-900">
                     <div className="flex items-center gap-3 mb-5">
-                      <Target size={18} className="text-emerald-400"/>
+                      <Target size={18} className="text-emerald-600"/>
                       <h3 className="font-black text-[15px]">Your Standing</h3>
                     </div>
                     <div className="space-y-4">
@@ -395,12 +395,12 @@ const GlobalLeaderboard = () => {
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Global Rank</p>
-                          <p className="text-2xl font-black text-white">#{globalCurrentUser.rank}</p>
+                          <p className="text-2xl font-black text-indigo-600">#{globalCurrentUser.rank}</p>
                           <p className="text-[10px] text-slate-500 font-bold">{globalCurrentUser.xp.toLocaleString()} XP</p>
                         </div>
                         <div className="text-right">
                           <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Level</p>
-                          <p className="text-base font-black text-emerald-400">{resolveLevelTitle(myLevel)}</p>
+                          <p className="text-base font-black text-emerald-600">{resolveLevelTitle(myLevel)}</p>
                           <p className="text-[10px] text-slate-500 font-bold">Lv. {myLevel}</p>
                         </div>
                       </div>
@@ -410,26 +410,26 @@ const GlobalLeaderboard = () => {
                         <div>
                           <div className="flex justify-between items-center mb-2">
                             <p className="text-[9px] font-black text-slate-400 uppercase">Progress to Rank #{competitorAbove.rank}</p>
-                            <p className="text-[9px] font-black text-emerald-400">{overtakePct}%</p>
+                            <p className="text-[9px] font-black text-emerald-600">{overtakePct}%</p>
                           </div>
-                          <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                          <div className="w-full xp-track">
                             <div
-                              className="h-full bg-emerald-400 rounded-full transition-all"
+                              className="xp-fill"
                               style={{width: `${overtakePct}%`}}
                             />
                           </div>
                           <p className="text-[10px] text-slate-500 font-semibold mt-2">
                             {xpToOvertake > 0
-                              ? <><span className="text-white font-black">{xpToOvertake.toLocaleString()} XP</span> needed to beat {competitorAbove.username}</>
-                              : <span className="text-emerald-400 font-black">You've overtaken {competitorAbove.username}!</span>
+                              ? <><span className="text-slate-900 font-black">{xpToOvertake.toLocaleString()} XP</span> needed to beat {competitorAbove.username}</>
+                              : <span className="text-emerald-600 font-black">You've overtaken {competitorAbove.username}!</span>
                             }
                           </p>
                         </div>
                       ) : (
                         <div>
-                          <p className="text-[10px] text-emerald-400 font-black">🏆 You're at the top! No one to beat.</p>
-                          <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden mt-2">
-                            <div className="h-full bg-emerald-400 rounded-full w-full" />
+                          <p className="text-[10px] text-emerald-600 font-black">🏆 You're at the top! No one to beat.</p>
+                          <div className="w-full xp-track mt-2">
+                            <div className="xp-fill w-full" style={{width: '100%'}} />
                           </div>
                         </div>
                       )}
@@ -447,7 +447,7 @@ const GlobalLeaderboard = () => {
                       navigate('/peers');
                     }
                   }}
-                  className="bg-white rounded-[24px] p-6 border border-slate-200 text-center cursor-pointer hover:border-indigo-400 transition-all group"
+                  className="neu p-6 text-center cursor-pointer hover:scale-105 transition-all group"
                 >
                     <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-all">
                       <BarChart3 size={20} />
@@ -458,7 +458,7 @@ const GlobalLeaderboard = () => {
 
                 <section 
                   onClick={() => navigate('/achievements')}
-                  className="bg-[#fee2d5] rounded-[30px] p-6 text-[#5c3d2e] relative overflow-hidden cursor-pointer hover:bg-[#fdd8c7] transition-all group"
+                  className="neu p-6 relative overflow-hidden cursor-pointer hover:scale-105 transition-all group"
                 >
                   <div className="mb-4 bg-white/40 w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-white/60 transition-colors">
                     <Trophy size={16} className="text-[#d97706]" />
@@ -484,10 +484,10 @@ const GlobalLeaderboard = () => {
 };
 
 const PodiumCard = ({ rank, name, univ, pts, active, avatarUrl }) => (
-  <div className={`rounded-[36px] p-5 text-center flex flex-col items-center transition-all duration-500 ${
+  <div className={`p-5 text-center flex flex-col items-center transition-all duration-500 ${
     active 
-      ? 'bg-[#512de3] text-white pt-10 pb-8 shadow-2xl relative z-10 scale-105' 
-      : 'bg-white text-slate-900 shadow-md border border-slate-200/50'
+      ? 'glass-card text-[#512de3] pt-10 pb-8 relative z-10 scale-105 border-2 border-indigo-200' 
+      : 'neu text-slate-900'
   }`}>    
     <div className="relative mb-4">
       <Avatar src={avatarUrl} name={name} size="w-20 h-20" className={active ? 'ring-4 ring-indigo-400/30' : 'ring-2 ring-slate-100'} />
@@ -496,8 +496,8 @@ const PodiumCard = ({ rank, name, univ, pts, active, avatarUrl }) => (
       </div>
     </div>
     <h3 className="font-black text-lg leading-tight mb-1 tracking-tight">{name}</h3>
-    <p className={`text-[12px] font-semibold mb-6 ${active ? 'text-indigo-200 opacity-80' : 'text-slate-400'}`}>{univ}</p>
-    <div className={`px-6 py-2 rounded-xl font-black text-[13px] ${active ? 'bg-white/20 backdrop-blur-xl' : 'bg-indigo-50 text-[#512de3]'}`}>
+    <p className={`text-[12px] font-semibold mb-6 ${active ? 'text-slate-500' : 'text-slate-400'}`}>{univ}</p>
+    <div className={`px-6 py-2 rounded-xl font-black text-[13px] ${active ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-50 text-[#512de3]'}`}>
       {pts} pts
     </div>
   </div>

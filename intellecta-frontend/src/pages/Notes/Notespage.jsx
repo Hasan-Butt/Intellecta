@@ -192,13 +192,13 @@ const NotesPage = () => {
             </div>
 
             {/* Search */}
-            <div className="relative mb-6">
+            <div className="relative mb-6 neu-inset rounded-2xl">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
               <Input
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 py-7 bg-white border-none rounded-2xl shadow-sm text-lg"
+                className="w-full pl-12 py-7 bg-transparent border-none text-lg outline-none focus-visible:ring-0 shadow-none"
               />
             </div>
 
@@ -321,7 +321,7 @@ const NotesPage = () => {
                   {activeTab === "all" && (
                     <button
                       onClick={() => openModal(true)}
-                      className="border-2 border-dashed border-zinc-200 rounded-[2.5rem] flex flex-col items-center justify-center p-8 text-zinc-400 min-h-[320px] bg-zinc-50/30 hover:bg-zinc-50 transition-all group"
+                      className="neu flex flex-col items-center justify-center p-8 text-zinc-400 min-h-[320px] transition-all group hover:scale-[1.02]"
                     >
                       <div className="bg-white p-4 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
                         <FileEdit className="h-6 w-6 text-zinc-400" />
@@ -359,11 +359,11 @@ const NotesPage = () => {
 
       {/* Floating selection bar */}
       {selectedIds.length > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#6D28D9] text-white py-4 px-8 rounded-[2.2rem] shadow-2xl flex items-center gap-6 z-50">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 glass-card border-indigo-200 text-indigo-900 py-4 px-8 flex items-center gap-6 z-50">
           <span className="text-sm font-medium">
             {selectedIds.length} notes selected
           </span>
-          <div className="h-4 w-[1px] bg-white/20" />
+          <div className="h-4 w-[1px] bg-indigo-200" />
           {showTagInput ? (
             <div className="flex items-center gap-2">
               <input
@@ -372,12 +372,12 @@ const NotesPage = () => {
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
                 placeholder="Enter tag..."
-                className="bg-white/20 text-white placeholder-white/60 text-sm px-3 py-1 rounded-lg outline-none border border-white/30 w-32"
+                className="neu-inset text-indigo-900 placeholder-indigo-400/60 text-sm px-3 py-1 outline-none w-32"
                 autoFocus
               />
               <button
                 onClick={handleAddTag}
-                className="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg transition-colors"
+                className="text-sm neu-btn px-3 py-1 transition-colors"
               >
                 Add
               </button>
@@ -391,20 +391,20 @@ const NotesPage = () => {
           ) : (
             <button
               onClick={() => setShowTagInput(true)}
-              className="flex items-center gap-2 text-sm hover:text-purple-200 transition-colors"
+              className="flex items-center gap-2 text-sm hover:text-indigo-600 transition-colors"
             >
               <BookmarkCheck size={16} /> Add Tag
             </button>
           )}
           <button
             onClick={handleReviewQueue}
-            className="flex items-center gap-2 text-sm hover:text-purple-200 transition-colors"
+            className="flex items-center gap-2 text-sm hover:text-indigo-600 transition-colors"
           >
             <CheckSquare size={16} /> Review Queue
           </button>
           <X
             size={20}
-            className="ml-4 cursor-pointer opacity-70 hover:opacity-100 transition-opacity"
+            className="ml-4 cursor-pointer opacity-70 hover:opacity-100 transition-opacity text-slate-500"
             onClick={clearSelection}
           />
         </div>

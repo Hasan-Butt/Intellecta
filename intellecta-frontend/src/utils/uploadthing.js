@@ -10,6 +10,8 @@
  * The token is a base64url-encoded JSON: { "apiKey": "sk_live_...", "appId": "..." }
  */
 
+import api from "../services/api";
+
 const TOKEN = process.env.REACT_APP_UPLOADTHING_TOKEN;
 
 function decodeToken(token) {
@@ -32,34 +34,23 @@ function decodeToken(token) {
  * @returns {Promise<string>} public file URL
  */
 export async function uploadFile(file) {
-  const { apiKey } = decodeToken(TOKEN);
-
-  // ── Step 1: Request a presigned upload URL ─────────────────────────────────
-  const presignRes = await fetch("https://api.uploadthing.com/v6/uploadFiles", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-uploadthing-api-key": apiKey,
-    },
-    body: JSON.stringify({
+  // ── Step 1: Request a presigned upload URL from our backend ──────────────
+  let presignJson;
+  try {
+    const res = await api.post("/uploadthing/presign", {
       files: [
         {
           name: file.name,
           size: file.size,
           type: file.type || "application/octet-stream",
         },
-      ],
-      acl: "public-read",
-      contentDisposition: "inline",
-    }),
-  });
-
-  if (!presignRes.ok) {
-    const err = await presignRes.text();
-    throw new Error(`UploadThing presign failed (${presignRes.status}): ${err}`);
+      ]
+    });
+    presignJson = res.data;
+  } catch (err) {
+    throw new Error(`UploadThing presign failed: ${err?.response?.data?.error || err.message}`);
   }
 
-  const presignJson = await presignRes.json();
   // UploadThing returns either { data: [...] } or [...]
   const fileData = Array.isArray(presignJson)
     ? presignJson[0]
