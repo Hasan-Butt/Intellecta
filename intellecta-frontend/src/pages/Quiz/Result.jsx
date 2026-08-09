@@ -1,24 +1,27 @@
-import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { 
-  RotateCcw, 
-  CheckCircle2, 
+import React, { useState, useEffect } from 'react';
+import {
+  RotateCcw,
+  CheckCircle2,
   XCircle,
-  BadgeCheck, 
-  GraduationCap, 
-  ClipboardCheck, 
-  Zap 
+  ClipboardCheck,
+  Zap,
+  Hourglass,
+  PenLine,
+  GraduationCap
 } from 'lucide-react';
 
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
+import quizService from '../../services/quizService';
 
-/* --- SUB-COMPONENT: PROFICIENCY DASHBOARD --- */
-const ProficiencyDashboard = ({ score, total }) => {
-  const proficiencyValue = total > 0 ? Math.round((score / total) * 100) : 0;
+import { getUserId } from '../../utils/auth';
+
+/* --- PROGRESS RING --- */
+const ProficiencyRing = ({ score, total }) => {
+  const value = total > 0 ? Math.round((score / total) * 100) : 0;
   const radius = 60;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (proficiencyValue / 100) * circumference;
+  const strokeDashoffset = circumference - (value / 100) * circumference;
 
   const getGrade = (val) => {
     if (val >= 90) return 'A+';
@@ -30,173 +33,246 @@ const ProficiencyDashboard = ({ score, total }) => {
   };
 
   return (
-    <section className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-      <div className="md:col-span-2 relative overflow-hidden bg-white rounded-3xl p-8 md:p-10 border border-slate-200 shadow-lg flex flex-col md:flex-row items-center justify-between">
-        <GraduationCap className="absolute -top-10 -right-10 text-slate-50 w-72 h-72 -rotate-12 pointer-events-none" strokeWidth={1} />
-        <div className="relative z-10 flex flex-col max-w-full md:max-w-[60%]">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest mb-6 w-fit">
-             <span>Overall Standing</span>
-          </div>
-          <div className="flex items-baseline gap-3 mb-4">
-            <h1 className="text-6xl font-extrabold text-slate-900 leading-none tracking-tighter">{proficiencyValue}%</h1>
-            <span className="text-xl font-bold text-emerald-600">{getGrade(proficiencyValue)}</span>
-          </div>
-          <p className="text-slate-500 text-base leading-relaxed font-medium">
-            Assessment completed! You've correctly answered <span className="text-slate-900 font-bold">{score} out of {total}</span> questions.
-          </p>
-        </div>
-        <div className="relative mt-8 md:mt-0 flex items-center justify-center">
-          <svg className="w-48 h-48 transform -rotate-90">
-            <circle cx="96" cy="96" r={radius} stroke="currentColor" strokeWidth="12" fill="transparent" className="text-slate-100" />
-            <circle cx="96" cy="96" r={radius} stroke="#6366f1" strokeWidth="12" strokeDasharray={circumference} style={{ strokeDashoffset }} strokeLinecap="round" fill="transparent" className="transition-all duration-1000 ease-out" />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-white rounded-full p-3.5 shadow-xl">
-              <BadgeCheck className="text-[#6366f1] w-10 h-10" fill="currentColor" fillOpacity={0.1} />
-            </div>
-          </div>
-        </div>
+    <div className="relative flex items-center justify-center w-48 h-48">
+      <svg className="w-full h-full transform -rotate-90">
+        <circle cx="96" cy="96" r={radius} stroke="currentColor" strokeWidth="12" fill="transparent" className="text-slate-100" />
+        <circle cx="96" cy="96" r={radius} stroke="#6366f1" strokeWidth="12" strokeDasharray={circumference} style={{ strokeDashoffset }} strokeLinecap="round" fill="transparent" className="transition-all duration-1000 ease-out" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-extrabold text-slate-900">{value}%</span>
+        <span className="mt-1 text-sm font-bold text-emerald-600">Grade {getGrade(value)}</span>
       </div>
-
-      <div className="flex flex-col gap-4">
-        <div className="bg-white rounded-3xl p-6 flex items-center gap-5 border border-slate-200 shadow-md flex-1">
-          <div className="p-3 bg-indigo-50 text-indigo-500 rounded-xl shrink-0"><ClipboardCheck size={24} /></div>
-          <div>
-            <p className="text-slate-400 font-black uppercase tracking-widest text-[10px] mb-1">Accuracy</p>
-            <h2 className="text-3xl font-extrabold text-slate-900">{score}/{total}</h2>
-          </div>
-        </div>
-        <div className="bg-[#BEF264] rounded-[2.5rem] p-6 flex items-center gap-6 shadow-lg flex-1">
-          <div className="p-4 bg-black/10 text-[#0F172A] rounded-2xl"><Zap size={28} fill="currentColor" /></div>
-          <div>
-            <p className="text-[#0F172A]/50 font-black uppercase tracking-widest text-[10px] mb-1">Experience</p>
-            <h2 className="text-2xl font-extrabold text-[#0F172A]">+{score * 5} XP</h2>
-          </div>
-        </div>
-      </div>
-    </section>
+    </div>
   );
 };
 
-/* --- SUB-COMPONENT: DETAILED BREAKDOWN --- */
-const DetailedBreakdown = ({ quiz, userAnswers }) => {
-  if (!quiz || !quiz.questions || !userAnswers) return null;
+/* --- RESULT DETAIL --- */
+const ResultDetail = ({ detail, summary }) => {
+  const quiz = summary.quiz || {};
+  const graded = detail.graded === true;
+  const score = detail.totalMarks ?? summary.score ?? 0;
+  const total = summary.totalQuestions || quiz.questions?.length || 0;
+  const xp = summary.xpGained || 0;
+  const questions = detail.questions || [];
 
   return (
-    <section className="mb-12">
-      <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-6">Question Breakdown</h2>
-      <div className="space-y-4">
-        {quiz.questions.map((q, idx) => {
-          const userAnswer = userAnswers[q.id];
-          const isCorrect = userAnswer === q.correctOptionIndex;
-          const isSkipped = userAnswer === undefined || userAnswer === null;
+    <div className="max-w-5xl mx-auto pb-12">
+      {/* Header */}
+      <section className="bg-white rounded-[2rem] border border-slate-200 shadow-lg p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="flex items-center gap-6">
+          <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl"><GraduationCap size={28} /></div>
+          <div>
+            <p className="text-slate-400 font-black uppercase tracking-widest text-[10px] mb-1">{quiz.category}</p>
+            <h1 className="text-2xl font-extrabold text-slate-900">{quiz.topic || 'Assessment'}</h1>
+            {graded ? (
+              <p className="text-sm text-slate-500 font-medium mt-1">You scored {score} / {total}</p>
+            ) : (
+              <p className="text-sm text-amber-500 font-semibold mt-1 flex items-center gap-1"><Hourglass size={14} /> Pending review — result will appear once graded</p>
+            )}
+          </div>
+        </div>
+        {graded && <ProficiencyRing score={score} total={total} />}
+      </section>
 
-          return (
-            <div key={q.id} className={`p-6 rounded-3xl border shadow-sm ${isCorrect ? 'bg-emerald-50/30 border-emerald-100' : isSkipped ? 'bg-white border-slate-200' : 'bg-red-50/30 border-red-100'}`}>
-              <div className="flex items-start justify-between gap-4 mb-5">
-                <h3 className="text-lg font-bold text-slate-800 leading-relaxed">
-                  <span className="text-slate-300 mr-2">{idx + 1}.</span> {q.text}
-                </h3>
-                <div className="shrink-0">
-                  {isCorrect ? (
-                    <div className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><CheckCircle2 size={16} /> Correct</div>
-                  ) : isSkipped ? (
-                    <div className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">Skipped</div>
-                  ) : (
-                    <div className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><XCircle size={16} /> Incorrect</div>
+      {/* Question breakdown */}
+      <section>
+        <h2 className="text-xl font-black text-slate-800 tracking-tight mb-4">Question Breakdown</h2>
+        <div className="space-y-4">
+          {questions.map((q, idx) => {
+            const isDescriptive = q.type === 'DESCRIPTIVE';
+            if (isDescriptive) {
+              const studentText = q.studentAnswer || '';
+              const awarded = graded ? (q.awardedMarks ?? null) : null;
+              const maxMark = q.maxMarks || 1;
+              return (
+                <div key={q.id} className={`p-6 rounded-3xl border shadow-sm ${awarded != null ? 'bg-emerald-50/30 border-emerald-100' : 'bg-white border-slate-200'}`}>
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <h3 className="text-lg font-bold text-slate-800"><span className="text-slate-300 mr-2">{idx + 1}.</span> {q.text}</h3>
+                    <div className={`shrink-0 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${awarded != null ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                      {awarded != null ? <><CheckCircle2 size={14} /> {awarded}/{maxMark} marks</> : <><Hourglass size={14} /> {graded ? 'Not assessed' : 'Awaiting review'}</>}
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-xl border border-slate-100 p-4">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Your Answer</p>
+                    <p className="text-sm text-slate-700 leading-relaxed flex items-start gap-2"><PenLine size={14} className="shrink-0 mt-0.5 text-indigo-500" />{studentText || '—'}</p>
+                  </div>
+                  {graded && q.modelAnswer && (
+                    <div className="bg-indigo-50 rounded-xl p-4 mt-3">
+                      <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-2">Model Answer</p>
+                      <p className="text-sm text-indigo-800 leading-relaxed">{q.modelAnswer}</p>
+                    </div>
                   )}
                 </div>
+              );
+            }
+            const isCorrect = graded && q.isCorrect === true;
+            const userAnswer = q.selectedOptionIndex;
+            const isSkipped = userAnswer === undefined || userAnswer === null;
+            const showCorrect = graded && q.correctOptionIndex != null;
+            return (
+              <div key={q.id} className={`p-6 rounded-3xl border shadow-sm ${isCorrect ? 'bg-emerald-50/30 border-emerald-100' : isSkipped ? 'bg-white border-slate-200' : 'bg-red-50/30 border-red-100'}`}>
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <h3 className="text-lg font-bold text-slate-800"><span className="text-slate-300 mr-2">{idx + 1}.</span> {q.text}</h3>
+                  <div className="shrink-0">
+                    {graded ? (
+                      isCorrect ? (
+                        <div className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><CheckCircle2 size={14} /> Correct</div>
+                      ) : isSkipped ? (
+                        <div className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">Skipped</div>
+                      ) : (
+                        <div className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><XCircle size={14} /> Incorrect</div>
+                      )
+                    ) : (
+                      <div className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><Hourglass size={14} /> Awaiting review</div>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {(q.options || []).map((opt, optIdx) => {
+                    const isUserSelection = userAnswer === optIdx;
+                    const isActualCorrect = showCorrect && q.correctOptionIndex === optIdx;
+                    let optionClass = "bg-white border-slate-100 text-slate-600";
+                    if (isActualCorrect) optionClass = "bg-emerald-50 border-emerald-200 text-emerald-800 font-bold";
+                    else if (isUserSelection && !graded) optionClass = "bg-indigo-50 border-indigo-200 text-indigo-800 font-bold";
+                    else if (isUserSelection && !isActualCorrect) optionClass = "bg-red-50 border-red-200 text-red-800 font-bold";
+                    return (
+                      <div key={optIdx} className={`p-3 rounded-xl border-2 flex items-center gap-3 transition-all ${optionClass}`}>
+                        <span className={`w-6 h-6 flex items-center justify-center rounded-lg text-xs font-black shrink-0 ${isActualCorrect ? 'bg-emerald-500 text-white' : isUserSelection ? (graded ? 'bg-red-500 text-white' : 'bg-indigo-500 text-white') : 'bg-slate-100 text-slate-400'}`}>
+                          {String.fromCharCode(65 + optIdx)}
+                        </span>
+                        <span className="text-sm">{opt}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {q.options.map((opt, optIdx) => {
-                  const isUserSelection = userAnswer === optIdx;
-                  const isActualCorrect = q.correctOptionIndex === optIdx;
-                  
-                  let optionClass = "bg-white border-slate-100 text-slate-600 hover:border-slate-200";
-                  if (isActualCorrect) {
-                    optionClass = "bg-emerald-50 border-emerald-200 text-emerald-800 font-bold shadow-sm shadow-emerald-100/50";
-                  } else if (isUserSelection && !isActualCorrect) {
-                    optionClass = "bg-red-50 border-red-200 text-red-800 font-bold shadow-sm shadow-red-100/50";
-                  }
-
-                  return (
-                    <div key={optIdx} className={`p-3.5 rounded-xl border-2 flex items-center gap-3 transition-all ${optionClass}`}>
-                      <span className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-black shrink-0 ${isActualCorrect ? 'bg-emerald-500 text-white' : isUserSelection ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                        {String.fromCharCode(65 + optIdx)}
-                      </span>
-                      <span className="text-sm">{opt}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
+            );
+          })}
+        </div>
+      </section>
+    </div>
   );
 };
 
-
-/* --- MAIN PAGE COMPONENT --- */
+/* --- MAIN PAGE --- */
 const QuizResultsPage = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const attempt = location.state?.attempt;
-  const quiz = location.state?.quiz;
+  const [attempts, setAttempts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [selectedAttempt, setSelectedAttempt] = useState(null);
+  const [selectedDetail, setSelectedDetail] = useState(null);
 
-  if (!attempt) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen space-y-4">
-        <p className="text-xl font-bold text-slate-400">No result data available.</p>
-        <button onClick={() => navigate('/quiz')} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold">Go Back</button>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const userId = getUserId();
+    if (!userId) { setLoading(false); return; }
+    quizService.getUserAttempts(userId)
+      .then(res => setAttempts(res || []))
+      .catch(err => { console.error("Error fetching attempts:", err); setAttempts([]); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const openDetail = async (attempt) => {
+    setSelectedAttempt(attempt);
+    setLoadingDetail(true);
+    setSelectedDetail(null);
+    try {
+      const detail = await quizService.getSubmissionResult(attempt.id);
+      setSelectedDetail(detail);
+    } catch (err) {
+      console.error("Error fetching result detail:", err);
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col">
+    <div className="flex-1 flex flex-col min-w-0">
       <Navbar />
-
-      <div className="flex flex-1 relative">
+      <div className="bg-[#f9f9ff] min-h-screen flex w-full">
         <Sidebar />
-
-        <main className="flex-1 p-6 md:p-8 lg:p-12 overflow-y-auto">
-          <div className="max-w-5xl mx-auto">
-            {/* 1. Statistics Header */}
-            <ProficiencyDashboard score={attempt.score} total={attempt.totalQuestions} />
-
-            {/* 2. Detailed Breakdown */}
-            {quiz && attempt.userAnswers && (
-               <DetailedBreakdown quiz={quiz} userAnswers={attempt.userAnswers} />
-            )}
-
-            {/* 3. Completion Card */}
-            <section className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden mb-12 p-10 text-center">
-              <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 size={48} />
+        <main className="flex-1 overflow-y-auto selection:bg-indigo-100 selection:text-indigo-900">
+          <div className="p-6 md:p-12 lg:p-16 max-w-5xl mx-auto">
+          {selectedAttempt ? (
+            <>
+              <button onClick={() => { setSelectedAttempt(null); setSelectedDetail(null); }} className="flex items-center gap-2 text-slate-500 font-bold hover:text-slate-800 mb-6 transition-colors">
+                <RotateCcw size={18} /> Back to Results
+              </button>
+              {loadingDetail ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-indigo-600 font-bold">Loading breakdown...</p>
+                </div>
+              ) : selectedDetail ? (
+                <ResultDetail detail={selectedDetail} summary={selectedAttempt} />
+              ) : (
+                <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-10 text-center">
+                  <p className="text-slate-500 font-medium">This attempt is still being reviewed. Check back after grading is complete.</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="mb-8">
+                <h1 className="text-3xl font-black text-slate-900 tracking-tight">Quiz Results</h1>
+                <p className="text-slate-500 font-medium mt-1">Track your performance across all assessments.</p>
               </div>
-              <h1 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Quiz Submitted Successfully!</h1>
-              <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
-                Great job completing the <span className="text-slate-900 font-bold">{attempt.quiz?.topic || 'Assessment'}</span>. Your progress has been updated in the global leaderboard.
-              </p>
-              
-              <div className="flex flex-col md:flex-row gap-5 justify-center">
-                <button 
-                  onClick={() => navigate('/quiz')}
-                  className="flex-1 max-w-xs group flex items-center justify-center gap-4 bg-indigo-600 hover:bg-indigo-500 text-white py-4 rounded-2xl font-bold text-lg transition-all active:scale-95 shadow-2xl shadow-indigo-500/30"
-                >
-                  <RotateCcw size={24} className="group-hover:rotate-[-45deg] transition-transform" />
-                  Try Another Quiz
-                </button>
-                <button 
-                   onClick={() => navigate('/leaderboard')}
-                   className="flex-1 max-w-xs px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-lg hover:bg-slate-50 transition-all shadow-sm"
-                >
-                   Check Leaderboard
-                </button>
-              </div>
-            </section>
+
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-indigo-600 font-bold">Loading results...</p>
+                </div>
+              ) : attempts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[2rem] border border-dashed border-slate-300">
+                  <div className="p-6 bg-slate-50 rounded-full mb-6"><ClipboardCheck size={40} className="text-slate-300" /></div>
+                  <h3 className="text-xl font-bold text-slate-800 mb-2">No Results Yet</h3>
+                  <p className="text-slate-500 max-w-md text-center">Once you attempt a quiz, your result will appear here after grading.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {attempts.map((a) => {
+                    const quiz = a.quiz || {};
+                    const score = a.totalMarks ?? a.score ?? 0;
+                    const total = a.totalQuestions || quiz.questions?.length || 0;
+                    const graded = a.graded === true;
+                    return (
+                      <button
+                        key={a.id}
+                        onClick={() => openDetail(a)}
+                        className="w-full text-left bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-indigo-200 transition-all p-6 flex items-center justify-between gap-4 group"
+                      >
+                        <div className="flex items-center gap-4 min-w-0">
+                          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl shrink-0"><Zap size={22} /></div>
+                          <div className="min-w-0">
+                            <p className="font-extrabold text-slate-900 truncate">{quiz.topic || 'Assessment'}</p>
+                            <p className="text-xs text-slate-400 font-medium">{quiz.category || 'General'} • {new Date(a.endTime || a.startTime || Date.now()).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 shrink-0">
+                          {graded ? (
+                            <>
+                              <div className="text-right">
+                                <p className="text-lg font-black text-indigo-600">{score}<span className="text-slate-300 text-sm">/{total}</span></p>
+                                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">+{a.xpGained || 0} XP</p>
+                              </div>
+                              <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full">Completed</span>
+                            </>
+                          ) : (
+                            <>
+                              <div className="text-right">
+                                <p className="text-lg font-black text-amber-500">Pending</p>
+                              </div>
+                              <span className="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-widest rounded-full">Pending Review</span>
+                            </>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
           </div>
         </main>
       </div>
@@ -205,4 +281,3 @@ const QuizResultsPage = () => {
 };
 
 export default QuizResultsPage;
-;

@@ -11,6 +11,7 @@ import PerformanceTrends from "./pages/Dashboard/PerformanceTrends.jsx";
 import StudentDashboardPage from "./pages/StudentDashboard/Dashboard";
 import LightReview from "./pages/LightReview/LightReview";
 import CreateQuizPage from "./pages/Dashboard/CreateQuiz.jsx";
+import ManageQuizzes from "./pages/Admin/ManageQuizzes.jsx";
 import QuizList from "./pages/Quiz/QuizList";
 import AttemptQuiz from "./pages/Quiz/AttemptQuiz";
 import Result from "./pages/Quiz/Result";
@@ -44,6 +45,7 @@ export default function AppRoutes() {
         <Route path="/quiz" element={<QuizList />} />
         <Route path="/AttemptQuiz" element={<AttemptQuiz />} />
         <Route path="/Result" element={<Result />} />
+        <Route path="/results" element={<Result />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/peers" element={<PeerComparison />} />
         <Route path="/distractions" element={<DistractionLog />} />
@@ -65,6 +67,7 @@ export default function AppRoutes() {
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/trends" element={<PerformanceTrends />} />
         <Route path="/create-quiz" element={<CreateQuizPage />} />
+        <Route path="/quiz-submissions" element={<ManageQuizzes />} />
         <Route path="/rewards" element={<RewardsPage />} />
       </Route>
     </Routes>

@@ -191,7 +191,7 @@ public class AdminService {
         List<QuizAttempt> allAttempts = quizAttemptRepository.findAll();
         long totalQuizzesTaken = allAttempts.size();
         double avgQuizScore = allAttempts.stream()
-                .filter(a -> a.getTotalQuestions() != null && a.getTotalQuestions() > 0 && a.getScore() != null)
+                .filter(a -> a.isGraded() && a.getTotalQuestions() != null && a.getTotalQuestions() > 0 && a.getScore() != null)
                 .mapToDouble(a -> (double) a.getScore() / a.getTotalQuestions() * 100)
                 .average().orElse(0.0);
         long totalQuestionsAnswered = allAttempts.stream()
@@ -434,6 +434,7 @@ public class AdminService {
                     .filter(a -> a.getStartTime() != null
                             && !a.getStartTime().isBefore(monthStart)
                             && !a.getStartTime().isAfter(monthEnd)
+                            && a.isGraded()
                             && a.getScore() != null
                             && a.getTotalQuestions() != null
                             && a.getTotalQuestions() > 0)
@@ -448,7 +449,7 @@ public class AdminService {
         // Group attempts by topic and compute per-topic average score
         Map<String, List<Double>> scoresByTopic = new HashMap<>();
         for (QuizAttempt a : allAttempts) {
-            if (a.getScore() == null || a.getTotalQuestions() == null || a.getTotalQuestions() == 0) continue;
+            if (!a.isGraded() || a.getScore() == null || a.getTotalQuestions() == null || a.getTotalQuestions() == 0) continue;
             String topic;
             try {
                 String cat   = (a.getQuiz() != null) ? a.getQuiz().getCategory() : null;
@@ -697,7 +698,7 @@ public class AdminService {
 
     private List<Double> buildScoreHistory(List<QuizAttempt> attempts) {
         List<Double> history = attempts.stream()
-                .filter(a -> a.getStartTime() != null && a.getScore() != null
+                .filter(a -> a.isGraded() && a.getStartTime() != null && a.getScore() != null
                         && a.getTotalQuestions() != null && a.getTotalQuestions() > 0)
                 .sorted(Comparator.comparing(QuizAttempt::getStartTime))
                 .map(a -> Math.round((double) a.getScore() / a.getTotalQuestions() * 100 * 10) / 10.0)
@@ -778,14 +779,14 @@ public class AdminService {
 
     private double computeAvgScore(List<QuizAttempt> attempts) {
         return attempts.stream()
-                .filter(a -> a.getTotalQuestions() != null && a.getTotalQuestions() > 0 && a.getScore() != null)
+                .filter(a -> a.isGraded() && a.getTotalQuestions() != null && a.getTotalQuestions() > 0 && a.getScore() != null)
                 .mapToDouble(a -> (double) a.getScore() / a.getTotalQuestions() * 100)
                 .average().orElse(0.0);
     }
 
     private String computeTrend(List<QuizAttempt> attempts) {
         List<QuizAttempt> sorted = attempts.stream()
-                .filter(a -> a.getStartTime() != null && a.getScore() != null
+                .filter(a -> a.isGraded() && a.getStartTime() != null && a.getScore() != null
                         && a.getTotalQuestions() != null && a.getTotalQuestions() > 0)
                 .sorted(Comparator.comparing(QuizAttempt::getStartTime))
                 .collect(Collectors.toList());

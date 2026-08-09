@@ -12,6 +12,11 @@ import java.util.List;
 @Repository
 public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> {
     List<QuizAttempt> findByUserId(Long userId);
+
+    @Query("SELECT a FROM QuizAttempt a LEFT JOIN FETCH a.quiz q LEFT JOIN FETCH q.questions WHERE a.user.id = :userId ORDER BY a.id DESC")
+    List<QuizAttempt> findByUserIdWithQuiz(@Param("userId") Long userId);
+
+    List<QuizAttempt> findByStatusOrderByIdDesc(String status);
     
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM QuizAttempt a WHERE a.user.id = :userId AND a.quiz.id = :quizId")
     boolean existsByUserIdAndQuizId(@Param("userId") Long userId, @Param("quizId") Long quizId);

@@ -1,6 +1,7 @@
 package com.intellecta.intellecta_backend.service;
 
 import com.intellecta.intellecta_backend.dto.request.QuizSubmissionRequest;
+import com.intellecta.intellecta_backend.enums.QuestionType;
 import com.intellecta.intellecta_backend.model.*;
 import com.intellecta.intellecta_backend.repository.QuizAttemptRepository;
 import com.intellecta.intellecta_backend.repository.QuizRepository;
@@ -10,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,56 +73,68 @@ public class QuizService {
             User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found: " + request.getUserId()));
 
-            int score = 0;
             List<Question> questions = quiz.getQuestions();
             Map<Long, Integer> userAnswers = request.getAnswers();
+            Map<Long, String> textAnswers = request.getTextAnswers();
 
             System.out.println("Processing submission for quiz: " + quiz.getTopic() + " (Questions: "
                     + (questions != null ? questions.size() : 0) + ")");
 
-            if (userAnswers != null && questions != null) {
+            boolean hasDescriptive = questions != null && questions.stream()
+                    .anyMatch(q -> q.getQuestionType() == QuestionType.DESCRIPTIVE);
+
+            int objectiveScore = 0;
+            if (!hasDescriptive && userAnswers != null && questions != null) {
                 for (Question q : questions) {
+                    if (q.getQuestionType() != QuestionType.OBJECTIVE) continue;
                     Integer userSelection = userAnswers.get(q.getId());
                     if (userSelection != null && userSelection.equals(q.getCorrectOptionIndex())) {
-                        score++;
+                        objectiveScore++;
                     }
                 }
             }
 
-            int xpGained = score * 5;
-            user.setXp(user.getXp() + xpGained);
-            userRepository.save(user);
+            boolean graded = !hasDescriptive;
+            int xpGained = graded ? objectiveScore * 5 : 0;
 
-            // Update sectional XP
-            String category = quiz.getCategory();
-            if (category == null || category.trim().isEmpty()) {
-                category = "General";
+            if (graded) {
+                user.setXp(user.getXp() + xpGained);
+                userRepository.save(user);
+
+                String category = quiz.getCategory();
+                if (category == null || category.trim().isEmpty()) {
+                    category = "General";
+                }
+
+                SectionalXP sectionalXP = sectionalXPRepository.findByUserAndCategory(user, category)
+                        .orElse(SectionalXP.builder()
+                                .user(user)
+                                .category(category)
+                                .xp(0L)
+                                .build());
+
+                sectionalXP.setXp(sectionalXP.getXp() + xpGained);
+                sectionalXPRepository.save(sectionalXP);
             }
-
-            SectionalXP sectionalXP = sectionalXPRepository.findByUserAndCategory(user, category)
-                    .orElse(SectionalXP.builder()
-                            .user(user)
-                            .category(category)
-                            .xp(0L)
-                            .build());
-
-            sectionalXP.setXp(sectionalXP.getXp() + xpGained);
-            sectionalXPRepository.save(sectionalXP);
 
             QuizAttempt attempt = QuizAttempt.builder()
                     .user(user)
                     .quiz(quiz)
-                    .score(score)
+                    .score(objectiveScore)
                     .totalQuestions(questions != null ? questions.size() : 0)
                     .xpGained(xpGained)
-                    .userAnswers(userAnswers)
+                    .userAnswers(userAnswers != null ? userAnswers : new java.util.HashMap<>())
+                    .textAnswers(textAnswers != null ? textAnswers : new java.util.HashMap<>())
+                    .totalMarks(objectiveScore)
+                    .graded(graded)
                     .startTime(LocalDateTime.now().minusMinutes(quiz.getTimeLimit()))
                     .endTime(LocalDateTime.now())
-                    .status("COMPLETED")
+                    .status(graded ? "COMPLETED" : "PENDING_REVIEW")
                     .build();
 
             QuizAttempt saved = quizAttemptRepository.save(attempt);
-            System.out.println("Quiz submitted successfully. Score: " + score + "/" + attempt.getTotalQuestions());
+            System.out.println("Quiz submitted successfully. Score: " + objectiveScore + "/" + attempt.getTotalQuestions()
+                    + " (graded: " + graded + ")");
             return saved;
         } catch (Exception e) {
             System.err.println("CRITICAL ERROR IN QUIZ SUBMISSION: " + e.getMessage());
@@ -129,6 +144,25 @@ public class QuizService {
     }
 
     public List<QuizAttempt> getAttemptsByUserId(Long userId) {
-        return quizAttemptRepository.findByUserId(userId);
+        List<QuizAttempt> attempts = quizAttemptRepository.findByUserIdWithQuiz(userId);
+
+        Map<Long, QuizAttempt> latestPerQuiz = new LinkedHashMap<>();
+        for (QuizAttempt attempt : attempts) {
+            Long quizId = attempt.getQuiz().getId();
+            QuizAttempt existing = latestPerQuiz.get(quizId);
+            if (existing == null || isAfter(attempt, existing)) {
+                latestPerQuiz.put(quizId, attempt);
+            }
+        }
+
+        return latestPerQuiz.values().stream()
+                .sorted(Comparator.comparing(QuizAttempt::getEndTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+    }
+
+    private boolean isAfter(QuizAttempt a, QuizAttempt b) {
+        if (a.getEndTime() == null) return false;
+        if (b.getEndTime() == null) return true;
+        return a.getEndTime().isAfter(b.getEndTime());
     }
 }

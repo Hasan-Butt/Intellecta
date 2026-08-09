@@ -41,4 +41,25 @@ public class QuizAttempt {
     @Column(name = "selected_option_index")
     @Builder.Default
     private java.util.Map<Long, Integer> userAnswers = new java.util.HashMap<>();
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "quiz_attempt_text_answers", joinColumns = @JoinColumn(name = "attempt_id"))
+    @MapKeyColumn(name = "question_id")
+    @Column(name = "answer_text", columnDefinition = "TEXT")
+    @Builder.Default
+    private java.util.Map<Long, String> textAnswers = new java.util.HashMap<>();
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "quiz_attempt_question_marks", joinColumns = @JoinColumn(name = "attempt_id"))
+    @MapKeyColumn(name = "question_id")
+    @Column(name = "marks_awarded")
+    @Builder.Default
+    private java.util.Map<Long, Integer> questionMarks = new java.util.HashMap<>();
+
+    @Builder.Default
+    private boolean graded = false;
+
+    private LocalDateTime gradedAt;
+
+    private Integer totalMarks;
 }
