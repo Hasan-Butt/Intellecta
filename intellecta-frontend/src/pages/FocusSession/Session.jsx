@@ -112,15 +112,6 @@ const StudySessionDashboard = () => {
   const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
 
   useEffect(() => {
-    if (ambientMode) {
-      document.body.classList.add("focus-mode");
-    } else {
-      document.body.classList.remove("focus-mode");
-    }
-    return () => document.body.classList.remove("focus-mode");
-  }, [ambientMode]);
-
-  useEffect(() => {
     let timer;
     if (showAchievementModal && earnedBadges.length > 0) {
       // 5 seconds delay per badge, except if we are on the last badge (then wait indefinitely or auto close, but let's wait indefinitely so they can click "Awesome!")
@@ -347,7 +338,7 @@ const StudySessionDashboard = () => {
   };
 
   const TimerCard = ({ zen = false }) => (
-    <section className={`p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-1000 ${zen ? "glass-card w-full max-w-3xl py-20 scale-110" : "glass-neu col-span-12 lg:col-span-7"}`}>
+    <section className={`p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-1000 ${zen ? "bg-white/5 border border-white/10 w-full max-w-3xl py-20 shadow-2xl backdrop-blur-xl scale-110" : "glass-neu col-span-12 lg:col-span-7"}`}>
       {zen && (
         <button 
           onClick={() => setAmbientMode(false)}
