@@ -57,9 +57,7 @@ public class GamificationServiceImpl implements GamificationService {
                         .build();
                 achievementRepo.save(achievement);
 
-                String imageUrl = badge.getImageFilePath() != null
-                        ? serveBaseUrl + "/" + badge.getBadgeKey() + "/image"
-                        : null;
+                String imageUrl = badge.getImageUrl();
 
                 newlyAwarded.add(BadgeDefinitionResponse.builder()
                         .id(badge.getId())

@@ -103,9 +103,9 @@ const Sidebar = () => {
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
             Level {userLevel} {levelTitle}
           </p>
-          <div className="flex items-center gap-2 w-3/4">
-            <div className="flex-1 bg-gray-100 h-1.5 rounded-full overflow-hidden">
-              <div className="h-full bg-[#451ebb] transition-all" style={{width: `${xpProgressPct}%`}} />
+          <div className="flex items-center gap-2 w-3/4 mt-1">
+            <div className="flex-1 xp-track">
+              <div className="xp-fill" style={{width: `${xpProgressPct}%`}} />
             </div>
           </div>
         </div>
@@ -239,7 +239,7 @@ const Sidebar = () => {
             </button>
             
             {showHelpBox && (
-              <div className="absolute bottom-full left-0 mb-3 w-64 p-5 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-indigo-50 z-[100] animate-in fade-in zoom-in-95 duration-200">
+              <div className="absolute bottom-full left-0 mb-3 w-64 p-5 glass-card z-[100] animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2 text-[#451ebb]">
                     <HelpCircle size={16} strokeWidth={3} />
@@ -253,8 +253,6 @@ const Sidebar = () => {
                   </div>
                   <p className="text-[10px] text-gray-400 font-bold uppercase mt-1">Average response time: &lt; 24h</p>
                 </div>
-                {/* Pointer Arrow */}
-                <div className="absolute -bottom-1.5 left-6 w-3 h-3 bg-white border-r border-b border-indigo-50 rotate-45" />
               </div>
             )}
           </div>
