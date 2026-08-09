@@ -58,7 +58,7 @@ const AchievementsPage = () => {
         
         <main className="flex-1 p-8 overflow-y-auto">
         {/* Header Stats */}
-        <div className="bg-white rounded-3xl p-10 mb-12 shadow-sm border border-gray-100 flex items-center justify-between overflow-hidden relative">
+        <div className="neu p-10 mb-12 flex items-center justify-between overflow-hidden relative">
           <div className="relative z-10">
             <h2 className="text-4xl font-black text-zinc-900 mb-4 uppercase tracking-tight">Hall of Fame</h2>
             <p className="text-gray-500 font-medium mb-8">You've unlocked <span className="text-[#451ebb] font-black">{earnedCount}</span> out of <span className="font-bold">{totalCount}</span> collectible milestones.</p>
@@ -163,7 +163,7 @@ const AchievementsPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setSelectedBadge(null)} />
           
-          <div className="bg-white rounded-[40px] w-full max-w-lg overflow-hidden relative z-10 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+          <div className="neu w-full max-w-lg overflow-hidden relative z-10 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
             <div className="p-12 text-center">
               <div className={`w-32 h-32 rounded-full mx-auto mb-8 flex items-center justify-center overflow-hidden border-4 border-white shadow-2xl ${
                 selectedBadge.earned ? 'bg-gradient-to-br from-[#451ebb] to-[#6c5dd3]' : 'bg-gray-100'
@@ -230,7 +230,7 @@ const AchievementsPage = () => {
 const AchievementCard = ({ badge, onClick }) => (
   <div 
     onClick={onClick}
-    className="group bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm hover:shadow-2xl hover:border-indigo-100 transition-all cursor-pointer flex items-center gap-8"
+    className="group neu p-8 hover:scale-[1.02] transition-all cursor-pointer flex items-center gap-8"
   >
     <div className="w-28 h-28 rounded-full bg-[#f5f6ff] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform overflow-hidden border-4 border-white shadow-md">
       {badge.imageUrl ? (

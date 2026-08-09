@@ -41,7 +41,7 @@ const MasteryItem = ({ title, subtitle, percentage, type }) => {
   const isSuccess = type === "success";
   
   return (
-    <div className="group flex items-center justify-between p-6 mb-4 bg-white rounded-2xl border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all duration-300 cursor-default">
+    <div className="group flex items-center justify-between p-6 mb-4 neu rounded-3xl hover:scale-[1.01] transition-all duration-300 cursor-default">
       <div className="flex items-center gap-5">
         <div
           className={`p-4 rounded-xl ${
@@ -376,7 +376,7 @@ const PerformanceDashboard = () => {
             <div className="grid grid-cols-12 gap-8">
               {/* Focus Chart Card */}
               <section
-                className="col-span-12 lg:col-span-8 bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-gray-100 overflow-hidden transition-all duration-500 hover:shadow-xl"
+                className="col-span-12 lg:col-span-8 neu overflow-hidden transition-all duration-500 hover:scale-[1.01]"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
               >
@@ -467,7 +467,7 @@ const PerformanceDashboard = () => {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-[32px] p-8 text-gray-800 border border-gray-100 shadow-sm flex flex-col justify-between">
+                <div className="neu p-8 text-gray-800 flex flex-col justify-between">
                   <div className="flex justify-between items-start">
                     <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600">
                       <Clock size={20} />
@@ -486,7 +486,7 @@ const PerformanceDashboard = () => {
               </section>
 
               {/* Heatmap Card */}
-              <section className="col-span-12 lg:col-span-4 bg-white rounded-[32px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-gray-100 h-fit">
+              <section className="col-span-12 lg:col-span-4 neu p-10 h-fit">
                 <header className="flex justify-between items-center mb-10">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
@@ -545,7 +545,7 @@ const PerformanceDashboard = () => {
               </section>
 
               {/* Mastery Deficits Card */}
-              <section className="col-span-12 lg:col-span-8 bg-white rounded-[32px] p-10 shadow-[0_20px_50_rgba(0,0,0,0.02)] border border-gray-100">
+              <section className="col-span-12 lg:col-span-8 neu p-10">
                 <header className="flex justify-between items-center mb-10">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-red-50 rounded-lg text-red-600">
@@ -576,7 +576,7 @@ const PerformanceDashboard = () => {
               </section>
 
               {/* Focus Allocation Card */}
-              <section className="col-span-12 lg:col-span-5 bg-white rounded-[32px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-gray-100 flex flex-col justify-between min-h-[520px]">
+              <section className="col-span-12 lg:col-span-5 neu p-10 flex flex-col justify-between min-h-[520px]">
                 <h2 className="font-black text-2xl tracking-tight text-[#2D2D5F] uppercase border-b border-gray-50 pb-4">
                   Focus Allocation
                 </h2>
@@ -646,7 +646,7 @@ const PerformanceDashboard = () => {
 
               {/* Analytical Charts Section */}
               <div className="col-span-12 lg:col-span-7 flex flex-col gap-8">
-                <section className="bg-white rounded-[32px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] border border-gray-100 flex flex-col h-[520px]">
+                <section className="neu p-10 flex flex-col h-[520px]">
                   <div className="flex justify-between items-start mb-10">
                     <div>
                       <h2 className="font-black text-xl tracking-tight text-[#4F39C3] uppercase">

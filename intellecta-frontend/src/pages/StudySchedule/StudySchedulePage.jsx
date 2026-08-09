@@ -63,7 +63,7 @@ const CourseCard = ({ course, onDelete }) => {
   const urgent = course.daysUntilExam >= 0 && course.daysUntilExam <= 7;
 
   return (
-    <div className="bg-white rounded-3xl px-8 py-6 flex items-center justify-between shadow-[0_4px_24px_-2px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow">
+    <div className="neu px-8 py-6 flex items-center justify-between hover:scale-[1.01] transition-transform">
       <div className="flex items-center gap-7">
         <div
           className="w-[72px] h-[72px] rounded-2xl flex items-center justify-center shrink-0"
@@ -168,7 +168,7 @@ const EnrollForm = ({ onEnrolled }) => {
   };
 
   return (
-    <div className="bg-[#f1f3ff] rounded-2xl p-8 flex flex-col gap-6">
+    <div className="neu p-8 flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h3
           className="font-bold text-[19px]"
@@ -195,7 +195,7 @@ const EnrollForm = ({ onEnrolled }) => {
         <input
           value={courseName}
           onChange={(e) => setCourseName(e.target.value)}
-          className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-4 text-[13px] outline-none focus:ring-2 focus:ring-indigo-400 placeholder:text-slate-400"
+          className="w-full neu-inset px-4 py-4 text-[13px] outline-none placeholder:text-slate-400 bg-transparent"
           placeholder="e.g. Linear Algebra"
         />
       </div>
@@ -212,7 +212,7 @@ const EnrollForm = ({ onEnrolled }) => {
           value={examDate}
           onChange={(e) => setExamDate(e.target.value)}
           min={new Date().toISOString().split("T")[0]}
-          className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-[13px] outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full neu-inset px-4 py-3 text-[13px] outline-none bg-transparent"
         />
       </div>
 
@@ -273,10 +273,7 @@ const EnrollForm = ({ onEnrolled }) => {
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="w-full py-3 rounded-xl text-white text-[15px] font-bold text-center transition-opacity hover:opacity-90 disabled:opacity-60"
-        style={{
-          background: "linear-gradient(135deg, #451ebb 0%, #5d3fd3 100%)",
-        }}
+        className="btn-primary w-full py-3 font-bold text-center transition-opacity hover:opacity-90 disabled:opacity-60"
       >
         {loading ? "Enrolling…" : "Enroll Course"}
       </button>
@@ -491,10 +488,9 @@ const GeneratePanel = ({ onGenerate, loading, hasCourses }) => {
 
   return (
     <div
-      className="rounded-[2.5rem] px-10 py-8 text-white overflow-hidden relative flex flex-col gap-6"
+      className="glass-card border-indigo-400/30 px-10 py-8 text-white overflow-hidden relative flex flex-col gap-6"
       style={{
         backgroundColor: "#5d3fd3",
-        boxShadow: "0 25px 50px -12px rgba(69,30,187,0.25)",
       }}
     >
       <div className="absolute top-[-48px] right-[-48px] w-40 h-40 rounded-full opacity-10 blur-3xl bg-white" />

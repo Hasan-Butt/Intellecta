@@ -339,7 +339,7 @@ const AnalyticsDashboard = () => {
             <div className="flex items-center mb-1.5 relative">
               <button 
                 onClick={() => setIsDatePickerOpen(!isDatePickerOpen)} 
-                className="flex items-center gap-3 bg-white hover:border-purple-200 transition-all px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm group"
+                className="flex items-center gap-3 neu-btn bg-transparent transition-all px-4 py-2.5 rounded-xl group"
               >
                 <Calendar size={18} className="text-[#4F27B8] group-hover:scale-110 transition-transform" />
                 <span className="text-sm font-semibold text-[#1A1D1F] tabular-nums">
@@ -349,7 +349,7 @@ const AnalyticsDashboard = () => {
               </button>
 
               {isDatePickerOpen && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-100 rounded-2xl shadow-xl z-50 p-4 space-y-4">
+                <div className="absolute right-0 top-full mt-2 w-64 neu z-50 p-4 space-y-4">
                   <div className="grid grid-cols-1 gap-2">
                     {[
                       { label: 'Today', days: 0 },
@@ -415,7 +415,7 @@ const AnalyticsDashboard = () => {
                   return `mostly ${dominant.toLowerCase()} impact`;
                 })(), icon: History, color: 'text-emerald-500', bg: 'bg-emerald-50' },
             ].map((stat, i) => (
-              <div key={i} className="bg-white p-7 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-lg transition-all group min-h-[160px] flex flex-col justify-between">
+              <div key={i} className="neu p-7 transition-all group min-h-[160px] flex flex-col justify-between hover:scale-[1.02]">
                 <div className="flex justify-between items-start gap-4 mb-4">
                   <div className={`p-4 rounded-2xl shrink-0 ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}><stat.icon size={28} /></div>
                   <span className={`text-[11px] font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider ml-auto whitespace-nowrap ${stat.color} ${stat.bg} border border-current border-opacity-10`}>{stat.sub}</span>
@@ -430,7 +430,7 @@ const AnalyticsDashboard = () => {
 
           {/* Main Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-5 bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm h-[375px] flex flex-col">
+            <div className="lg:col-span-5 neu p-6 h-[375px] flex flex-col">
               <div className="mb-4">
                   <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight">Triggers</h2>
               </div>
@@ -449,7 +449,7 @@ const AnalyticsDashboard = () => {
               </div>
             </div>
             
-            <div className="lg:col-span-7 bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm h-[375px] flex flex-col">
+            <div className="lg:col-span-7 neu p-6 h-[375px] flex flex-col">
               <div className="flex flex-row justify-between items-center mb-2 gap-4">
                 <div className="min-w-0">
                   <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
@@ -469,7 +469,7 @@ const AnalyticsDashboard = () => {
           </div>
 
           {/* Log Table */}
-          <section className="bg-white rounded-[32px] overflow-hidden shadow-sm border border-gray-100">
+          <section className="neu overflow-hidden">
             <div className="px-10 py-8 flex items-center justify-between border-b border-gray-50">
               <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight">Distraction Log</h2>
               <div className="flex items-center gap-4 relative">
@@ -481,7 +481,7 @@ const AnalyticsDashboard = () => {
                 </button>
 
                 {isFilterOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden">
+                  <div className="absolute right-0 top-full mt-2 w-48 neu z-50 overflow-hidden">
                     <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
                       {['All', ...new Set(logData.map(item => item.category.label))].map((cat, idx) => (
                         <button

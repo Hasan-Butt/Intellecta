@@ -214,8 +214,8 @@ const SettingsPage = () => {
                     onClick={() => { setActiveTab(tab.id); setError(null); }}
                     className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold text-sm transition-all ${
                       activeTab === tab.id 
-                      ? 'bg-[#451ebb] text-white shadow-lg shadow-indigo-100' 
-                      : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
+                      ? 'btn-primary' 
+                      : 'neu-btn bg-transparent text-gray-500 hover:scale-[1.02]'
                     }`}
                   >
                     <tab.icon size={18} />
@@ -225,7 +225,7 @@ const SettingsPage = () => {
               </div>
 
               {/* Main Content Area */}
-              <div className="flex-1 bg-white rounded-[32px] p-10 shadow-sm border border-gray-100 relative min-h-[600px] flex flex-col">
+              <div className="flex-1 neu p-10 relative min-h-[600px] flex flex-col">
                 
                 {/* Profile Tab */}
                 {activeTab === 'profile' && (
@@ -291,7 +291,7 @@ const SettingsPage = () => {
                           type="text" 
                           value={profileData.username}
                           onChange={(e) => setProfileData({...profileData, username: e.target.value})}
-                          className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-transparent focus:bg-white focus:border-[#451ebb]/30 outline-none transition-all font-bold text-zinc-900"
+                          className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold text-zinc-900"
                         />
                       </div>
                       <div className="space-y-2">
@@ -300,7 +300,7 @@ const SettingsPage = () => {
                           type="email" 
                           value={profileData.email}
                           onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                          className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-transparent focus:bg-white focus:border-[#451ebb]/30 outline-none transition-all font-bold text-zinc-900"
+                          className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold text-zinc-900"
                         />
                       </div>
                     </div>
@@ -312,7 +312,7 @@ const SettingsPage = () => {
                         value={profileData.bio}
                         onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
                         placeholder="Tell us about your learning goals..."
-                        className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-transparent focus:bg-white focus:border-[#451ebb]/30 outline-none transition-all font-bold text-zinc-900 resize-none"
+                        className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold text-zinc-900 resize-none"
                       />
                     </div>
                   </div>
@@ -337,7 +337,7 @@ const SettingsPage = () => {
                           value={passwordData.currentPassword}
                           onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
                           placeholder="••••••••" 
-                          className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-transparent focus:bg-white focus:border-[#451ebb]/30 outline-none transition-all font-bold" 
+                          className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold" 
                         />
                       </div>
                       <div className="space-y-2">
@@ -347,7 +347,7 @@ const SettingsPage = () => {
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
                           placeholder="••••••••" 
-                          className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-transparent focus:bg-white focus:border-[#451ebb]/30 outline-none transition-all font-bold" 
+                          className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold" 
                         />
                       </div>
                       <div className="space-y-2">
@@ -357,7 +357,7 @@ const SettingsPage = () => {
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
                           placeholder="••••••••" 
-                          className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-transparent focus:bg-white focus:border-[#451ebb]/30 outline-none transition-all font-bold" 
+                          className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold" 
                         />
                       </div>
                     </div>
@@ -381,7 +381,7 @@ const SettingsPage = () => {
                           </div>
                           <button 
                             onClick={() => setNotifications({...notifications, [item.key]: !notifications[item.key]})}
-                            className={`w-12 h-6 rounded-full transition-colors relative ${notifications[item.key] ? 'bg-[#451ebb]' : 'bg-gray-300'}`}
+                            className={`w-12 h-6 rounded-full transition-colors relative ${notifications[item.key] ? 'bg-indigo-600' : 'bg-gray-300'}`}
                           >
                             <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${notifications[item.key] ? 'left-7' : 'left-1'}`} />
                           </button>
@@ -412,7 +412,7 @@ const SettingsPage = () => {
                     <button 
                       onClick={handleUpdatePassword}
                       disabled={saving || !passwordData.currentPassword || !passwordData.newPassword}
-                      className="flex items-center gap-3 px-8 py-4 bg-[#451ebb] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#5d3fd3] transition-all shadow-xl shadow-indigo-100 disabled:opacity-50 min-w-[180px] justify-center"
+                      className="btn-primary min-w-[180px] justify-center py-4 text-xs font-black uppercase tracking-widest disabled:opacity-50 transition-all flex items-center gap-3"
                     >
                       {saving ? (
                         <><Loader2 size={16} className="animate-spin" /> Updating...</>
@@ -426,7 +426,7 @@ const SettingsPage = () => {
                     <button 
                       onClick={handleSaveProfile}
                       disabled={saving}
-                      className="flex items-center gap-3 px-8 py-4 bg-[#451ebb] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#5d3fd3] transition-all shadow-xl shadow-indigo-100 disabled:opacity-50 min-w-[180px] justify-center"
+                      className="btn-primary min-w-[180px] justify-center py-4 text-xs font-black uppercase tracking-widest disabled:opacity-50 transition-all flex items-center gap-3"
                     >
                       {saving ? (
                         <><Loader2 size={16} className="animate-spin" /> Saving...</>

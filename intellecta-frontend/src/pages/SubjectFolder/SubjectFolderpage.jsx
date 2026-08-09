@@ -166,10 +166,10 @@ const DropZone = ({ onFileSelect }) => {
       onDrop={handleDrop}
       onClick={() => inputRef.current?.click()}
       className={cn(
-        "border-2 border-dashed rounded-3xl py-10 flex flex-col items-center justify-center cursor-pointer transition-all",
+        "neu-inset py-10 flex flex-col items-center justify-center cursor-pointer transition-all border-2",
         isDragging
           ? "border-[#7c3aed] bg-[#f5f3ff]"
-          : "border-gray-200 bg-gray-50/50 hover:border-[#c4b5fd] hover:bg-[#faf9ff]"
+          : "border-transparent hover:border-[#c4b5fd]"
       )}
     >
       <input
@@ -247,7 +247,7 @@ const FileRow = ({ file, onTagAdded, onDeleted, openConfirm }) => {
   return (
     <div
       onClick={handleClick}
-      className="grid grid-cols-[1fr_auto_auto] gap-4 items-center py-3 px-2 rounded-2xl hover:bg-gray-50 transition-colors group cursor-pointer"
+      className="grid grid-cols-[1fr_auto_auto] gap-4 items-center py-3 px-4 rounded-2xl hover:neu transition-all hover:scale-[1.01] group cursor-pointer"
     >
       <div className="flex items-center gap-3 min-w-0">
         <FileIcon type={displayType} />
@@ -349,7 +349,7 @@ const NewFolderModal = ({ isOpen, onClose, onCreate }) => {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-10 flex flex-col gap-6"
+        className="neu w-full max-w-md p-10 flex flex-col gap-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -380,7 +380,7 @@ const NewFolderModal = ({ isOpen, onClose, onCreate }) => {
             onChange={(e) => setSubjectName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
             placeholder="e.g. Physics, Mathematics..."
-            className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-800 outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-[#ede9fe] transition-all placeholder:text-gray-300 font-medium"
+            className="w-full px-5 py-3.5 neu-inset bg-transparent border-none text-sm text-gray-800 outline-none focus:ring-2 focus:ring-[#ede9fe] transition-all placeholder:text-gray-400 font-medium"
           />
         </div>
 
@@ -392,7 +392,7 @@ const NewFolderModal = ({ isOpen, onClose, onCreate }) => {
             <select
               value={semester}
               onChange={(e) => setSemester(e.target.value)}
-              className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-800 outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-[#ede9fe] transition-all appearance-none font-medium cursor-pointer"
+              className="w-full px-5 py-3.5 neu-inset bg-transparent border-none text-sm text-gray-800 outline-none focus:ring-2 focus:ring-[#ede9fe] transition-all appearance-none font-medium cursor-pointer"
             >
               <option value="Semester 1">Semester 1</option>
               <option value="Semester 2">Semester 2</option>
@@ -413,14 +413,14 @@ const NewFolderModal = ({ isOpen, onClose, onCreate }) => {
         <div className="flex items-center gap-3 pt-2">
           <button
             onClick={onClose}
-            className="flex-1 py-3.5 rounded-2xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+            className="flex-1 py-3.5 rounded-2xl neu-inset bg-transparent text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleCreate}
             disabled={!subjectName.trim() || creating}
-            className="flex-1 py-3.5 rounded-2xl bg-[#7c3aed] text-white text-sm font-bold hover:bg-[#6d28d9] transition-colors shadow-lg shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-3.5 btn-primary text-sm font-bold transition-colors shadow-lg shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {creating ? "Creating..." : "Create Folder"}
           </button>

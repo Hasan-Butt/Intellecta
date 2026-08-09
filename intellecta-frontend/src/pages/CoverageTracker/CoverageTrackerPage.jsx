@@ -114,7 +114,7 @@ const Modal = ({ isOpen, onClose, title, children, wide = false }) => {
     >
       <div
         className={cn(
-          "bg-white rounded-[2.5rem] shadow-2xl p-10 flex flex-col gap-6 max-h-[90vh] overflow-y-auto",
+          "neu p-10 flex flex-col gap-6 max-h-[90vh] overflow-y-auto",
           wide ? "w-full max-w-2xl" : "w-full max-w-md"
         )}
         onClick={(e) => e.stopPropagation()}
@@ -142,7 +142,7 @@ const InputField = ({ label, required, ...props }) => (
       {label} {required && <span className="text-red-400">*</span>}
     </label>
     <input
-      className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-800 outline-none focus:border-[#7c3aed] focus:ring-2 focus:ring-[#ede9fe] transition-all placeholder:text-gray-300 font-medium"
+      className="w-full px-5 py-3.5 neu-inset bg-transparent border-none text-sm text-gray-800 outline-none transition-all placeholder:text-gray-400 font-medium"
       {...props}
     />
   </div>
@@ -155,8 +155,8 @@ const ModalBtn = ({ onClick, disabled, loading, children, variant = "primary" })
     className={cn(
       "flex-1 py-3.5 rounded-2xl text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2",
       variant === "primary"
-        ? "bg-[#7c3aed] text-white hover:bg-[#6d28d9] shadow-lg shadow-indigo-100"
-        : "border border-gray-200 text-gray-500 hover:bg-gray-50"
+        ? "btn-primary shadow-lg shadow-indigo-100"
+        : "neu-inset bg-transparent text-gray-500 hover:scale-[1.02]"
     )}
   >
     {loading && <Loader2 size={14} className="animate-spin" />}
@@ -315,7 +315,7 @@ const ExamDetailModal = ({
       </div>
 
       {/* Exam Progress Bar */}
-      <div className="bg-gray-50 rounded-2xl px-5 py-4 border border-gray-100">
+      <div className="neu-inset bg-transparent border-none px-5 py-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
             Exam Coverage Progress
@@ -363,7 +363,7 @@ const ExamDetailModal = ({
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="neu overflow-hidden">
           {loadingTopics ? (
             <div className="flex items-center justify-center py-8 text-gray-400 gap-2">
               <Loader2 size={16} className="animate-spin" /> Loading…
@@ -421,7 +421,7 @@ const ExamDetailModal = ({
 
       {/* Add Topic inline form */}
       {addTopicModal && (
-        <div className="bg-[#f5f3ff] rounded-2xl p-5 border border-[#ddd6fe] flex flex-col gap-4">
+        <div className="neu-inset p-5 flex flex-col gap-4">
           <h4 className="text-sm font-extrabold text-[#7c3aed]">
             New Topic for this Exam
           </h4>
@@ -806,7 +806,7 @@ const CoverageTrackerPage = () => {
                     <div className="relative">
                       <button
                         onClick={() => setSubjectOpen(!subjectOpen)}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-700 hover:border-gray-300 transition-colors shadow-sm"
+                        className="flex items-center gap-2 px-4 py-2 neu-inset bg-transparent border-none text-xs font-bold text-gray-700 transition-colors"
                       >
                         {activeSubject?.name || "Select Subject"}
                         <ChevronDown
@@ -818,7 +818,7 @@ const CoverageTrackerPage = () => {
                         />
                       </button>
                       {subjectOpen && (
-                        <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 z-20">
+                        <div className="absolute right-0 mt-2 w-56 neu py-1.5 z-20">
                           {subjects.length === 0 && (
                             <p className="text-xs text-gray-400 px-4 py-3 italic">
                               No subjects yet.
@@ -854,8 +854,9 @@ const CoverageTrackerPage = () => {
                 </div>
 
                 {/* Subject-level progress */}
-                <div className="bg-white rounded-3xl px-6 py-5 mb-5 border border-gray-100 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-col flex-1 min-h-0">
+                <div className="neu px-6 py-5 mb-5">
+                  <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                       Overall Subject Progress — {activeSubject?.name || "—"}
                     </span>
@@ -873,9 +874,10 @@ const CoverageTrackerPage = () => {
                     All topics · NOT STARTED=0% · IN PROGRESS=25% · REVIEWED=50% · MASTERED=100%
                   </p>
                 </div>
+                </div>
 
                 {/* Topic List */}
-                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mb-5">
+                <div className="neu overflow-hidden mb-5">
                   {loading ? (
                     <div className="flex items-center justify-center py-12 text-gray-400 gap-2">
                       <Loader2 size={18} className="animate-spin" /> Loading topics…
@@ -1008,7 +1010,8 @@ const CoverageTrackerPage = () => {
                 {secondaryExams.map((exam) => (
                   <div
                     key={exam.id}
-                    className="bg-white rounded-2xl px-5 py-4 mb-3 border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:border-[#c4b5fd] transition-colors"
+                    onClick={() => setSelectedExam(exam)}
+                    className="neu px-5 py-4 mb-3 flex items-center justify-between cursor-pointer hover:scale-[1.02] transition-transform"
                     onClick={() => setExamDetailModal(exam)}
                   >
                     <div>
@@ -1031,9 +1034,9 @@ const CoverageTrackerPage = () => {
                 ))}
 
                 {/* Panic Meter + Recommended */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                <div className="flex flex-col gap-4">
+                  <div className="neu p-4">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                       Panic Meter
                     </p>
                     <div className="flex items-center gap-2 mb-2">
@@ -1065,9 +1068,8 @@ const CoverageTrackerPage = () => {
                         : "Based on days left + coverage"}
                     </p>
                   </div>
-
-                  <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                  <div className="neu p-4">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                       Recommended
                     </p>
                     <p className="text-3xl font-black text-gray-900">
@@ -1083,7 +1085,7 @@ const CoverageTrackerPage = () => {
 
                 {/* Behind Alert */}
                 {showBehindAlert && lowestTopic && (
-                  <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3">
+                  <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3 mt-4">
                     <AlertTriangle
                       size={15}
                       className="text-red-500 flex-shrink-0 mt-0.5"
@@ -1110,8 +1112,8 @@ const CoverageTrackerPage = () => {
                 )}
 
                 {/* Pre-Exam Checklist */}
-                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-50">
+                <div className="neu overflow-hidden mt-4">
+                  <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between bg-white/50">
                     <div className="flex flex-col gap-1.5">
                       <h3 className="text-sm font-extrabold text-gray-800">
                         Pre-Exam Checklist
