@@ -167,9 +167,9 @@ export default function LightReview() {
       <style>{styles}</style>
       <Navbar />
       <div
+        className="bg-[#faf9ff]"
         style={{
           minHeight: "100vh",
-          background: "linear-gradient(135deg, #f9f9ff 0%, #ede9fe 50%, #f0f9ff 100%)",
           display: "flex",
           width: "100%",
         }}
@@ -227,19 +227,16 @@ export default function LightReview() {
           {/* ── Loading ─────────────────────────────────────────── */}
           {loading ? (
             <div
+              className="neu"
               style={{
                 width: "100%",
                 maxWidth: 680,
                 minHeight: 360,
-                background: "rgba(255,255,255,0.7)",
-                backdropFilter: "blur(16px)",
-                borderRadius: 28,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexDirection: "column",
                 gap: 16,
-                boxShadow: "0 8px 40px rgba(69,30,187,0.08)",
               }}
             >
               <div
@@ -259,14 +256,11 @@ export default function LightReview() {
           ) : isFinished ? (
             /* ── All done ────────────────────────────────────────── */
             <div
+              className="neu"
               style={{
                 width: "100%",
                 maxWidth: 680,
-                background: "rgba(255,255,255,0.88)",
-                backdropFilter: "blur(20px)",
-                borderRadius: 28,
                 padding: "4rem 3rem",
-                boxShadow: "0 20px 60px rgba(69,30,187,0.12)",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -312,17 +306,12 @@ export default function LightReview() {
               </div>
               <button
                 onClick={() => navigate("/studentDashboard")}
+                className="btn-primary"
                 style={{
                   marginTop: 8,
                   padding: "14px 36px",
-                  background: "linear-gradient(135deg,#451ebb,#7c5fe6)",
-                  color: "white",
                   fontWeight: 700,
                   fontSize: 15,
-                  border: "none",
-                  borderRadius: 16,
-                  cursor: "pointer",
-                  boxShadow: "0 8px 24px rgba(69,30,187,0.28)",
                   animation: "lr-pulse-ring 2.5s ease-in-out infinite",
                 }}
               >
