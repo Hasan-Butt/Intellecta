@@ -17,8 +17,9 @@ public class Document {
     @Column(nullable = false)
     private String fileName;
 
-    // UploadThing CDN URL e.g. https://utfs.io/f/<key>
-    @Column(nullable = false)
+    // UploadThing CDN URL (or legacy local path).
+    // DB column is still called file_path from before the UploadThing migration.
+    @Column(name = "file_path", nullable = false)
     private String fileUrl;
 
     // Subject name e.g. "Physics", "Mathematics"

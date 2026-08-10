@@ -148,6 +148,7 @@ public class QuizService {
 
         Map<Long, QuizAttempt> latestPerQuiz = new LinkedHashMap<>();
         for (QuizAttempt attempt : attempts) {
+            if (attempt.getQuiz() == null) continue; // skip orphaned attempts
             Long quizId = attempt.getQuiz().getId();
             QuizAttempt existing = latestPerQuiz.get(quizId);
             if (existing == null || isAfter(attempt, existing)) {
