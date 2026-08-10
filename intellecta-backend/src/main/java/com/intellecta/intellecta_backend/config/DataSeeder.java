@@ -1,6 +1,7 @@
 package com.intellecta.intellecta_backend.config;
 
 import com.intellecta.intellecta_backend.enums.BadgeType;
+import com.intellecta.intellecta_backend.enums.QuestionType;
 import com.intellecta.intellecta_backend.enums.UserRoles;
 import com.intellecta.intellecta_backend.model.*;
 import com.intellecta.intellecta_backend.repository.*;
@@ -173,6 +174,10 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println("[DataSeeder] Seeded sessions + activities for " + students.size() + " students.");
         }
 
+        // Ensure quizzes exist — Bug 1.2.5: without them no attempts get
+        // seeded and the Mastery Deficits section stays empty in dev.
+        seedQuizzes();
+
         // Seed quiz attempts independently — re-seed if no historical data (> 2 months old)
         // This fires on fresh DBs, old DBs with only recent data, and after table clears
         LocalDateTime twoMonthsAgo = LocalDateTime.now().minusMonths(2);
@@ -318,6 +323,48 @@ public class DataSeeder implements CommandLineRunner {
         }
         studySessionRepository.saveAll(batch);
         System.out.println("[DataSeeder] Seeded " + batch.size() + " study sessions (90 days).");
+    }
+
+    // ── Quizzes — objective-only so seeded attempts stay gradable ─────────────
+
+    private void seedQuizzes() {
+        if (quizRepository.count() > 0) return;
+
+        Random rng = new Random(2024L);
+        List<Quiz> quizzes = new ArrayList<>();
+
+        for (int i = 0; i < 6; i++) {
+            String category = SUBJECTS[rng.nextInt(SUBJECTS.length)];
+            String topic = category + " — Essentials";
+            List<Question> questions = new ArrayList<>();
+
+            for (int qi = 0; qi < 4; qi++) {
+                int correct = rng.nextInt(4);
+                int a = 1 + rng.nextInt(90);
+                questions.add(Question.builder()
+                        .text("Q" + (qi + 1) + ": " + topic + " — which option is correct?")
+                        .options(List.of("Option A (" + a + ")", "Option B (" + (a + 1) + ")",
+                                "Option C (" + (a + 2) + ")", "Option D (" + (a + 3) + ")"))
+                        .correctOptionIndex(correct)
+                        .questionType(QuestionType.OBJECTIVE)
+                        .maxMarks(1)
+                        .build());
+            }
+
+            Quiz quiz = Quiz.builder()
+                    .category(category)
+                    .topic(topic)
+                    .difficulty(i % 3 == 0 ? "Beginner" : i % 3 == 1 ? "Intermediate" : "Expert")
+                    .timeLimit(15 + rng.nextInt(15))
+                    .description("Seeded quiz for " + category + ".")
+                    .questions(questions)
+                    .build();
+            questions.forEach(q -> q.setQuiz(quiz));
+            quizzes.add(quiz);
+        }
+
+        quizRepository.saveAll(quizzes);
+        System.out.println("[DataSeeder] Seeded " + quizzes.size() + " quizzes (no quizzes existed).");
     }
 
     // ── Quiz attempts — 7-month programmatic generation ──────────────────────

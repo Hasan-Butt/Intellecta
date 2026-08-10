@@ -149,13 +149,22 @@ const PerformanceDashboard = () => {
   }, [sessions]);
 
   const masteryDeficits = useMemo(() => {
-    if (attempts.length === 0) return [];
+    // Bug 1.2.1: ungraded (PENDING_REVIEW) attempts have score 0 — never
+    // treat them as mastery failures.
+    const gradedAttempts = attempts.filter(a => a.graded === true);
+    if (gradedAttempts.length === 0) return [];
 
     const scoresByTopic = {};
-    attempts.forEach(a => {
-      const topic = a.quiz?.category || a.quiz?.topic || "General";
+    gradedAttempts.forEach(a => {
+      // Bug 1.2.4: group by topic first, then category.
+      const topic = a.quiz?.topic || a.quiz?.category || "General";
       if (!scoresByTopic[topic]) scoresByTopic[topic] = [];
-      const pct = a.totalQuestions > 0 ? (a.score / a.totalQuestions) * 100 : 0;
+      // Bug 1.2.3: score only counts OBJECTIVE questions; divide by the
+      // objective count, not by totalQuestions (which includes descriptive).
+      const objectiveCount = (a.quiz?.questions || [])
+        .filter(q => q.questionType === 'OBJECTIVE').length;
+      const denominator = objectiveCount > 0 ? objectiveCount : (a.totalQuestions || 0);
+      const pct = denominator > 0 ? (a.score / denominator) * 100 : 0;
       scoresByTopic[topic].push(pct);
     });
 
@@ -328,10 +337,14 @@ const PerformanceDashboard = () => {
       subjectStats[sub].hours += (s.durationMinutes || 30) / 60;
     });
 
-    attempts.forEach(a => {
-      const sub = a.quiz?.category || a.quiz?.topic || "General";
+    // Bug 1.2.1/1.2.3: same grading/denominator discipline as Mastery Deficits
+    attempts.filter(a => a.graded === true).forEach(a => {
+      const sub = a.quiz?.topic || a.quiz?.category || "General";
       if (!subjectStats[sub]) subjectStats[sub] = { hours: 0, mastery: 0, attempts: 0 };
-      const pct = a.totalQuestions > 0 ? (a.score / a.totalQuestions) * 100 : 0;
+      const objectiveCount = (a.quiz?.questions || [])
+        .filter(q => q.questionType === 'OBJECTIVE').length;
+      const denominator = objectiveCount > 0 ? objectiveCount : (a.totalQuestions || 0);
+      const pct = denominator > 0 ? (a.score / denominator) * 100 : 0;
       subjectStats[sub].mastery = (subjectStats[sub].mastery * subjectStats[sub].attempts + pct) / (subjectStats[sub].attempts + 1);
       subjectStats[sub].attempts += 1;
     });

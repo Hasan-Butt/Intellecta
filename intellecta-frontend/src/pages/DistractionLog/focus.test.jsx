@@ -138,3 +138,142 @@ describe("Cognitive Behavioral Audit (Bugs 1.1.1 - 1.1.4)", () => {
     expect(await screen.findByText("50%")).toBeInTheDocument();
   });
 });
+
+// ── Mastery Deficits (Bugs 1.2.1 - 1.2.5) ────────────────────────────────
+
+const objectiveQuiz = (topic, category, objectiveCount) => ({
+  id: 1,
+  topic,
+  category,
+  questions: Array.from({ length: objectiveCount }, (_, i) => ({
+    id: i + 1,
+    questionType: "OBJECTIVE",
+  })),
+});
+
+const attempt = (overrides = {}) => ({
+  id: 1,
+  score: 0,
+  totalQuestions: 0,
+  graded: true,
+  startTime: new Date().toISOString(),
+  endTime: new Date().toISOString(),
+  status: "COMPLETED",
+  quiz: objectiveQuiz("Calculus", "Math", 1),
+  ...overrides,
+});
+
+describe("Mastery Deficits (Bugs 1.2.1 - 1.2.4)", () => {
+  const mockApiFor = (attemptsData, sessionsData = []) => {
+    api.get.mockImplementation((url) => {
+      if (url.includes("/distractions/")) return Promise.resolve({ data: [] });
+      if (url.includes("/quizzes/")) return Promise.resolve({ data: attemptsData });
+      return Promise.resolve({ data: sessionsData });
+    });
+  };
+
+  test("1.2.1: ungraded PENDING_REVIEW attempts are excluded (no false 0% deficits)", async () => {
+    mockApiFor([
+      attempt({
+        id: 1,
+        score: 4,
+        totalQuestions: 4,
+        graded: true,
+        quiz: objectiveQuiz("Calculus", "Math", 4),
+      }),
+      attempt({
+        id: 2,
+        score: 0,
+        totalQuestions: 4,
+        graded: false,
+        status: "PENDING_REVIEW",
+        quiz: objectiveQuiz("Calculus", "Math", 4),
+      }),
+    ]);
+
+    render(<PerformanceDashboard />);
+
+    // Only the graded attempt counts: 4/4 -> 100% mastered
+    expect(await screen.findByText("Concept mastered")).toBeInTheDocument();
+    expect(screen.queryByText("Requires immediate review")).not.toBeInTheDocument();
+  });
+
+  test("1.2.1: when only ungraded attempts exist, section shows the empty state", async () => {
+    mockApiFor([
+      attempt({
+        id: 1,
+        score: 0,
+        totalQuestions: 4,
+        graded: false,
+        status: "PENDING_REVIEW",
+        quiz: objectiveQuiz("Calculus", "Math", 4),
+      }),
+    ]);
+
+    render(<PerformanceDashboard />);
+
+    expect(await screen.findByText("No quiz data available yet.")).toBeInTheDocument();
+  });
+
+  test("1.2.2: all attempts (not just latest per quiz) are averaged", async () => {
+    mockApiFor([
+      attempt({
+        id: 1,
+        score: 2,
+        totalQuestions: 4,
+        quiz: objectiveQuiz("Calculus", "Math", 4),
+      }),
+      attempt({
+        id: 2,
+        score: 4,
+        totalQuestions: 4,
+        quiz: objectiveQuiz("Calculus", "Math", 4),
+      }),
+    ]);
+
+    render(<PerformanceDashboard />);
+
+    // average = (50% + 100%) / 2 = 75%
+    expect(await screen.findByText("75%")).toBeInTheDocument();
+  });
+
+  test("1.2.3: denominator is objective question count, not total questions", async () => {
+    mockApiFor([
+      attempt({
+        id: 1,
+        score: 3,
+        totalQuestions: 5, // 2 descriptive questions included in total
+        quiz: objectiveQuiz("Calculus", "Math", 3),
+      }),
+    ]);
+
+    render(<PerformanceDashboard />);
+
+    // 3/3 objective -> 100%, not 3/5 = 60%
+    expect(await screen.findByText("Concept mastered")).toBeInTheDocument();
+  });
+
+  test("1.2.4: groups by quiz topic first; category only as fallback", async () => {
+    mockApiFor([
+      attempt({
+        id: 1,
+        score: 4,
+        totalQuestions: 4,
+        quiz: objectiveQuiz("Calculus", "Math", 4),
+      }),
+      attempt({
+        id: 2,
+        score: 4,
+        totalQuestions: 4,
+        quiz: { ...objectiveQuiz("Some Topic", "Physics", 4), topic: null },
+      }),
+    ]);
+
+    render(<PerformanceDashboard />);
+
+    expect(await screen.findByText("Calculus")).toBeInTheDocument();
+    // topic is null -> falls back to the category (not "Some Topic")
+    expect(screen.getByText("Physics")).toBeInTheDocument();
+    expect(screen.queryByText("Some Topic")).not.toBeInTheDocument();
+  });
+});
