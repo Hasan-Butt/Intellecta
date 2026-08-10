@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import Swal from 'sweetalert2';
 import {
   Plus, ChevronDown, ChevronRight, AlertTriangle,
   Shuffle, Check, Zap, Trash2, X, Loader2,
@@ -655,7 +656,7 @@ const CoverageTrackerPage = () => {
   const handleCreateTopic = async () => {
     if (!topicForm.title.trim()) return;
     if (!activeSubject) {
-      alert("❌ Please select or create a subject first.");
+      Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Please select or create a subject first.' });
       return;
     }
 
@@ -683,7 +684,7 @@ const CoverageTrackerPage = () => {
   const handleCreateExam = async () => {
   if (!examForm.name.trim() || !examForm.examDate) return;
   if (!activeSubject) {
-    alert("❌ Please select or create a subject first.");
+    Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Please select or create a subject first.' });
     return;
   }
   
@@ -692,7 +693,7 @@ const CoverageTrackerPage = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   if (selectedDate < today) {
-    alert("❌ Cannot create exam with a past date. Please select today or a future date.");
+    Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Cannot create exam with a past date. Please select today or a future date.' });
     return;
   }
   
@@ -704,7 +705,7 @@ const CoverageTrackerPage = () => {
     setExamForm({ name: "", examDate: "" });
   } catch (err) {
     console.error("Failed to create exam:", err);
-    alert("Failed to create exam. Please try again.");
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to create exam. Please try again.' });
   } finally {
     setModalLoading(false);
   }
@@ -716,7 +717,7 @@ const CoverageTrackerPage = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   if (selectedDate < today) {
-    alert("❌ Cannot set exam date to a past date. Please select today or a future date.");
+    Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Cannot set exam date to a past date. Please select today or a future date.' });
     return;
   }
   
@@ -726,7 +727,7 @@ const CoverageTrackerPage = () => {
     setExamDetailModal(null);
   } catch (err) {
     console.error("Failed to update exam date:", err);
-    alert("Failed to update exam date. Please try again.");
+    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to update exam date. Please try again.' });
   }
 };
 
