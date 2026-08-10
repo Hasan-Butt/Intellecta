@@ -28,7 +28,6 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (dto.username() != null) user.setUsername(dto.username());
-        if (dto.email() != null) user.setEmail(dto.email());
         if (dto.bio() != null) user.setBio(dto.bio());
         if (dto.avatarUrl() != null) user.setAvatarUrl(dto.avatarUrl());
         if (dto.studyReminders() != null) user.setStudyReminders(dto.studyReminders());
@@ -42,6 +41,10 @@ public class UserService {
     public void updatePassword(Long userId, PasswordUpdateDto dto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getPassword() == null) {
+            throw new RuntimeException("Password changes are not supported for Google-linked accounts.");
+        }
 
         if (!passwordEncoder.matches(dto.currentPassword(), user.getPassword())) {
             throw new RuntimeException("Current password does not match");
@@ -71,6 +74,7 @@ public class UserService {
                 .email(user.getEmail())
                 .bio(user.getBio())
                 .avatarUrl(user.getAvatarUrl())
+                .hasPassword(user.getPassword() != null)
                 .studyReminders(user.isStudyReminders())
                 .achievementAlerts(user.isAchievementAlerts())
                 .weeklyReports(user.isWeeklyReports())

@@ -3,6 +3,7 @@ package com.intellecta.intellecta_backend.controller;
 import com.intellecta.intellecta_backend.dto.request.AddAppRuleRequestDto;
 import com.intellecta.intellecta_backend.dto.request.ConfigDeployRequestDto;
 import com.intellecta.intellecta_backend.dto.request.UserCreateRequestDto;
+import com.intellecta.intellecta_backend.dto.request.UserPasswordResetRequestDto;
 import com.intellecta.intellecta_backend.dto.request.UserUpdateRequestDto;
 import com.intellecta.intellecta_backend.dto.response.*;
 import com.intellecta.intellecta_backend.service.AdminService;
@@ -48,6 +49,17 @@ public class AdminController {
                                         @Valid @RequestBody UserUpdateRequestDto dto) {
         try {
             return ResponseEntity.ok(adminService.updateUser(id, dto));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/users/{id}/password")
+    public ResponseEntity<?> resetUserPassword(@PathVariable Long id,
+                                               @Valid @RequestBody UserPasswordResetRequestDto dto) {
+        try {
+            adminService.resetPassword(id, dto);
+            return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

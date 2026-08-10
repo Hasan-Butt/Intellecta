@@ -11,6 +11,7 @@ import {
   Pencil,
   Trash2,
   X,
+  KeyRound,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -49,6 +50,13 @@ const UsersPage = () => {
   const [editForm, setEditForm] = useState(emptyEditForm);
   const [editError, setEditError] = useState("");
   const [editLoading, setEditLoading] = useState(false);
+
+  // Reset password modal
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetTarget, setResetTarget] = useState(null);
+  const [resetForm, setResetForm] = useState({ password: "", confirmPassword: "" });
+  const [resetError, setResetError] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
 
   // Delete dialog
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -161,6 +169,37 @@ const UsersPage = () => {
       setEditError(err.response?.data?.message || "Failed to update user.");
     } finally {
       setEditLoading(false);
+    }
+  };
+
+  // Reset Password
+  const openResetModal = (user) => {
+    setOpenMenuId(null);
+    setResetTarget(user);
+    setResetForm({ password: "", confirmPassword: "" });
+    setResetError("");
+    setShowResetModal(true);
+  };
+  const handleResetSubmit = async (e) => {
+    e.preventDefault();
+    if (resetForm.password.length < 6) {
+      setResetError("Password must be at least 6 characters long.");
+      return;
+    }
+    if (resetForm.password !== resetForm.confirmPassword) {
+      setResetError("Password confirmation does not match.");
+      return;
+    }
+    setResetLoading(true);
+    setResetError("");
+    try {
+      await api.put(`/admin/users/${resetTarget.id}/password`, resetForm);
+      setShowResetModal(false);
+      showToast("Password reset successfully.");
+    } catch (err) {
+      setResetError(err.response?.data?.message || "Failed to reset password.");
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -332,7 +371,7 @@ const UsersPage = () => {
                       </td>
                     </tr>
                   ) : (
-                    users.map((u) => (
+                    users.map((u, idx) => (
                       <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-8 py-5">
                           <div className="flex items-center gap-3">
@@ -368,16 +407,24 @@ const UsersPage = () => {
                               <MoreHorizontal size={20} />
                             </button>
                             {openMenuId === u.id && (
-                              <div className="absolute right-0 top-8 z-20 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 w-36">
+                              <div className={`absolute right-0 z-20 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 w-48 ${idx >= users.length - 2 ? "bottom-full mb-2" : "top-8"}`}>
                                 <button
                                   onClick={() => openEditModal(u)}
-                                  className="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                                  className="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors whitespace-nowrap"
                                 >
                                   <Pencil size={14} className="text-[#6C5DD3]" /> Edit
                                 </button>
+                                {u.hasPassword && (
+                                  <button
+                                    onClick={() => openResetModal(u)}
+                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors whitespace-nowrap"
+                                  >
+                                    <KeyRound size={14} className="text-[#6C5DD3]" /> Reset Password
+                                  </button>
+                                )}
                                 <button
                                   onClick={() => openDeleteDialog(u)}
-                                  className="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-50 transition-colors"
+                                  className="w-full flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-50 transition-colors whitespace-nowrap"
                                 >
                                   <Trash2 size={14} /> Delete
                                 </button>
@@ -477,6 +524,26 @@ const UsersPage = () => {
             </FormField>
             {editError && <ErrorBox message={editError} />}
             <ModalActions onCancel={() => setShowEditModal(false)} loading={editLoading} submitLabel="Save Changes" />
+          </form>
+        </Modal>
+      )}
+
+      {/* RESET PASSWORD MODAL */}
+      {showResetModal && resetTarget && (
+        <Modal title={`Reset Password — ${resetTarget.username}`} onClose={() => setShowResetModal(false)}>
+          <form onSubmit={handleResetSubmit} className="space-y-4">
+            <FormField label="New Password">
+              <input required type="password" minLength={6} value={resetForm.password}
+                onChange={(e) => setResetForm({ ...resetForm, password: e.target.value })}
+                className={inputCls} placeholder="Enter new password" />
+            </FormField>
+            <FormField label="Confirm Password">
+              <input required type="password" value={resetForm.confirmPassword}
+                onChange={(e) => setResetForm({ ...resetForm, confirmPassword: e.target.value })}
+                className={inputCls} placeholder="Repeat new password" />
+            </FormField>
+            {resetError && <ErrorBox message={resetError} />}
+            <ModalActions onCancel={() => setShowResetModal(false)} loading={resetLoading} submitLabel="Reset Password" />
           </form>
         </Modal>
       )}
