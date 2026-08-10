@@ -654,6 +654,11 @@ const CoverageTrackerPage = () => {
 
   const handleCreateTopic = async () => {
     if (!topicForm.title.trim()) return;
+    if (!activeSubject) {
+      alert("❌ Please select or create a subject first.");
+      return;
+    }
+
     setModalLoading(true);
     try {
       await createTopic(activeSubject.id, {
@@ -677,6 +682,10 @@ const CoverageTrackerPage = () => {
 
   const handleCreateExam = async () => {
   if (!examForm.name.trim() || !examForm.examDate) return;
+  if (!activeSubject) {
+    alert("❌ Please select or create a subject first.");
+    return;
+  }
   
   // Check if date is in the past
   const selectedDate = new Date(examForm.examDate);
@@ -1010,7 +1019,6 @@ const CoverageTrackerPage = () => {
                 {secondaryExams.map((exam) => (
                   <div
                     key={exam.id}
-                    onClick={() => setSelectedExam(exam)}
                     className="neu px-5 py-4 mb-3 flex items-center justify-between cursor-pointer hover:scale-[1.02] transition-transform"
                     onClick={() => setExamDetailModal(exam)}
                   >
