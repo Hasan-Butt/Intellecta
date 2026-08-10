@@ -265,11 +265,41 @@ const PerformanceDashboard = () => {
       }
     });
 
+    // All-sessions slot grid for the audit's Circadian Rhythm — same scope as
+    // Sustainability / Depth / Velocity (Bug 1.1.3: one scope for all four metrics)
+    const allTimeSlots = Array(12).fill(0);
+    sessions.forEach(s => {
+      const sDate = new Date(s.startTime);
+      const hour = sDate.getHours();
+      let slot = Math.floor((hour - 6 + 24) % 24 / 2);
+      if (slot >= 0 && slot < 12) {
+        allTimeSlots[slot] += (s.deepWork ? 3 : 1);
+      }
+    });
+
     const labels = days.map(d => 
       d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()
     );
 
-    // Deduce Prime Slot (column with highest sum)
+    const formatHour = (h) => `${h.toString().padStart(2, '0')}:00`;
+
+    // Circadian Rhythm — prime slot over ALL sessions (Bug 1.1.3)
+    let maxAllIntensity = -1;
+    let allPrimeSlotIdx = 0;
+    for (let c = 0; c < 12; c++) {
+      if (allTimeSlots[c] > maxAllIntensity) {
+        maxAllIntensity = allTimeSlots[c];
+        allPrimeSlotIdx = c;
+      }
+    }
+    const allStartHour = (6 + allPrimeSlotIdx * 2) % 24;
+    const allEndHour = (allStartHour + 2) % 24;
+    const circadianRhythm = maxAllIntensity > 0
+      ? `${formatHour(allStartHour)} — ${formatHour(allEndHour)}`
+      : "No data yet";
+
+    // Deduce Prime Slot (column with highest sum over the last 7 days)
+    // Bug 1.1.2: never fabricate a window when that week has no data
     let maxIntensity = -1;
     let primeSlotIdx = 0;
     for (let c = 0; c < 12; c++) {
@@ -283,10 +313,12 @@ const PerformanceDashboard = () => {
       }
     }
 
+    const hasPrimeSlotData = maxIntensity > 0;
     const startHour = (6 + primeSlotIdx * 2) % 24;
     const endHour = (startHour + 2) % 24;
-    const formatHour = (h) => `${h.toString().padStart(2, '0')}:00`;
-    const primeSlotStr = `${formatHour(startHour)} — ${formatHour(endHour)}`;
+    const primeSlotStr = hasPrimeSlotData
+      ? `${formatHour(startHour)} — ${formatHour(endHour)}`
+      : "No data yet";
 
     // Mastery vs Focus Correlation (Efficiency)
     const subjectStats = {};
@@ -334,7 +366,7 @@ const PerformanceDashboard = () => {
       dayLabels: labels,
       primeSlot: primeSlotStr,
       behavioralInsights: {
-        circadianRhythm: primeSlotStr,
+        circadianRhythm,
         sustainability: `${avgDuration}m`,
         depth: `${concentrationQuality}%`,
         velocity: `${velocity}h/day`
@@ -661,6 +693,18 @@ const PerformanceDashboard = () => {
                     </div>
                   </div>
 
+                  {sessions.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center rounded-3xl border-2 border-dashed border-gray-100">
+                      <div className="text-center">
+                        <p className="text-sm font-black text-gray-400 uppercase tracking-widest">
+                          No study data available yet.
+                        </p>
+                        <p className="text-[10px] font-medium text-gray-300 mt-2">
+                          Complete a focus session to unlock this audit.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="flex-1 grid grid-cols-2 gap-6">
                     <div className="bg-gray-50 rounded-3xl p-6 flex flex-col justify-between group hover:bg-indigo-600 transition-all duration-500">
                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-white/60 transition-colors">Circadian Rhythm</span>
@@ -691,6 +735,7 @@ const PerformanceDashboard = () => {
                       </div>
                     </div>
                   </div>
+                  )}
 
                   <div className="mt-10 pt-8 border-t border-gray-50">
                     <div className="flex items-start gap-4">

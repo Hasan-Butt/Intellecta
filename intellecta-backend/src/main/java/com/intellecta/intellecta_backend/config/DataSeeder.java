@@ -38,6 +38,7 @@ public class DataSeeder implements CommandLineRunner {
         seedActiveSessions();
         seedSystemConfig();
         seedAppGovernanceRules();
+        repairBuggySeededDistractionTimestamps();
     }
 
     // ── Active (in-progress) sessions ────────────────────────────────────────
@@ -402,14 +403,96 @@ public class DataSeeder implements CommandLineRunner {
                     impact = "HIGH";
                 }
 
+                LocalDateTime loggedAt = pickDistractionLoggedAt(u, rng);
+
                 batch.add(DistractionEntry.builder()
                     .user(u).reason(DISTRACTIONS[(i + j) % DISTRACTIONS.length])
                     .duration(durationMins + " min")
                     .impact(impact)
+                    .loggedAt(loggedAt)
                     .build());
             }
         }
         distractionRepository.saveAll(batch);
+    }
+
+    /**
+     * Bug 1.1.1 — seeded distractions used to rely on {@code @CreationTimestamp},
+     * which stamped them all at seeder run time (after every seeded session),
+     * so every session looked distraction-free and "Concentration Quality"
+     * was always 100%. Now each seeded distraction gets an explicit
+     * {@code loggedAt} inside one of the student's seeded session windows.
+     */
+    private LocalDateTime pickDistractionLoggedAt(User student, Random rng) {
+        List<StudySession> completed = studySessionRepository
+                .findByUserIdOrderByStartTimeDesc(student.getId()).stream()
+                .filter(s -> s.getStartTime() != null && s.getEndTime() != null
+                        && s.getEndTime().isAfter(s.getStartTime()))
+                .toList();
+        if (completed.isEmpty()) {
+            // No sessions yet (fresh DB edge case) — fall back to the last 90 days
+            return LocalDateTime.now()
+                    .minusDays(rng.nextInt(90))
+                    .minusHours(rng.nextInt(24))
+                    .withSecond(0).withNano(0);
+        }
+        StudySession s = completed.get(rng.nextInt(completed.size()));
+        long spanMinutes = java.time.Duration.between(s.getStartTime(), s.getEndTime()).toMinutes();
+        int offsetMin = spanMinutes > 0 ? rng.nextInt((int) Math.min(spanMinutes, 180)) : 0;
+        return s.getStartTime().plusMinutes(offsetMin);
+    }
+
+    /**
+     * Bug 1.1.1 repair pass — databases seeded before the fix hold distraction
+     * rows batch-stamped at the old seeder run time (all outside every session
+     * window, clustered within a couple of minutes). Re-stamp those rows into
+     * session windows so focus analytics reads meaningful concentration values.
+     */
+    private void repairBuggySeededDistractionTimestamps() {
+        List<User> students = userRepository.findAll().stream()
+                .filter(u -> u.getRole() == UserRoles.STUDENT)
+                .toList();
+        if (students.isEmpty()) return;
+
+        Random rng = new Random(555L);
+        boolean repairedAny = false;
+        for (User u : students) {
+            List<DistractionEntry> entries = distractionRepository.findByUserIdOrderByLoggedAtDesc(u.getId());
+            if (entries.size() < 2) continue;
+
+            List<StudySession> completed = studySessionRepository
+                    .findByUserIdOrderByStartTimeDesc(u.getId()).stream()
+                    .filter(s -> s.getStartTime() != null && s.getEndTime() != null
+                            && s.getEndTime().isAfter(s.getStartTime()))
+                    .toList();
+            if (completed.isEmpty()) continue;
+
+            boolean allOutsideSessions = entries.stream().allMatch(e ->
+                    completed.stream().noneMatch(s ->
+                            !e.getLoggedAt().isBefore(s.getStartTime())
+                            && !e.getLoggedAt().isAfter(s.getEndTime())));
+            if (!allOutsideSessions) continue; // already placed inside session windows
+
+            boolean batchStamped = allStampedWithinTwoMinutes(entries);
+            if (!batchStamped) continue; // real, user-logged distractions — leave alone
+
+            List<DistractionEntry> toSave = new ArrayList<>();
+            for (DistractionEntry e : entries) {
+                e.setLoggedAt(pickDistractionLoggedAt(u, rng));
+                toSave.add(e);
+            }
+            distractionRepository.saveAll(toSave);
+            repairedAny = true;
+        }
+        if (repairedAny) {
+            System.out.println("[DataSeeder] Repaired batch-stamped seeded distractions into session windows.");
+        }
+    }
+
+    private boolean allStampedWithinTwoMinutes(List<DistractionEntry> entries) {
+        LocalDateTime first = entries.get(0).getLoggedAt();
+        return entries.stream().allMatch(e ->
+                Math.abs(java.time.Duration.between(first, e.getLoggedAt()).toMinutes()) <= 2);
     }
 
     // ── Achievements ──────────────────────────────────────────────────────────
