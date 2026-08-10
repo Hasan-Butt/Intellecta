@@ -142,6 +142,26 @@ public class QuizService {
     }
 
     public List<QuizAttempt> getAttemptsByUserId(Long userId) {
-        return quizAttemptRepository.findByUserIdWithQuiz(userId);
+        List<QuizAttempt> attempts = quizAttemptRepository.findByUserIdWithQuiz(userId);
+
+        Map<Long, QuizAttempt> latestPerQuiz = new LinkedHashMap<>();
+        for (QuizAttempt attempt : attempts) {
+            if (attempt.getQuiz() == null) continue; // skip orphaned attempts
+            Long quizId = attempt.getQuiz().getId();
+            QuizAttempt existing = latestPerQuiz.get(quizId);
+            if (existing == null || isAfter(attempt, existing)) {
+                latestPerQuiz.put(quizId, attempt);
+            }
+        }
+
+        return latestPerQuiz.values().stream()
+                .sorted(Comparator.comparing(QuizAttempt::getEndTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+    }
+
+    private boolean isAfter(QuizAttempt a, QuizAttempt b) {
+        if (a.getEndTime() == null) return false;
+        if (b.getEndTime() == null) return true;
+        return a.getEndTime().isAfter(b.getEndTime());
     }
 }

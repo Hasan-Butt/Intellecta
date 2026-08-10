@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import Swal from 'sweetalert2';
 import {
   X,
   Image as ImageIcon,
@@ -214,7 +215,7 @@ const EditNote = ({ isOpen, onClose, note, onSaved }) => {
       if (onSaved) onSaved();
     } catch (err) {
       console.error("Failed to update note:", err);
-      alert("Could not save changes.");
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Could not save changes.' });
     } finally {
       setSaving(false);
     }

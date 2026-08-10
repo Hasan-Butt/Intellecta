@@ -23,8 +23,8 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secretString;
 
-    // Default to 24 hours expiration
-    private final long JWT_EXPIRATION = 1000 * 60 * 60 * 24;
+    // 7 days – matches cookie maxAge in AuthController
+    private final long JWT_EXPIRATION = 1000L * 60 * 60 * 24 * 7;
 
     @PostConstruct
     public void init() {
@@ -45,7 +45,13 @@ public class JwtUtil {
     }
 
     public Long extractUserId(String token) {
-        return extractAllClaims(token).get("userId", Long.class);
+        Object userIdObj = extractAllClaims(token).get("userId");
+        if (userIdObj instanceof Number) {
+            return ((Number) userIdObj).longValue();
+        } else if (userIdObj instanceof String) {
+            return Long.parseLong((String) userIdObj);
+        }
+        return null;
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
