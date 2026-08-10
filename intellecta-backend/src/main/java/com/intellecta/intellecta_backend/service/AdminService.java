@@ -709,12 +709,19 @@ public class AdminService {
     }
 
     private String categorizeDistraction(String reason) {
+        // Keep in sync with the frontend bucket scheme in
+        // src/pages/DistractionLog/distraction.jsx (Bug 2.1.4).
         String lower = reason.toLowerCase();
-        if (lower.contains("social") || lower.contains("video") || lower.contains("watch"))
+        if (lower.contains("social") || lower.contains("video") || lower.contains("watch")
+                || lower.contains("instagram") || lower.contains("reel") || lower.contains("twitter")
+                || lower.contains("tiktok") || lower.contains("youtube") || lower.contains("scroll"))
             return "Social Media";
-        if (lower.contains("phone") || lower.contains("notification") || lower.contains("message") || lower.contains("chat"))
+        if (lower.contains("phone") || lower.contains("notification") || lower.contains("message")
+                || lower.contains("chat") || lower.contains("whatsapp") || lower.contains("call"))
             return "Notifications";
-        if (lower.contains("break") || lower.contains("noise") || lower.contains("tired") || lower.contains("snack"))
+        if (lower.contains("break") || lower.contains("noise") || lower.contains("tired")
+                || lower.contains("snack") || lower.contains("hunger") || lower.contains("hungry")
+                || lower.contains("chai") || lower.contains("eat") || lower.contains("food"))
             return "Physical Breaks";
         return "Other Distractions";
     }

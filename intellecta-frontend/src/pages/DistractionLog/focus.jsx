@@ -84,7 +84,6 @@ const MasteryItem = ({ title, subtitle, percentage, type }) => {
 
 const PerformanceDashboard = () => {
   const navigate = useNavigate();
-  const [isHovered, setIsHovered] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [attempts, setAttempts] = useState([]);
   const [distractions, setDistractions] = useState([]);
@@ -255,7 +254,7 @@ const PerformanceDashboard = () => {
     "09:00 PM",
     "12:00 AM",
   ];
-  const { heatmapData, dayLabels, primeSlot, behavioralInsights } = useMemo(() => {
+  const { heatmapData, dayLabels, primeSlot, hasPrimeSlotData, behavioralInsights } = useMemo(() => {
     // Generate past 7 days (including today)
     const days = [];
     for (let i = 6; i >= 0; i--) {
@@ -387,6 +386,7 @@ const PerformanceDashboard = () => {
       heatmapData: grid.map(row => row.map(val => Math.min(5, val))),
       dayLabels: labels,
       primeSlot: primeSlotStr,
+      hasPrimeSlotData,
       behavioralInsights: {
         circadianRhythm,
         sustainability: `${avgDuration}m`,
@@ -396,7 +396,12 @@ const PerformanceDashboard = () => {
     };
   }, [sessions, attempts, distractions]);
 
-  const hourLabels = ["06", "08", "10", "12", "02", "04", "06", "08", "10", "12", "02", "04"];
+  // Bug 1.4.3: 12 two-hour buckets starting at 06:00, with explicit AM/PM
+  const hourLabels = Array.from({ length: 12 }, (_, i) => {
+    const h = (6 + i * 2) % 24;
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${h12.toString().padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+  });
 
   const radius = 100;
   const circumference = 2 * Math.PI * radius;
@@ -431,8 +436,6 @@ const PerformanceDashboard = () => {
               {/* Focus Chart Card */}
               <section
                 className="col-span-12 lg:col-span-8 neu overflow-hidden transition-all duration-500 hover:scale-[1.01]"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
               >
                 <div className="p-10 flex justify-between items-start">
                   <header>
@@ -443,11 +446,13 @@ const PerformanceDashboard = () => {
                       Biometric tracking of cognitive load over 24h
                     </p>
                   </header>
-                  <button
-                    className={`px-6 py-2.5 rounded-full text-[11px] font-black tracking-[0.15em] uppercase transition-all duration-300 ${isHovered ? "bg-[#3f2da1] -translate-y-1 shadow-indigo-200 shadow-xl" : "bg-[#4F39C3]"} text-white shadow-lg`}
+                  {/* Bug 1.4.1: static status indicator — live tracking isn't wired up */}
+                  <div
+                    className="px-6 py-2.5 rounded-full text-[11px] font-black tracking-[0.15em] uppercase bg-[#E8FFF3] text-emerald-600 shadow-sm flex items-center gap-2"
                   >
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     Live Tracking
-                  </button>
+                  </div>
                 </div>
 
                 <div className="relative h-72 w-full px-2">
@@ -591,10 +596,12 @@ const PerformanceDashboard = () => {
                     </div>
                   </div>
 
-                  {/* The right side badge */}
-                  <span className="translate-y-2 flex-shrink-0 px-4 py-2 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-xl">
-                    Optimal Flow
-                  </span>
+                  {/* Bug 1.4.2: hide the badge when there's no prime-slot data */}
+                  {hasPrimeSlotData && (
+                    <span className="translate-y-2 flex-shrink-0 px-4 py-2 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-xl">
+                      Optimal Flow
+                    </span>
+                  )}
                 </footer>
               </section>
 
