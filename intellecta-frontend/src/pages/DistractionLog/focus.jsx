@@ -109,9 +109,9 @@ const PerformanceDashboard = () => {
       .catch(err => console.error("Error fetching distractions:", err));
   }, []);
 
-  const { allocationData, totalHours, totalSessions, maxSessionDuration } = useMemo(() => {
+  const { allocationData, totalHours, totalSessions, maxSessionDuration, deepWorkRatio } = useMemo(() => {
     if (sessions.length === 0) {
-      return { allocationData: [], totalHours: 0 };
+      return { allocationData: [], totalHours: 0, deepWorkRatio: 0 };
     }
 
     const groups = sessions.reduce((acc, s) => {
@@ -124,15 +124,23 @@ const PerformanceDashboard = () => {
     const totalMinutes = Object.values(groups).reduce((a, b) => a + b, 0);
     const colors = ["#5D5FEF", "#A5A6F6", "#E2E2F2", "#C7D2FE", "#818CF8"];
 
+    // Bug 1.3.1: keep exact shares, round all slices, then move any rounding
+    // remainder onto the largest slice so the ring always sums to exactly 100.
     const data = Object.entries(groups)
       .map(([label, mins], i) => ({
         label,
-        value: Math.round((mins / totalMinutes) * 100),
-        color: colors[i % colors.length],
-        bgClass: `bg-[${colors[i % colors.length]}]`, // fallback
+        exact: (mins / totalMinutes) * 100,
         rawColor: colors[i % colors.length]
       }))
-      .sort((a, b) => b.value - a.value);
+      .sort((a, b) => b.exact - a.exact)
+      .map(item => ({ ...item, value: Math.round(item.exact) }));
+
+    const roundedSum = data.reduce((a, b) => a + b.value, 0);
+    const diff = 100 - roundedSum;
+    if (diff !== 0 && data.length > 0) {
+      const maxIdx = data.reduce((best, it, i, arr) => (it.value > arr[best].value ? i : best), 0);
+      data[maxIdx].value = Math.max(0, data[maxIdx].value + diff);
+    }
 
     const deepSessions = sessions.filter(s => s.deepWork).length;
     const ratio = sessions.length > 0 ? Math.round((deepSessions / sessions.length) * 100) : 0;
@@ -144,7 +152,8 @@ const PerformanceDashboard = () => {
       totalHours: (totalMinutes / 60).toFixed(1),
       totalSessions: sessions.length,
       avgSessionDuration: avg,
-      maxSessionDuration: maxSession
+      maxSessionDuration: maxSession,
+      deepWorkRatio: ratio
     };
   }, [sessions]);
 
@@ -626,6 +635,20 @@ const PerformanceDashboard = () => {
                   Focus Allocation
                 </h2>
 
+                {allocationData.length === 0 ? (
+                  /* Bug 1.3.3: explicit empty state instead of a bare "0h" donut */
+                  <div className="flex-1 flex items-center justify-center my-8 rounded-3xl border-2 border-dashed border-gray-100 py-14">
+                    <div className="text-center">
+                      <p className="text-sm font-black text-gray-400 uppercase tracking-widest">
+                        No study data available yet.
+                      </p>
+                      <p className="text-[10px] font-medium text-gray-300 mt-2">
+                        Complete a focus session to unlock allocation.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                <>
                 <div className="relative flex items-center justify-center my-8">
                   <svg
                     className="w-72 h-72 transform -rotate-90"
@@ -653,7 +676,8 @@ const PerformanceDashboard = () => {
                           fill="transparent"
                           strokeDasharray={circumference}
                           strokeDashoffset={dashOffset}
-                          strokeLinecap="round"
+                          /* Bug 1.3.1: square caps so segments don't bleed into each other */
+                          strokeLinecap="butt"
                           style={{ 
                             transform: `rotate(${rotation}deg)`,
                             transformOrigin: 'center',
@@ -674,6 +698,10 @@ const PerformanceDashboard = () => {
                     <span className="text-[11px] font-bold tracking-[0.25em] text-gray-400 mt-2 uppercase">
                       Total Focused
                     </span>
+                    {/* Bug 1.3.4: surface the previously unused deep-work ratio */}
+                    <span className="text-[10px] font-black text-indigo-600 mt-2 uppercase tracking-widest">
+                      {deepWorkRatio}% Deep Work
+                    </span>
                   </div>
                 </div>
 
@@ -687,6 +715,8 @@ const PerformanceDashboard = () => {
                     </div>
                   ))}
                 </div>
+                </>
+                )}
               </section>
 
               {/* Analytical Charts Section */}
