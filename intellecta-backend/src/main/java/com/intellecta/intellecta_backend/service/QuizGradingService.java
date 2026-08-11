@@ -42,11 +42,13 @@ public class QuizGradingService {
         User user = attempt.getUser();
 
         List<SubmissionDetailResponse.QuestionView> views = new ArrayList<>();
+        int maxMarks = 0;
         if (quiz.getQuestions() != null) {
             for (Question q : quiz.getQuestions()) {
                 Integer awarded = attempt.getQuestionMarks() != null
                         ? attempt.getQuestionMarks().get(q.getId()) : null;
                 boolean isDr = q.getQuestionType() == QuestionType.DESCRIPTIVE;
+                maxMarks += (q.getMaxMarks() != null && q.getMaxMarks() > 0) ? q.getMaxMarks() : 1;
                 views.add(SubmissionDetailResponse.QuestionView.builder()
                         .id(q.getId())
                         .text(q.getText())
@@ -72,6 +74,7 @@ public class QuizGradingService {
                 .quizCategory(quiz.getCategory())
                 .objectiveScore(attempt.getScore())
                 .totalMarks(attempt.getTotalMarks())
+                .maxMarks(maxMarks)
                 .graded(attempt.isGraded())
                 .questions(views)
                 .build();

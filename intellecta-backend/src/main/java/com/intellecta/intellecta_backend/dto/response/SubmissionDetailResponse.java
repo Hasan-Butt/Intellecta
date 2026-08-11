@@ -17,6 +17,7 @@ public class SubmissionDetailResponse {
     private String quizCategory;
     private int objectiveScore;
     private Integer totalMarks;
+    private Integer maxMarks; // max marks available in the quiz (sum of question maxMarks)
     private boolean graded;
     private List<QuestionView> questions;
 

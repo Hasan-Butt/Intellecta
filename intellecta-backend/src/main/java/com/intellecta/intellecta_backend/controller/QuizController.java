@@ -72,7 +72,7 @@ public class QuizController {
                 q.setModelAnswer(null);
                 q.setAwardedMarks(null);
                 q.setIsCorrect(null);
-                q.setMaxMarks(null);
+                // maxMarks is NOT secret (shown on the attempt page), keep it for display
             });
         }
         return ResponseEntity.ok(detail);
