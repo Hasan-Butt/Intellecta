@@ -99,6 +99,8 @@ const StudySessionDashboard = () => {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [levelUpData, setLevelUpData] = useState({ level: 1, title: "Scholar" });
   const [showArchive, setShowArchive] = useState(false);
   const [lastSessionStats, setLastSessionStats] = useState(null);
   const [userAvatar, setUserAvatar] = useState("");
@@ -318,7 +320,13 @@ const StudySessionDashboard = () => {
           api.get(`/dashboard/user/${userId}`),
           api.get(`/sessions/user/${userId}`),
         ]);
-        setLevel(dashRes.data.level ?? 1);
+        const newLevel = dashRes.data.level ?? 1;
+        if (newLevel > level) {
+          setLevelUpData({ level: newLevel, title: dashRes.data.levelTitle ?? "Scholar" });
+          setShowLevelUpModal(true);
+        }
+        setLevel(newLevel);
+        window.dispatchEvent(new Event("userDataUpdated"));
         setCurrentXp(dashRes.data.currentXp ?? 0);
         setNextLevelXp(dashRes.data.nextLevelXp ?? 141);
         setXpProgressPct(dashRes.data.xpProgressPct ?? 0);
@@ -844,6 +852,30 @@ const StudySessionDashboard = () => {
                  )}
               </div>
            </div>
+        </div>
+      )}
+      {/* Level Up Modal */}
+      {showLevelUpModal && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center bg-indigo-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] p-10 max-w-sm w-full mx-4 shadow-2xl relative overflow-hidden text-center animate-in zoom-in-95 duration-500">
+            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-20 blur-3xl rounded-t-[2.5rem]" />
+            <div className="relative z-10">
+              <div className="w-24 h-24 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-xl shadow-indigo-200 mb-6 border-4 border-white">
+                <span className="text-4xl font-black text-white">{levelUpData.level}</span>
+              </div>
+              <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-2">Level Up!</h2>
+              <p className="text-gray-500 font-medium mb-1">You've reached a new milestone.</p>
+              <div className="bg-indigo-50 text-indigo-700 font-bold px-4 py-2 rounded-xl inline-block mt-2 mb-8 uppercase tracking-widest text-xs border border-indigo-100">
+                {levelUpData.title}
+              </div>
+              <button 
+                onClick={() => setShowLevelUpModal(false)}
+                className="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+              >
+                Keep Going
+              </button>
+            </div>
+          </div>
         </div>
       )}
       {showSummary && lastSessionStats && (
