@@ -848,7 +848,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ── Today's Itinerary — from API todaySchedule ── */}
-                <div className="bg-white rounded-3xl p-8 flex flex-col gap-8 shadow-sm border border-gray-100">
+                <div className="neu p-8 flex flex-col gap-8">
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-[#484554] text-xs tracking-[1.2px] uppercase font-bold">
@@ -916,7 +916,7 @@ export default function DashboardPage() {
                 />
 
                 {/* ── XP / Level / Leaderboard panel ── */}
-                <div className="bg-white rounded-3xl overflow-hidden flex flex-col shadow-sm border border-gray-100 h-[655px]">
+                <div className="neu overflow-hidden flex flex-col h-[655px]">
                   <div className="p-6 flex flex-col gap-6 bg-gradient-to-br from-[#451ebb] to-[#5d3fd3] min-h-[190px]">
                     <div className="flex items-start justify-between text-white">
                       <div>
