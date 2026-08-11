@@ -15,6 +15,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import com.intellecta.intellecta_backend.util.LevelUtils;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -124,15 +126,7 @@ public class User {
 
     public void setXp(long xp){
         this.xp = xp;
-        this.level = calculateLevel(xp);
-    }
-
-    private int calculateLevel(long totalXp) {
-        int lvl = 1;
-        while (100.0 * Math.pow(lvl + 1, 1.5) <= totalXp) {
-            lvl++;
-        }
-        return lvl;
+        this.level = LevelUtils.calculateLevel(xp);
     }
 
     public int getLevel(){

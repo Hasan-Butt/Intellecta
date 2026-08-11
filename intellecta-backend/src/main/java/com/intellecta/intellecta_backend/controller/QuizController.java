@@ -27,9 +27,12 @@ public class QuizController {
 
     @GetMapping
     public ResponseEntity<List<Quiz>> getAllQuizzes(@RequestParam(required = false) Long userId) {
-        if (userId != null) {
-            SecurityUtils.validateUser(userId);
+        // Always scope the query to an authenticated identity — never serve an
+        // unscoped listing to a caller who omits the userId parameter.
+        if (userId == null) {
+            userId = SecurityUtils.getAuthenticatedUser().getId();
         }
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(quizService.getAllQuizzes(userId));
     }
 
@@ -41,6 +44,10 @@ public class QuizController {
     @GetMapping("/{id}")
     public ResponseEntity<Quiz> getQuizById(@PathVariable Long id,
                                             @RequestParam(required = false) Long userId) {
+        if (userId == null) {
+            userId = SecurityUtils.getAuthenticatedUser().getId();
+        }
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(quizService.getQuizById(id, userId));
     }
 

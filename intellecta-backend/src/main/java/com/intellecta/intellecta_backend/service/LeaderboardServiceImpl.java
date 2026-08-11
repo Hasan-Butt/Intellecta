@@ -12,6 +12,7 @@ import com.intellecta.intellecta_backend.repository.NotesRepository;
 import com.intellecta.intellecta_backend.repository.SectionalXPRepository;
 import com.intellecta.intellecta_backend.repository.StudySessionRepository;
 import com.intellecta.intellecta_backend.repository.UserRepository;
+import com.intellecta.intellecta_backend.util.LevelUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -59,11 +60,10 @@ public class LeaderboardServiceImpl implements LeaderboardService {
             }
             long focusHours = Math.round(focusMinutesByUser.getOrDefault(u.getId(), 0L) / 60.0);
 
-            int level = calculateLevel(u.getXp());
-            long nextLevelXp  = (long)(100.0 * Math.pow(level + 1, 1.5));
-            long prevLevelXp  = level <= 1 ? 0L : (long)(100.0 * Math.pow(level, 1.5));
-            int xpPct = (int) Math.min(100,
-                ((u.getXp() - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
+            int level = LevelUtils.calculateLevel(u.getXp());
+            long nextLevelXp  = LevelUtils.nextLevelXp(level);
+            long prevLevelXp  = LevelUtils.prevLevelXp(level);
+            int xpPct = LevelUtils.xpProgressPct(u.getXp(), level);
 
             boolean isMe = u.getId().equals(userId);
             boolean isAnon = u.isAnonymousMode();
@@ -108,11 +108,10 @@ public class LeaderboardServiceImpl implements LeaderboardService {
             User u = sxp.getUser();
             // Level/progress reflect the student's GLOBAL level (total XP), not
             // the sectional XP — sectional rank and global level are separate concepts
-            int level = calculateLevel(u.getXp());
-            long nextLevelXp  = (long)(100.0 * Math.pow(level + 1, 1.5));
-            long prevLevelXp  = level <= 1 ? 0L : (long)(100.0 * Math.pow(level, 1.5));
-            int xpPct = (int) Math.min(100,
-                ((u.getXp() - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
+            int level = LevelUtils.calculateLevel(u.getXp());
+            long nextLevelXp  = LevelUtils.nextLevelXp(level);
+            long prevLevelXp  = LevelUtils.prevLevelXp(level);
+            int xpPct = LevelUtils.xpProgressPct(u.getXp(), level);
 
             boolean isMe = u.getId().equals(userId);
             boolean isAnon = u.isAnonymousMode();
@@ -180,10 +179,10 @@ public class LeaderboardServiceImpl implements LeaderboardService {
 
     private PeerStatsDTO buildStats(User u, int globalRank, boolean isMe) {
         long xp = u.getXp();
-        int level = calculateLevel(xp);
-        long nextLevelXp = (long)(100.0 * Math.pow(level + 1, 1.5));
-        long prevLevelXp = level <= 1 ? 0L : (long)(100.0 * Math.pow(level, 1.5));
-        int xpPct = (int) Math.min(100, ((xp - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
+        int level = LevelUtils.calculateLevel(xp);
+        long nextLevelXp = LevelUtils.nextLevelXp(level);
+        long prevLevelXp = LevelUtils.prevLevelXp(level);
+        int xpPct = LevelUtils.xpProgressPct(xp, level);
 
         long totalMinutes = sessionRepository
             .findByUserIdOrderByStartTimeDesc(u.getId())
@@ -242,12 +241,6 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         if (minutes < 45) return 2;
         if (minutes < 90) return 3;
         return 4;
-    }
-
-    private int calculateLevel(long totalXp) {
-        int lvl = 1;
-        while (100.0 * Math.pow(lvl + 1, 1.5) <= totalXp) lvl++;
-        return lvl;
     }
 
     private String resolveLevelTitle(int level) {

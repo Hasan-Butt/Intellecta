@@ -7,6 +7,7 @@ import Navbar from '../../components/dashboard/Navbar';
 import api from '../../services/api';
 import Avatar from '../../components/common/Avatar';
 import { getUserId } from '../../utils/auth';
+import { calculateLevel } from '../../utils/levels';
 
 const GlobalLeaderboard = () => {
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -139,13 +140,6 @@ const GlobalLeaderboard = () => {
   // Always use globalData for the current user's authoritative rank & XP
   const globalCurrentUser = globalData.find(r => r.currentUser);
 
-  // Compute level fully on the frontend from XP — never trust the stale DB field
-  const computeLevel = (xp) => {
-    let lvl = 1;
-    while (100.0 * Math.pow(lvl + 1, 1.5) <= xp) lvl++;
-    return lvl;
-  };
-
   // Sidebar comparison data (view-specific)
   const currentUser = currentLeaderboard.find(r => r.currentUser);
   const peers = currentLeaderboard.filter(r => !r.currentUser);
@@ -157,7 +151,8 @@ const GlobalLeaderboard = () => {
 
   // The user's standing: the active board's entry, falling back to the global one
   const standingUser = currentUser || globalCurrentUser;
-  const myLevel = computeLevel(standingUser?.xp ?? 0);
+  // Compute level fully on the frontend from XP — never trust the stale DB field
+  const myLevel = calculateLevel(standingUser?.xp ?? 0);
 
   // Next competitor directly above current user in this board
   const competitorAbove = currentUser
