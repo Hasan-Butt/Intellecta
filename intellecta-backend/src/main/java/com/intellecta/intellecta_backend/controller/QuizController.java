@@ -39,8 +39,9 @@ public class QuizController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Quiz> getQuizById(@PathVariable Long id) {
-        return ResponseEntity.ok(quizService.getQuizById(id));
+    public ResponseEntity<Quiz> getQuizById(@PathVariable Long id,
+                                            @RequestParam(required = false) Long userId) {
+        return ResponseEntity.ok(quizService.getQuizById(id, userId));
     }
 
     @PostMapping("/submit")
