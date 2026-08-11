@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Filter, Download, BarChart3, TrendingUp, Award, Lightbulb, Globe, Zap, Target, Trophy, ChevronRight } from 'lucide-react';
+import { Filter, Download, BarChart3, TrendingUp, Award, Lightbulb, Globe, Zap, Target, Trophy, ChevronRight, Search } from 'lucide-react';
 
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
@@ -20,6 +20,7 @@ const GlobalLeaderboard = () => {
   const [categories, setCategories] = useState([]);
   const [selectedPeerUserId, setSelectedPeerUserId] = useState(null);
   const [showPeerDropdown, setShowPeerDropdown] = useState(false);
+  const [peerSearch, setPeerSearch] = useState("");
   const [nextAchievement, setNextAchievement] = useState(null);
 
   const fetchGlobal = async () => {
@@ -149,6 +150,9 @@ const GlobalLeaderboard = () => {
   // Sidebar comparison data (view-specific)
   const currentUser = currentLeaderboard.find(r => r.currentUser);
   const peers = currentLeaderboard.filter(r => !r.currentUser);
+  const filteredPeers = peers.filter(p =>
+    (p.username || "").toLowerCase().includes(peerSearch.toLowerCase().trim())
+  );
   const selectedPeer = peers.find(r => r.userId === selectedPeerUserId) || peers[0] || null;
   const xpGap = (selectedPeer && currentUser) ? Math.max(0, selectedPeer.xp - currentUser.xp) : 0;
 
@@ -331,7 +335,7 @@ const GlobalLeaderboard = () => {
                         {/* Peer — clickable to switch */}
                         <div className="text-center z-10 relative">
                           <button
-                            onClick={() => setShowPeerDropdown(v => !v)}
+                            onClick={() => { setShowPeerDropdown(v => !v); setPeerSearch(""); }}
                             className="group flex flex-col items-center focus:outline-none"
                             title="Click to change peer"
                           >
@@ -345,23 +349,42 @@ const GlobalLeaderboard = () => {
 
                           {/* Peer selector dropdown */}
                           {showPeerDropdown && (
-                            <div className="absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 min-w-[160px] overflow-hidden max-h-[240px] overflow-y-auto custom-scrollbar">
-                              <p className="text-[9px] font-black uppercase text-slate-400 px-3 pt-3 pb-1">Compare with</p>
-                              {peers.map(peer => (
-                                <button
-                                  key={peer.userId}
-                                  onClick={() => { setSelectedPeerUserId(peer.userId); setShowPeerDropdown(false); }}
-                                  className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-indigo-50 transition-colors ${
-                                    peer.userId === selectedPeer.userId ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700'
-                                  }`}
-                                >
-                                  <Avatar src={peer.avatarUrl} name={peer.username} size="w-6 h-6" />
-                                  <div>
-                                    <p className="text-[11px] font-bold leading-none">{peer.username}</p>
-                                    <p className="text-[9px] text-slate-400">Rank #{peer.rank} · {peer.xp} XP</p>
-                                  </div>
-                                </button>
-                              ))}
+                            <div className="absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 w-64 overflow-hidden">
+                              <div className="p-2 pb-0">
+                                <div className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
+                                  <Search size={12} className="text-slate-400 shrink-0" />
+                                  <input
+                                    value={peerSearch}
+                                    onChange={(e) => setPeerSearch(e.target.value)}
+                                    placeholder="Search students..."
+                                    className="w-full bg-transparent outline-none text-[11px] font-semibold text-slate-700 placeholder:text-slate-400"
+                                  />
+                                </div>
+                              </div>
+                              <p className="text-[9px] font-black uppercase text-slate-400 px-3 pt-2.5 pb-1">Compare with</p>
+                              <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
+                                {filteredPeers.length > 0 ? (
+                                  filteredPeers.map(peer => (
+                                    <button
+                                      key={peer.userId}
+                                      onClick={() => { setSelectedPeerUserId(peer.userId); setShowPeerDropdown(false); }}
+                                      className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-indigo-50 transition-colors ${
+                                        peer.userId === selectedPeer.userId ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700'
+                                      }`}
+                                    >
+                                      <Avatar src={peer.avatarUrl} name={peer.username} size="w-6 h-6" />
+                                      <div>
+                                        <p className="text-[11px] font-bold leading-none">{peer.username}</p>
+                                        <p className="text-[9px] text-slate-400">Rank #{peer.rank} · {peer.xp} XP</p>
+                                      </div>
+                                    </button>
+                                  ))
+                                ) : (
+                                  <p className="px-3 py-4 text-[11px] font-semibold text-slate-400 text-center">
+                                    No students found
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>

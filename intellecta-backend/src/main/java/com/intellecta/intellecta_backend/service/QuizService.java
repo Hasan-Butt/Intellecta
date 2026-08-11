@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +59,16 @@ public class QuizService {
     }
 
     public Quiz getQuizById(Long id) {
-        return quizRepository.findById(id).orElseThrow(() -> new RuntimeException("Quiz not found"));
+        return getQuizById(id, null);
+    }
+
+    public Quiz getQuizById(Long id, Long userId) {
+        Quiz quiz = quizRepository.findById(id).orElseThrow(() -> new RuntimeException("Quiz not found"));
+        if (userId != null) {
+            SecurityUtils.validateUser(userId);
+            quiz.setAttempted(quizAttemptRepository.existsByUserIdAndQuizId(userId, id));
+        }
+        return quiz;
     }
 
     @org.springframework.transaction.annotation.Transactional
@@ -82,18 +93,40 @@ public class QuizService {
                     .anyMatch(q -> q.getQuestionType() == QuestionType.DESCRIPTIVE);
 
             int objectiveScore = 0;
-            if (!hasDescriptive && userAnswers != null && questions != null) {
+            if (userAnswers != null && questions != null) {
                 for (Question q : questions) {
                     if (q.getQuestionType() != QuestionType.OBJECTIVE) continue;
                     Integer userSelection = userAnswers.get(q.getId());
                     if (userSelection != null && userSelection.equals(q.getCorrectOptionIndex())) {
-                        objectiveScore++;
+                        int marks = q.getMaxMarks() != null && q.getMaxMarks() > 0 ? q.getMaxMarks() : 1;
+                        objectiveScore += marks;
                     }
                 }
             }
 
+            enforceTimeLimit(quiz, request.getStartedAt());
+
             boolean graded = !hasDescriptive;
             int xpGained = graded ? objectiveScore * 5 : 0;
+
+            QuizAttempt attempt = QuizAttempt.builder()
+                    .user(user)
+                    .quiz(quiz)
+                    .score(objectiveScore)
+                    .totalQuestions(questions != null ? questions.size() : 0)
+                    .xpGained(xpGained)
+                    .userAnswers(userAnswers != null ? userAnswers : new java.util.HashMap<>())
+                    .textAnswers(textAnswers != null ? textAnswers : new java.util.HashMap<>())
+                    .totalMarks(objectiveScore)
+                    .graded(graded)
+                    .startTime(resolveStartTime(quiz, request.getStartedAt()))
+                    .endTime(LocalDateTime.now())
+                    .status(graded ? "COMPLETED" : "PENDING_REVIEW")
+                    .build();
+
+            // Persist the attempt BEFORE awarding XP so a duplicate-submission race
+            // (unique constraint on user_id + quiz_id) rolls back without double XP.
+            QuizAttempt saved = quizAttemptRepository.save(attempt);
 
             if (graded) {
                 user.setXp(user.getXp() + xpGained);
@@ -115,25 +148,11 @@ public class QuizService {
                 sectionalXPRepository.save(sectionalXP);
             }
 
-            QuizAttempt attempt = QuizAttempt.builder()
-                    .user(user)
-                    .quiz(quiz)
-                    .score(objectiveScore)
-                    .totalQuestions(questions != null ? questions.size() : 0)
-                    .xpGained(xpGained)
-                    .userAnswers(userAnswers != null ? userAnswers : new java.util.HashMap<>())
-                    .textAnswers(textAnswers != null ? textAnswers : new java.util.HashMap<>())
-                    .totalMarks(objectiveScore)
-                    .graded(graded)
-                    .startTime(LocalDateTime.now().minusMinutes(quiz.getTimeLimit()))
-                    .endTime(LocalDateTime.now())
-                    .status(graded ? "COMPLETED" : "PENDING_REVIEW")
-                    .build();
-
-            QuizAttempt saved = quizAttemptRepository.save(attempt);
             System.out.println("Quiz submitted successfully. Score: " + objectiveScore + "/" + attempt.getTotalQuestions()
                     + " (graded: " + graded + ")");
             return saved;
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new RuntimeException("Quiz already attempted by this user.");
         } catch (Exception e) {
             System.err.println("CRITICAL ERROR IN QUIZ SUBMISSION: " + e.getMessage());
             e.printStackTrace();
@@ -141,27 +160,34 @@ public class QuizService {
         }
     }
 
-    public List<QuizAttempt> getAttemptsByUserId(Long userId) {
-        List<QuizAttempt> attempts = quizAttemptRepository.findByUserIdWithQuiz(userId);
-
-        Map<Long, QuizAttempt> latestPerQuiz = new LinkedHashMap<>();
-        for (QuizAttempt attempt : attempts) {
-            if (attempt.getQuiz() == null) continue; // skip orphaned attempts
-            Long quizId = attempt.getQuiz().getId();
-            QuizAttempt existing = latestPerQuiz.get(quizId);
-            if (existing == null || isAfter(attempt, existing)) {
-                latestPerQuiz.put(quizId, attempt);
-            }
+    /**
+     * Rejects submissions that exceed the quiz time limit. Uses the client-reported
+     * start timestamp with a 60s grace period. No-op when the client doesn't send
+     * one or the quiz has no time limit configured.
+     */
+    private void enforceTimeLimit(Quiz quiz, Long startedAt) {
+        if (startedAt == null || startedAt <= 0) return;
+        Integer timeLimit = quiz.getTimeLimit();
+        if (timeLimit == null || timeLimit <= 0) return;
+        long elapsedSeconds = (System.currentTimeMillis() - startedAt) / 1000;
+        if (elapsedSeconds > timeLimit * 60L + 60L) {
+            throw new RuntimeException("Quiz time limit exceeded. Submission rejected.");
         }
-
-        return latestPerQuiz.values().stream()
-                .sorted(Comparator.comparing(QuizAttempt::getEndTime, Comparator.nullsLast(Comparator.reverseOrder())))
-                .toList();
     }
 
-    private boolean isAfter(QuizAttempt a, QuizAttempt b) {
-        if (a.getEndTime() == null) return false;
-        if (b.getEndTime() == null) return true;
-        return a.getEndTime().isAfter(b.getEndTime());
+    private LocalDateTime resolveStartTime(Quiz quiz, Long startedAt) {
+        if (startedAt != null && startedAt > 0) {
+            return java.time.Instant.ofEpochMilli(startedAt)
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDateTime();
+        }
+        Integer timeLimit = quiz.getTimeLimit();
+        return LocalDateTime.now().minusMinutes(timeLimit != null ? timeLimit : 0);
+    }
+
+    // Bug 1.2.2: return EVERY attempt (with quiz questions eagerly fetched) so the
+    // frontend can average the full mastery history — not just the latest per quiz.
+    public List<QuizAttempt> getAttemptsByUserId(Long userId) {
+        return quizAttemptRepository.findByUserIdWithQuiz(userId);
     }
 }

@@ -9,6 +9,8 @@ import Swal from 'sweetalert2';
 
 import { getUserId } from '../../utils/auth';
 
+const RESULTS_PATH = '/results';
+
 const FullAssessmentInterface = () => {
   const [searchParams] = useSearchParams();
   const quizId = searchParams.get('id');
@@ -22,15 +24,26 @@ const FullAssessmentInterface = () => {
   const [loading, setLoading] = useState(true);
   const [markedForReview, setMarkedForReview] = useState({});
   const [showReviewQueue, setShowReviewQueue] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const response = await api.get(`/quizzes/${quizId}`);
+        const userId = getUserId();
+        const response = await api.get(`/quizzes/${quizId}?userId=${userId}`);
         const quizData = response.data;
+        if (quizData.attempted) {
+          Swal.fire({
+            title: 'Already Attempted',
+            text: 'You have already completed this quiz.',
+            icon: 'info',
+            confirmButtonColor: '#6C5DD3'
+          }).then(() => navigate('/quiz'));
+          return;
+        }
         setQuiz(quizData);
-        // Use the actual timeLimit from the quiz (mins to secs)
-        setTimeLeft(quizData.timeLimit * 60); 
+        // Use the actual timeLimit from the quiz (mins to secs), default 10 min
+        setTimeLeft((quizData.timeLimit || 10) * 60);
       } catch (error) {
         console.error("Error fetching quiz:", error);
       } finally {
@@ -38,19 +51,28 @@ const FullAssessmentInterface = () => {
       }
     };
     if (quizId) fetchQuiz();
-  }, [quizId]);
+  }, [quizId, navigate]);
 
-  // Use a ref to hold the latest answers to avoid stale closures during auto-submit
+  // Refs to hold the latest values to avoid stale closures during auto-submit
   const answersRef = React.useRef(answers);
   useEffect(() => {
     answersRef.current = answers;
   }, [answers]);
+
+  const textAnswersRef = React.useRef(textAnswers);
+  useEffect(() => {
+    textAnswersRef.current = textAnswers;
+  }, [textAnswers]);
+
+  const submittingRef = React.useRef(false);
+  const startedAtRef = React.useRef(Date.now());
 
   useEffect(() => {
     // Wait until quiz is fully loaded
     if (loading || !quiz) return;
 
     if (timeLeft <= 0) {
+      if (submittingRef.current) return;
       Swal.fire({
         title: 'Time is up!',
         text: 'Auto-submitting your quiz...',
@@ -58,7 +80,7 @@ const FullAssessmentInterface = () => {
         timer: 2000,
         showConfirmButton: false
       });
-      handleSubmit();
+      handleSubmitRef.current({ auto: true });
       return;
     }
 
@@ -84,25 +106,40 @@ const FullAssessmentInterface = () => {
     setTextAnswers({ ...textAnswers, [currentQuestion.id]: value });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = React.useCallback(async (options = {}) => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
     try {
       const userId = getUserId();
       if (!userId) return;
-      const response = await api.post('/quizzes/submit', {
+      await api.post('/quizzes/submit', {
         userId: parseInt(userId),
         quizId: quiz.id,
         answers: answersRef.current, // Use ref for guaranteed fresh answers
-        textAnswers
+        textAnswers: textAnswersRef.current,
+        startedAt: startedAtRef.current
       });
+      const hasDescriptive = (quiz.questions || []).some(q => q.questionType === 'DESCRIPTIVE');
+      const redirectPath = options.redirectPath || RESULTS_PATH;
+      if (options.auto) {
+        // "Time is up!" modal is already on screen; navigate without a second one
+        navigate(redirectPath);
+        return;
+      }
       Swal.fire({
         title: 'Quiz Submitted!',
-        text: 'Your answers have been recorded. Results will appear once grading is complete.',
+        text: hasDescriptive
+          ? 'Your answers have been recorded. Results will appear once grading is complete.'
+          : 'Your answers have been recorded and your result is ready now.',
         icon: 'success',
         confirmButtonColor: '#6C5DD3'
       }).then(() => {
-        navigate(`/results`);
+        navigate(redirectPath);
       });
     } catch (error) {
+      submittingRef.current = false;
+      setSubmitting(false);
       console.error("Error submitting quiz:", error);
       Swal.fire({
         title: 'Submission Error',
@@ -111,7 +148,7 @@ const FullAssessmentInterface = () => {
         confirmButtonColor: '#6C5DD3'
       });
     }
-  };
+  }, [quiz, navigate]);
 
   const handleSubmitRef = React.useRef(handleSubmit);
   useEffect(() => {
@@ -124,6 +161,8 @@ const FullAssessmentInterface = () => {
     const handlePopState = (e) => {
       window.history.pushState(null, "", window.location.href);
 
+      if (submittingRef.current) return;
+
       Swal.fire({
         title: 'Exit Quiz?',
         text: 'Are you sure you want to exit? Your current progress will be automatically submitted.',
@@ -134,7 +173,7 @@ const FullAssessmentInterface = () => {
         confirmButtonText: 'Yes, exit and submit'
       }).then((result) => {
         if (result.isConfirmed) {
-          handleSubmitRef.current();
+          handleSubmitRef.current({ redirectPath: RESULTS_PATH });
         }
       });
     };
@@ -146,10 +185,16 @@ const FullAssessmentInterface = () => {
   }, []);
 
   const handleNavigationAttempt = (e) => {
-    const target = e.target.closest('a') || e.target.closest('button');
+    if (submittingRef.current) return;
+
+    const anchor = e.target.closest('a');
+    const target = anchor || e.target.closest('button');
     if (target) {
       e.preventDefault();
       e.stopPropagation();
+
+      // Remember where the user was heading so we can land there after submitting
+      const redirectPath = anchor ? anchor.getAttribute('href') : RESULTS_PATH;
 
       Swal.fire({
         title: 'Exit Quiz?',
@@ -161,7 +206,7 @@ const FullAssessmentInterface = () => {
         confirmButtonText: 'Yes, exit and submit'
       }).then((result) => {
         if (result.isConfirmed) {
-          handleSubmitRef.current();
+          handleSubmitRef.current({ redirectPath });
         }
       });
     }
@@ -225,7 +270,7 @@ const FullAssessmentInterface = () => {
                     <p className="text-slate-500 text-lg font-medium tracking-wide">{quiz.topic}</p>
                   </div>
                   <div className="bg-slate-50 text-slate-600 px-6 py-2 rounded-full text-sm font-bold border border-slate-100">
-                    {currentQuestion.questionType === 'DESCRIPTIVE' ? `+${currentQuestion.maxMarks || 1}.0 Marks` : '+1.0 Marks'}
+                    +{currentQuestion.maxMarks || 1} Mark{(currentQuestion.maxMarks || 1) > 1 ? 's' : ''}
                   </div>
                 </div>
               </section>
@@ -416,9 +461,10 @@ const FullAssessmentInterface = () => {
               <p className="text-sm font-medium text-slate-500">You can still go back and change your answers.</p>
               <button 
                 onClick={handleSubmit}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all w-full md:w-auto"
+                disabled={submitting}
+                className={`bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all w-full md:w-auto ${submitting ? 'opacity-60 cursor-not-allowed' : 'hover:bg-emerald-700'}`}
               >
-                Confirm Submission
+                {submitting ? 'Submitting...' : 'Confirm Submission'}
               </button>
             </div>
           </div>

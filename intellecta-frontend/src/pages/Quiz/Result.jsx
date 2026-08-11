@@ -51,8 +51,7 @@ const ResultDetail = ({ detail, summary }) => {
   const quiz = summary.quiz || {};
   const graded = detail.graded === true;
   const score = detail.totalMarks ?? summary.score ?? 0;
-  const total = summary.totalQuestions || quiz.questions?.length || 0;
-  const xp = summary.xpGained || 0;
+  const total = detail.maxMarks || summary.totalQuestions || quiz.questions?.length || 0;
   const questions = detail.questions || [];
 
   return (
@@ -232,8 +231,10 @@ const QuizResultsPage = () => {
                 <div className="space-y-4">
                   {attempts.map((a) => {
                     const quiz = a.quiz || {};
+                    const questions = quiz.questions || [];
+                    const maxMarksTotal = questions.reduce((sum, q) => sum + (q.maxMarks || 1), 0);
                     const score = a.totalMarks ?? a.score ?? 0;
-                    const total = a.totalQuestions || quiz.questions?.length || 0;
+                    const total = maxMarksTotal || a.totalQuestions || 0;
                     const graded = a.graded === true;
                     return (
                       <button

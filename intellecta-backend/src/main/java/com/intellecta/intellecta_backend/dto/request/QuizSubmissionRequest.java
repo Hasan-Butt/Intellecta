@@ -20,4 +20,6 @@ public class QuizSubmissionRequest {
     private Map<Long, Integer> answers; // questionId -> selectedOptionIndex
 
     private Map<Long, String> textAnswers; // questionId -> raw student text (descriptive)
+
+    private Long startedAt; // epoch millis when the student began the attempt (client-side)
 }
