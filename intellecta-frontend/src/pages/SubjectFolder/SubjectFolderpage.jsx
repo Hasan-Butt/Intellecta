@@ -746,10 +746,10 @@ const SubjectFolderpage = () => {
         <main className="flex-1 overflow-y-auto">
           <div className="px-10 py-10 max-w-4xl">
             <div className="mb-8">
-              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
                 My Sanctuary Files
               </h1>
-              <p className="text-gray-500 text-sm mt-1 max-w-md">
+              <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
                 Organize your academic journey through semantic tagging and
                 hierarchical clarity.
               </p>

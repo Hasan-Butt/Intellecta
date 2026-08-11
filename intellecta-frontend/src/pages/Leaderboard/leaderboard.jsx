@@ -169,7 +169,7 @@ const GlobalLeaderboard = () => {
     : 100;
 
   return (
-    <div className="min-h-screen bg-[var(--color-base)] font-['Inter',_sans-serif] text-slate-900 antialiased flex flex-col">
+    <div className="min-h-screen bg-[var(--color-base)] text-slate-900 flex flex-col">
       <Navbar />
 
       <div className="flex flex-1 relative items-start">
@@ -181,10 +181,10 @@ const GlobalLeaderboard = () => {
             {/* HEADER AREA */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
               <div className="space-y-1">
-                <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-[#1e293b]">
+                <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
                   {viewMode === 'global' ? 'Global Standings' : 'Sectional Ranking'}
                 </h1>
-                <p className="text-slate-500 font-medium text-sm md:text-base">
+                <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
                   {viewMode === 'global' 
                     ? 'Academic performance rankings across the Intellecta network.' 
                     : (() => {

@@ -332,8 +332,8 @@ const AnalyticsDashboard = () => {
                   <LayoutGrid size={16} />
                   <span>Performance Insights</span>
               </div>
-              <h1 className="text-5xl font-[800] text-[#1A1D1F] tracking-[-0.03em] leading-tight">Distraction Analytics</h1>
-              <p className="text-[#6F767E] text-xl font-medium tracking-tight">Deep-dive into your cognitive leaks and focus sessions.</p>
+              <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">Distraction Analytics</h1>
+              <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">Deep-dive into your cognitive leaks and focus sessions.</p>
             </div>
 
             <div className="flex items-center mb-1.5 relative">
