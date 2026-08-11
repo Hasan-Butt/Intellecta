@@ -428,7 +428,7 @@ const PerformanceDashboard = () => {
                   System Active
                 </span>
               </div>
-              <h1 className="text-4xl font-black text-gray-900 tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
                 Performance Dashboard
               </h1>
             </header>

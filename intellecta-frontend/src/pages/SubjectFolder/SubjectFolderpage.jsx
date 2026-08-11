@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import Swal from 'sweetalert2';
 import {
   Upload, FolderPlus, Search, Filter, X, Plus,
   FileText, Image as ImageIcon, File, ChevronDown, Check,
@@ -524,7 +525,7 @@ const SubjectFolderpage = () => {
 
   const handleFileSelect = async (newFiles) => {
     if (!activeSubject) {
-      alert("Please select a subject folder first.");
+      Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Please select a subject folder first.' });
       return;
     }
     setLoading(true);
@@ -534,7 +535,7 @@ const SubjectFolderpage = () => {
         try {
           validateDocumentFile(file);
         } catch (e) {
-          alert(`Skipping ${file.name}: ${e.message}`);
+          Swal.fire({ icon: 'warning', title: 'Skipped', text: `Skipping ${file.name}: ${e.message}` });
           continue;
         }
 
@@ -564,7 +565,7 @@ const SubjectFolderpage = () => {
       }
     } catch (err) {
       console.error("Upload failed:", err);
-      alert("Upload failed: " + err.message);
+      Swal.fire({ icon: 'error', title: 'Upload Failed', text: err.message });
     } finally {
       setLoading(false);
     }
@@ -745,10 +746,10 @@ const SubjectFolderpage = () => {
         <main className="flex-1 overflow-y-auto">
           <div className="px-10 py-10 max-w-4xl">
             <div className="mb-8">
-              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
                 My Sanctuary Files
               </h1>
-              <p className="text-gray-500 text-sm mt-1 max-w-md">
+              <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
                 Organize your academic journey through semantic tagging and
                 hierarchical clarity.
               </p>

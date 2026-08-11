@@ -478,10 +478,10 @@ const StudySessionDashboard = () => {
           <div className={`max-w-6xl mx-auto transition-opacity duration-1000 ${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
             <div className="flex justify-between items-end mb-10">
               <div className="space-y-2">
-                <h2 className="font-[sans-serif] font-extrabold text-5xl tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
                   Focus Session.
-                </h2>
-                <p className="text-slate-500 max-w-md leading-relaxed">
+                </h1>
+                <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
                   Design your cognitive environment. The Sanctuary aligns your
                   energy with your objectives.
                 </p>

@@ -176,10 +176,10 @@ const NotesPage = () => {
             {/* Header */}
             <div className="flex justify-between items-start mb-8 gap-4">
               <div className="space-y-1">
-                <h1 className="text-4xl font-bold text-zinc-900 tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
                   All Notes
                 </h1>
-                <p className="text-zinc-500 text-lg">
+                <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
                   Organize your thoughts and fuel your intellect.
                 </p>
               </div>
