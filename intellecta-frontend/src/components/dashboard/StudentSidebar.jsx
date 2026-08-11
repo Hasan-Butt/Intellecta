@@ -51,13 +51,18 @@ const Sidebar = () => {
       })
       .catch(() => {});
     
-    api.get(`/dashboard/user/${userId}`)
-      .then(res => {
-        setUserLevel(res.data.level ?? 1);
-        setLevelTitle(res.data.levelTitle ?? 'Beginner');
-        setXpProgressPct(res.data.xpProgressPct ?? 0);
-      })
-      .catch(() => {});
+    const fetchDashboard = () => {
+      api.get(`/dashboard/user/${userId}`)
+        .then(res => {
+          setUserLevel(res.data.level ?? 1);
+          setLevelTitle(res.data.levelTitle ?? 'Beginner');
+          setXpProgressPct(res.data.xpProgressPct ?? 0);
+        })
+        .catch(() => {});
+    };
+
+    fetchDashboard();
+    window.addEventListener("userDataUpdated", fetchDashboard);
 
     // Close help box when clicking outside
     const handleClickOutside = (event) => {
@@ -66,7 +71,10 @@ const Sidebar = () => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("userDataUpdated", fetchDashboard);
+    };
   }, [location.pathname]); // Re-fetch level/XP on every page navigation
 
   const handleLogout = () => {

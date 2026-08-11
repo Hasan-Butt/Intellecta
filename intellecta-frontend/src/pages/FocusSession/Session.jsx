@@ -20,6 +20,7 @@ import {
   ListTodo,
   Plus,
   Trash2,
+  Star,
 } from "lucide-react";
 import Avatar from "../../components/common/Avatar";
 
@@ -99,6 +100,8 @@ const StudySessionDashboard = () => {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [levelUpData, setLevelUpData] = useState({ level: 1, title: "Scholar" });
   const [showArchive, setShowArchive] = useState(false);
   const [lastSessionStats, setLastSessionStats] = useState(null);
   const [userAvatar, setUserAvatar] = useState("");
@@ -189,6 +192,23 @@ const StudySessionDashboard = () => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
     } else if (isActive && timeLeft === 0) {
+      // Play a short beep when timer finishes
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 2);
+      } catch (e) {
+        console.error("Audio playback failed", e);
+      }
+
       if (mode === "Work") {
         setPomodorosCompleted((prev) => prev + 1);
         setMode("Break");
@@ -301,7 +321,13 @@ const StudySessionDashboard = () => {
           api.get(`/dashboard/user/${userId}`),
           api.get(`/sessions/user/${userId}`),
         ]);
-        setLevel(dashRes.data.level ?? 1);
+        const newLevel = dashRes.data.level ?? 1;
+        if (newLevel > level) {
+          setLevelUpData({ level: newLevel, title: dashRes.data.levelTitle ?? "Scholar" });
+          setShowLevelUpModal(true);
+        }
+        setLevel(newLevel);
+        window.dispatchEvent(new Event("userDataUpdated"));
         setCurrentXp(dashRes.data.currentXp ?? 0);
         setNextLevelXp(dashRes.data.nextLevelXp ?? 141);
         setXpProgressPct(dashRes.data.xpProgressPct ?? 0);
@@ -338,7 +364,7 @@ const StudySessionDashboard = () => {
   };
 
   const TimerCard = ({ zen = false }) => (
-    <section className={`p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-1000 ${zen ? "bg-white/5 border border-white/10 w-full max-w-3xl py-20 shadow-2xl backdrop-blur-xl scale-110" : "glass-neu col-span-12 lg:col-span-7"}`}>
+    <section className={`p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-1000 ${zen ? "bg-white/5 border border-white/10 rounded-[3rem] w-full max-w-3xl py-20 shadow-2xl backdrop-blur-xl scale-110" : "glass-neu col-span-12 lg:col-span-7"}`}>
       {zen && (
         <button 
           onClick={() => setAmbientMode(false)}
@@ -827,6 +853,55 @@ const StudySessionDashboard = () => {
                  )}
               </div>
            </div>
+        </div>
+      )}
+      {/* Level Up Modal */}
+      {showLevelUpModal && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center bg-indigo-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <style>{`
+            @keyframes rotate-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+            .animate-rotate-slow { animation: rotate-slow 10s linear infinite; }
+            .animate-rotate-slow-reverse { animation: rotate-slow 12s linear infinite reverse; }
+            .animate-twinkle-1 { animation: twinkle 3s ease-in-out infinite; }
+            .animate-twinkle-2 { animation: twinkle 4s ease-in-out infinite 1s; }
+            .animate-twinkle-3 { animation: twinkle 2.5s ease-in-out infinite 2s; }
+            .animate-twinkle-4 { animation: twinkle 3.5s ease-in-out infinite 0.5s; }
+          `}</style>
+          <div className="bg-white rounded-[2.5rem] p-10 max-w-sm w-full mx-4 shadow-2xl relative overflow-hidden text-center animate-in zoom-in-95 duration-500">
+            {/* Twinkling Stars Background */}
+            <div className="absolute top-8 left-8 text-yellow-400 animate-twinkle-1"><Star size={16} fill="currentColor" /></div>
+            <div className="absolute top-12 right-10 text-purple-400 animate-twinkle-2"><Star size={20} fill="currentColor" /></div>
+            <div className="absolute top-32 left-6 text-indigo-400 animate-twinkle-3"><Star size={12} fill="currentColor" /></div>
+            <div className="absolute top-28 right-8 text-pink-400 animate-twinkle-4"><Star size={14} fill="currentColor" /></div>
+            <div className="absolute bottom-24 left-12 text-emerald-400 animate-twinkle-2"><Star size={10} fill="currentColor" /></div>
+            <div className="absolute bottom-28 right-12 text-blue-400 animate-twinkle-1"><Star size={14} fill="currentColor" /></div>
+
+            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-indigo-500 to-purple-600 opacity-20 blur-3xl rounded-t-[2.5rem]" />
+            <div className="relative z-10">
+              <div className="relative w-32 h-32 mx-auto mb-6 flex items-center justify-center">
+                {/* Rotating dashed ring */}
+                <div className="absolute inset-0 rounded-full border-[3px] border-dashed border-indigo-300 opacity-60 animate-rotate-slow" />
+                {/* Rotating inner gradient ring */}
+                <div className="absolute inset-2 rounded-full border-[3px] border-dashed border-purple-300 opacity-60 animate-rotate-slow-reverse" />
+                
+                <div className="relative z-10 w-24 h-24 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-full flex items-center justify-center shadow-xl shadow-indigo-200 border-4 border-white">
+                  <span className="text-4xl font-black text-white">{levelUpData.level}</span>
+                </div>
+              </div>
+              <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-2">Level Up!</h2>
+              <p className="text-gray-500 font-medium mb-1">You've reached a new milestone.</p>
+              <div className="bg-indigo-50 text-indigo-700 font-bold px-4 py-2 rounded-xl inline-block mt-2 mb-8 uppercase tracking-widest text-xs border border-indigo-100">
+                {levelUpData.title}
+              </div>
+              <button 
+                onClick={() => setShowLevelUpModal(false)}
+                className="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+              >
+                Keep Going
+              </button>
+            </div>
+          </div>
         </div>
       )}
       {showSummary && lastSessionStats && (
