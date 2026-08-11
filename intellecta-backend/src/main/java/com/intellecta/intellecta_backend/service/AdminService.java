@@ -3,6 +3,7 @@ package com.intellecta.intellecta_backend.service;
 import com.intellecta.intellecta_backend.dto.request.AddAppRuleRequestDto;
 import com.intellecta.intellecta_backend.dto.request.ConfigDeployRequestDto;
 import com.intellecta.intellecta_backend.dto.request.UserCreateRequestDto;
+import com.intellecta.intellecta_backend.dto.request.UserPasswordResetRequestDto;
 import com.intellecta.intellecta_backend.dto.request.UserUpdateRequestDto;
 import com.intellecta.intellecta_backend.dto.response.*;
 import com.intellecta.intellecta_backend.enums.UserRoles;
@@ -82,6 +83,19 @@ public class AdminService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setStatus("Inactive");
+        userRepository.save(user);
+    }
+
+    public void resetPassword(Long id, UserPasswordResetRequestDto dto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getPassword() == null) {
+            throw new IllegalArgumentException("Password resets are not supported for Google-linked accounts.");
+        }
+        if (!dto.password().equals(dto.confirmPassword())) {
+            throw new IllegalArgumentException("Password confirmation does not match.");
+        }
+        user.setPassword(passwordEncoder.encode(dto.password()));
         userRepository.save(user);
     }
 
@@ -856,6 +870,7 @@ public class AdminService {
                 .status(user.getStatus())
                 .bio(user.getBio())
                 .avatarUrl(user.getAvatarUrl())
+                .hasPassword(user.getPassword() != null)
                 .studyReminders(user.isStudyReminders())
                 .achievementAlerts(user.isAchievementAlerts())
                 .weeklyReports(user.isWeeklyReports())

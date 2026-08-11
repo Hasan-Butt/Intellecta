@@ -16,6 +16,7 @@ public class UserResponseDto {
     private String status;
     private String bio;
     private String avatarUrl;
+    private boolean hasPassword;
     private boolean studyReminders;
     private boolean achievementAlerts;
     private boolean weeklyReports;

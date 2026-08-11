@@ -15,6 +15,7 @@ import {
   Plus
 } from 'lucide-react';
 import api from '../../services/api';
+import Swal from 'sweetalert2';
 import Avatar from '../../components/common/Avatar';
 import { uploadFile, validateImageFile } from '../../utils/uploadthing';
 
@@ -39,6 +40,8 @@ const SettingsPage = () => {
     newPassword: '',
     confirmPassword: ''
   });
+
+  const [hasPassword, setHasPassword] = useState(true);
 
   const [notifications, setNotifications] = useState({
     studyReminders: true,
@@ -73,6 +76,7 @@ const SettingsPage = () => {
         bio: res.data.bio || '',
         avatarUrl: res.data.avatarUrl || predefinedAvatars[0]
       });
+      setHasPassword(res.data.hasPassword !== false);
       setNotifications({
         studyReminders: res.data.studyReminders ?? true,
         achievementAlerts: res.data.achievementAlerts ?? true,
@@ -92,8 +96,9 @@ const SettingsPage = () => {
     const userId = getUserId();
     if (!userId) return;
     try {
+      const { email, ...editableFields } = profileData;
       await api.put(`/users/${userId}/profile`, {
-        ...profileData,
+        ...editableFields,
         ...notifications
       });
       setSuccess(true);
@@ -122,8 +127,20 @@ const SettingsPage = () => {
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
+      Swal.fire({
+        icon: "success",
+        title: "Password Updated",
+        text: "Your password has been changed successfully.",
+        confirmButtonColor: "#451ebb",
+      });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update password");
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: err.response?.data?.message || "Failed to update password",
+        confirmButtonColor: "#451ebb",
+      });
     } finally {
       setSaving(false);
     }
@@ -296,12 +313,9 @@ const SettingsPage = () => {
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Address</label>
-                        <input 
-                          type="email" 
-                          value={profileData.email}
-                          onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                          className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold text-zinc-900"
-                        />
+                        <div className="w-full px-5 py-3 neu-inset bg-transparent border-none font-bold text-zinc-400 select-none">
+                          {profileData.email}
+                        </div>
                       </div>
                     </div>
 
@@ -321,46 +335,58 @@ const SettingsPage = () => {
                 {/* Security Tab */}
                 {activeTab === 'security' && (
                   <div className="space-y-8 animate-in fade-in duration-500 flex-1">
-                    <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100 flex items-start gap-4">
-                      <ShieldCheck className="text-amber-600 mt-1" size={24} />
-                      <div>
-                        <h4 className="text-sm font-black text-amber-900 uppercase">Protect your account</h4>
-                        <p className="text-xs text-amber-700 font-medium mt-1">Update your password regularly to maintain high security integrity.</p>
-                      </div>
-                    </div>
+                    {hasPassword ? (
+                      <>
+                        <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100 flex items-start gap-4">
+                          <ShieldCheck className="text-amber-600 mt-1" size={24} />
+                          <div>
+                            <h4 className="text-sm font-black text-amber-900 uppercase">Protect your account</h4>
+                            <p className="text-xs text-amber-700 font-medium mt-1">Update your password regularly to maintain high security integrity.</p>
+                          </div>
+                        </div>
 
-                    <div className="space-y-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Current Password</label>
-                        <input 
-                          type="password" 
-                          value={passwordData.currentPassword}
-                          onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                          placeholder="••••••••" 
-                          className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold" 
-                        />
+                        <div className="space-y-6">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Current Password</label>
+                            <input 
+                              type="password" 
+                              value={passwordData.currentPassword}
+                              onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                              placeholder="••••••••" 
+                              className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold" 
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">New Password</label>
+                            <input 
+                              type="password" 
+                              value={passwordData.newPassword}
+                              onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                              placeholder="••••••••" 
+                              className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold" 
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Confirm New Password</label>
+                            <input 
+                              type="password" 
+                              value={passwordData.confirmPassword}
+                              onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                              placeholder="••••••••" 
+                              className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold" 
+                            />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 flex items-start gap-4">
+                        <ShieldCheck className="text-gray-400 mt-1" size={24} />
+                        <div>
+                          <h4 className="text-sm font-black text-gray-500 uppercase">Google-linked account</h4>
+                          <p className="text-xs text-gray-400 font-medium mt-1">Password changes aren't available for accounts signed in with Google. Manage your sign-in options in your Google account.</p>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">New Password</label>
-                        <input 
-                          type="password" 
-                          value={passwordData.newPassword}
-                          onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                          placeholder="••••••••" 
-                          className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold" 
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Confirm New Password</label>
-                        <input 
-                          type="password" 
-                          value={passwordData.confirmPassword}
-                          onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                          placeholder="••••••••" 
-                          className="w-full px-5 py-3 neu-inset bg-transparent border-none focus:ring-0 outline-none transition-all font-bold" 
-                        />
-                      </div>
-                    </div>
+                    )}
                   </div>
                 )}
 
@@ -409,19 +435,25 @@ const SettingsPage = () => {
                   </p>
                   
                   {activeTab === 'security' ? (
-                    <button 
-                      onClick={handleUpdatePassword}
-                      disabled={saving || !passwordData.currentPassword || !passwordData.newPassword}
-                      className="btn-primary min-w-[180px] justify-center py-4 text-xs font-black uppercase tracking-widest disabled:opacity-50 transition-all flex items-center gap-3"
-                    >
-                      {saving ? (
-                        <><Loader2 size={16} className="animate-spin" /> Updating...</>
-                      ) : success ? (
-                        <><Check size={16} strokeWidth={4} /> Password Updated</>
-                      ) : (
-                        <>Update Password</>
-                      )}
-                    </button>
+                    hasPassword ? (
+                      <button 
+                        onClick={handleUpdatePassword}
+                        disabled={saving || !passwordData.currentPassword || !passwordData.newPassword}
+                        className="btn-primary min-w-[180px] justify-center py-4 text-xs font-black uppercase tracking-widest disabled:opacity-50 transition-all flex items-center gap-3"
+                      >
+                        {saving ? (
+                          <><Loader2 size={16} className="animate-spin" /> Updating...</>
+                        ) : success ? (
+                          <><Check size={16} strokeWidth={4} /> Password Updated</>
+                        ) : (
+                          <>Update Password</>
+                        )}
+                      </button>
+                    ) : (
+                      <span className="min-w-[180px] justify-center py-4 text-xs font-black uppercase tracking-widest text-gray-300 flex items-center gap-3">
+                        <ShieldCheck size={16} /> Google Account
+                      </span>
+                    )
                   ) : (
                     <button 
                       onClick={handleSaveProfile}
