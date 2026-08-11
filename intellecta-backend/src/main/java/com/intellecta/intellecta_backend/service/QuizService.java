@@ -8,7 +8,9 @@ import com.intellecta.intellecta_backend.repository.QuizRepository;
 import com.intellecta.intellecta_backend.repository.SectionalXPRepository;
 import com.intellecta.intellecta_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -63,7 +65,8 @@ public class QuizService {
     }
 
     public Quiz getQuizById(Long id, Long userId) {
-        Quiz quiz = quizRepository.findById(id).orElseThrow(() -> new RuntimeException("Quiz not found"));
+        Quiz quiz = quizRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz not found: " + id));
         if (userId != null) {
             SecurityUtils.validateUser(userId);
             quiz.setAttempted(quizAttemptRepository.existsByUserIdAndQuizId(userId, id));
@@ -75,12 +78,12 @@ public class QuizService {
     public QuizAttempt submitQuiz(QuizSubmissionRequest request) {
         SecurityUtils.validateUser(request.getUserId());
         if (quizAttemptRepository.existsByUserIdAndQuizId(request.getUserId(), request.getQuizId())) {
-            throw new RuntimeException("Quiz already attempted by this user.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quiz already attempted by this user.");
         }
         try {
             Quiz quiz = getQuizById(request.getQuizId());
             User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found: " + request.getUserId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + request.getUserId()));
 
             List<Question> questions = quiz.getQuestions();
             Map<Long, Integer> userAnswers = request.getAnswers();
@@ -152,7 +155,7 @@ public class QuizService {
                     + " (graded: " + graded + ")");
             return saved;
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            throw new RuntimeException("Quiz already attempted by this user.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quiz already attempted by this user.");
         } catch (Exception e) {
             System.err.println("CRITICAL ERROR IN QUIZ SUBMISSION: " + e.getMessage());
             e.printStackTrace();
@@ -171,7 +174,8 @@ public class QuizService {
         if (timeLimit == null || timeLimit <= 0) return;
         long elapsedSeconds = (System.currentTimeMillis() - startedAt) / 1000;
         if (elapsedSeconds > timeLimit * 60L + 60L) {
-            throw new RuntimeException("Quiz time limit exceeded. Submission rejected.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Quiz time limit exceeded. Submission rejected.");
         }
     }
 

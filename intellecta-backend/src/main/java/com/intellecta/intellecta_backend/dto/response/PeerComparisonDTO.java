@@ -18,12 +18,14 @@ public class PeerComparisonDTO {
     public static class PeerStatsDTO {
         private Long   userId;
         private String username;
+        private String avatarUrl;
         private int    globalRank;
         private long   xp;
         private int    level;
         private String levelTitle;
         private int    xpProgressPct;
         private long   focusHours;
+        private long   focusMinutes;
         private long   totalSessions;
         private int    totalPomodoros;
         private int    streakDays;
@@ -31,7 +33,7 @@ public class PeerComparisonDTO {
         private long   totalDocuments;
         // category → sectional XP
         private Map<String, Long> sectionalXp;
-        // 14-day heatmap intensity (0-4)
+        // 14-day heatmap intensity (0-4) built from real study sessions
         private List<Integer> heatmap;
     }
 }

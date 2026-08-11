@@ -61,7 +61,8 @@ public class QuizController {
     @GetMapping("/submissions/{attemptId}")
     public ResponseEntity<SubmissionDetailResponse> getSubmissionForStudent(@PathVariable Long attemptId) {
         QuizAttempt attempt = quizAttemptRepository.findById(attemptId)
-                .orElseThrow(() -> new RuntimeException("Attempt not found: " + attemptId));
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Attempt not found: " + attemptId));
         if (attempt.getUser() != null) {
             SecurityUtils.validateUser(attempt.getUser().getId());
         }

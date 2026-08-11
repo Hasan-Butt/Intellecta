@@ -13,7 +13,9 @@ import com.intellecta.intellecta_backend.repository.SectionalXPRepository;
 import com.intellecta.intellecta_backend.repository.StudySessionRepository;
 import com.intellecta.intellecta_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,6 +42,12 @@ public class LeaderboardServiceImpl implements LeaderboardService {
             .collect(java.util.stream.Collectors.toList());
         allUsers.sort(Comparator.comparingLong(User::getXp).reversed());
 
+        // Single aggregate query for focus minutes — avoids one query per user
+        Map<Long, Long> focusMinutesByUser = new java.util.HashMap<>();
+        for (Object[] row : sessionRepository.totalFocusMinutesByUser()) {
+            focusMinutesByUser.put(((Number) row[0]).longValue(), ((Number) row[1]).longValue());
+        }
+
         List<LeaderboardEntryDTO> board = new ArrayList<>();
         int currentRank = 1;
         int displayRank = 1;
@@ -49,9 +57,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
                 displayRank = currentRank;
                 prevXp = u.getXp();
             }
-            long focusHours = sessionRepository
-                .findByUserIdOrderByStartTimeDesc(u.getId())
-                .stream().mapToLong(StudySession::getDurationMinutes).sum() / 60;
+            long focusHours = Math.round(focusMinutesByUser.getOrDefault(u.getId(), 0L) / 60.0);
 
             int level = calculateLevel(u.getXp());
             long nextLevelXp  = (long)(100.0 * Math.pow(level + 1, 1.5));
@@ -61,7 +67,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
 
             boolean isMe = u.getId().equals(userId);
             boolean isAnon = u.isAnonymousMode();
-            String displayName = isAnon ? (isMe ? u.getUsername() + " (Anonymous)" : "Anonymous") : u.getUsername();
+            String displayName = isAnon ? (isMe ? u.getUsername() : "Anonymous") : u.getUsername();
             String displayAvatar = (isAnon && !isMe) ? null : u.getAvatarUrl();
 
             board.add(LeaderboardEntryDTO.builder()
@@ -100,15 +106,17 @@ public class LeaderboardServiceImpl implements LeaderboardService {
                 prevXp = sxp.getXp();
             }
             User u = sxp.getUser();
-            int level = calculateLevel(sxp.getXp());
+            // Level/progress reflect the student's GLOBAL level (total XP), not
+            // the sectional XP — sectional rank and global level are separate concepts
+            int level = calculateLevel(u.getXp());
             long nextLevelXp  = (long)(100.0 * Math.pow(level + 1, 1.5));
             long prevLevelXp  = level <= 1 ? 0L : (long)(100.0 * Math.pow(level, 1.5));
             int xpPct = (int) Math.min(100,
-                ((sxp.getXp() - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
+                ((u.getXp() - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
 
             boolean isMe = u.getId().equals(userId);
             boolean isAnon = u.isAnonymousMode();
-            String displayName = isAnon ? (isMe ? u.getUsername() + " (Anonymous)" : "Anonymous") : u.getUsername();
+            String displayName = isAnon ? (isMe ? u.getUsername() : "Anonymous") : u.getUsername();
             String displayAvatar = (isAnon && !isMe) ? null : u.getAvatarUrl();
 
             board.add(LeaderboardEntryDTO.builder()
@@ -126,6 +134,16 @@ public class LeaderboardServiceImpl implements LeaderboardService {
             currentRank++;
         }
         return board;
+    }
+
+    @Override
+    public List<String> getSectionalCategories() {
+        return sectionalXPRepository.findAll().stream()
+                .map(SectionalXP::getCategory)
+                .filter(c -> c != null && !c.trim().isEmpty())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -148,24 +166,29 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         User me   = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found: " + userId));
         User peer = userRepository.findById(peerId).orElseThrow(() -> new RuntimeException("Peer not found: " + peerId));
 
+        if (peer.getRole() == UserRoles.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot compare with an admin user.");
+        }
+
         return PeerComparisonDTO.builder()
-            .me(buildStats(me, rankMap.getOrDefault(userId, 0)))
-            .peer(buildStats(peer, rankMap.getOrDefault(peerId, 0)))
+            .me(buildStats(me, rankMap.getOrDefault(userId, 0), true))
+            .peer(buildStats(peer, rankMap.getOrDefault(peerId, 0), false))
             .build();
     }
 
     // ── Private helpers ────────────────────────────────────────────────────────
 
-    private PeerStatsDTO buildStats(User u, int globalRank) {
+    private PeerStatsDTO buildStats(User u, int globalRank, boolean isMe) {
         long xp = u.getXp();
         int level = calculateLevel(xp);
         long nextLevelXp = (long)(100.0 * Math.pow(level + 1, 1.5));
         long prevLevelXp = level <= 1 ? 0L : (long)(100.0 * Math.pow(level, 1.5));
         int xpPct = (int) Math.min(100, ((xp - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
 
-        long focusHours = sessionRepository
+        long totalMinutes = sessionRepository
             .findByUserIdOrderByStartTimeDesc(u.getId())
-            .stream().mapToLong(StudySession::getDurationMinutes).sum() / 60;
+            .stream().mapToLong(StudySession::getDurationMinutes).sum();
+        long focusHours = Math.round(totalMinutes / 60.0);
 
         long totalSessions = sessionRepository.countByUserId(u.getId());
         int totalPomodoros = Optional.ofNullable(sessionRepository.sumPomodorosByUserId(u.getId())).orElse(0);
@@ -175,28 +198,34 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         Map<String, Long> sectionalXp = sectionalXPRepository.findByUserId(u.getId())
             .stream().collect(Collectors.toMap(SectionalXP::getCategory, SectionalXP::getXp));
 
-        // Generate consistent 14-day heatmap based on user ID and their overall activity level
-        java.util.Random rand = new java.util.Random(u.getId());
-        List<Integer> heatmap = new ArrayList<>();
-        double activityFactor = Math.min(1.0, (double) focusHours / 50.0); // max out at 50 hours
-        for (int i = 0; i < 14; i++) {
-            // Random value weighted by their activity factor. 0 = idle, 4 = max focus.
-            int base = rand.nextInt(3); 
-            int intensity = (int) Math.round((base + 2) * activityFactor);
-            // Occasional spike or drop
-            if (rand.nextDouble() > 0.8) intensity = rand.nextInt(5);
-            heatmap.add(Math.min(4, Math.max(0, intensity)));
+        // REAL 14-day heatmap derived from actual study sessions, scaled 0-4
+        java.time.LocalDate today = java.time.LocalDate.now();
+        Map<java.time.LocalDate, Long> minutesByDay = new java.util.HashMap<>();
+        for (Object[] row : sessionRepository.dailyFocusMinutes(u.getId(), today.minusDays(13).atStartOfDay())) {
+            minutesByDay.put(((java.sql.Date) row[0]).toLocalDate(), ((Number) row[1]).longValue());
         }
+        List<Integer> heatmap = new ArrayList<>();
+        for (int i = 13; i >= 0; i--) {
+            long minutes = minutesByDay.getOrDefault(today.minusDays(i), 0L);
+            heatmap.add(focusIntensity(minutes));
+        }
+
+        // Anonymous mode: mask other users, keep the requester's own identity
+        boolean isAnon = u.isAnonymousMode();
+        String username = isAnon ? (isMe ? u.getUsername() : "Anonymous") : u.getUsername();
+        String avatarUrl = (isAnon && !isMe) ? null : u.getAvatarUrl();
 
         return PeerStatsDTO.builder()
             .userId(u.getId())
-            .username(u.getUsername())
+            .username(username)
+            .avatarUrl(avatarUrl)
             .globalRank(globalRank)
             .xp(xp)
             .level(level)
             .levelTitle(resolveLevelTitle(level))
             .xpProgressPct(xpPct)
             .focusHours(focusHours)
+            .focusMinutes(totalMinutes)
             .totalSessions(totalSessions)
             .totalPomodoros(totalPomodoros)
             .streakDays(u.getStreakDays())
@@ -205,6 +234,14 @@ public class LeaderboardServiceImpl implements LeaderboardService {
             .sectionalXp(sectionalXp)
             .heatmap(heatmap)
             .build();
+    }
+
+    private int focusIntensity(long minutes) {
+        if (minutes <= 0) return 0;
+        if (minutes < 15) return 1;
+        if (minutes < 45) return 2;
+        if (minutes < 90) return 3;
+        return 4;
     }
 
     private int calculateLevel(long totalXp) {

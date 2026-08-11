@@ -22,6 +22,16 @@ public interface StudySessionRepository extends JpaRepository<StudySession, Long
     @Query("SELECT SUM(s.pomodorosCompleted) FROM StudySession s WHERE s.user.id = :userId")
     Integer sumPomodorosByUserId(Long userId);
 
+    // Total focus minutes per user (single aggregate query — avoids N+1)
+    @Query(value = """
+    SELECT s.user_id AS userId,
+           SUM(DATEDIFF(minute, s.start_time, s.end_time)) AS minutes
+    FROM study_sessions s
+    WHERE s.start_time IS NOT NULL AND s.end_time IS NOT NULL
+    GROUP BY s.user_id
+    """, nativeQuery = true)
+    List<Object[]> totalFocusMinutesByUser();
+
     // Per-day focus minutes for the last 7 days (used by the bar chart)
     @Query(value = """
     SELECT CAST(s.start_time AS date) AS day,

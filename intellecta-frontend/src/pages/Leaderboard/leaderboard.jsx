@@ -83,12 +83,12 @@ const GlobalLeaderboard = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await api.get('/content/categories');
-        const names = (res.data || []).map(c => c.name).filter(Boolean);
+        const res = await api.get('/leaderboards/sectional/categories');
+        const names = (res.data || []).filter(Boolean);
         setCategories(names);
         if (names.length > 0) setSelectedCategory(names[0]);
       } catch (err) {
-        console.error('Error fetching categories:', err);
+        console.error('Error fetching sectional categories:', err);
         setCategories(["Computer Science"]);
         setSelectedCategory("Computer Science");
       }
@@ -145,7 +145,6 @@ const GlobalLeaderboard = () => {
     while (100.0 * Math.pow(lvl + 1, 1.5) <= xp) lvl++;
     return lvl;
   };
-  const myLevel = computeLevel(globalCurrentUser?.xp ?? 0);
 
   // Sidebar comparison data (view-specific)
   const currentUser = currentLeaderboard.find(r => r.currentUser);
@@ -156,6 +155,10 @@ const GlobalLeaderboard = () => {
   const selectedPeer = peers.find(r => r.userId === selectedPeerUserId) || peers[0] || null;
   const xpGap = (selectedPeer && currentUser) ? Math.max(0, selectedPeer.xp - currentUser.xp) : 0;
 
+  // The user's standing: the active board's entry, falling back to the global one
+  const standingUser = currentUser || globalCurrentUser;
+  const myLevel = computeLevel(standingUser?.xp ?? 0);
+
   // Next competitor directly above current user in this board
   const competitorAbove = currentUser
     ? currentLeaderboard
@@ -163,10 +166,13 @@ const GlobalLeaderboard = () => {
         .sort((a, b) => b.rank - a.rank)[0] || null
     : null;
   const xpToOvertake = competitorAbove ? Math.max(0, competitorAbove.xp - currentUser.xp + 1) : 0;
-  const rankBelowCompetitor = currentLeaderboard
-    .filter(r => competitorAbove && r.rank > competitorAbove.rank)
+  // Floor of the user's own bracket = the person directly BELOW them, so the
+  // progress bar measures the gap they actually need to close (previously it
+  // used the person below the competitor, which made the bar sit at 0%)
+  const rankBelowUser = currentLeaderboard
+    .filter(r => currentUser && r.rank > currentUser.rank)
     .sort((a, b) => a.rank - b.rank)[0];
-  const baseXp = rankBelowCompetitor ? rankBelowCompetitor.xp : 0;
+  const baseXp = rankBelowUser ? rankBelowUser.xp : (currentUser ? currentUser.xp : 0);
   const overtakeRange = competitorAbove ? Math.max(1, competitorAbove.xp - baseXp) : 1;
   const overtakePct = currentUser && competitorAbove
     ? Math.min(100, Math.round(((currentUser.xp - baseXp) / overtakeRange) * 100))
@@ -407,7 +413,18 @@ const GlobalLeaderboard = () => {
                 </section>
 
                 {/* Your Standing */}
-                {globalCurrentUser && (
+                {viewMode === 'sectional' && !currentUser ? (
+                  <section className="neu p-6 text-slate-900">
+                    <div className="flex items-center gap-3 mb-5">
+                      <Target size={18} className="text-emerald-600"/>
+                      <h3 className="font-black text-[15px]">Your Standing</h3>
+                    </div>
+                    <p className="text-[12px] text-slate-500 font-semibold leading-relaxed">
+                      You're not ranked in <span className="text-indigo-600 font-black">{selectedCategory}</span> yet.
+                      Attempt a quiz in this category to start earning sectional XP.
+                    </p>
+                  </section>
+                ) : standingUser && (
                   <section className="neu p-6 text-slate-900">
                     <div className="flex items-center gap-3 mb-5">
                       <Target size={18} className="text-emerald-600"/>
@@ -417,9 +434,11 @@ const GlobalLeaderboard = () => {
                       {/* Rank + Level */}
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Global Rank</p>
-                          <p className="text-2xl font-black text-indigo-600">#{globalCurrentUser.rank}</p>
-                          <p className="text-[10px] text-slate-500 font-bold">{globalCurrentUser.xp.toLocaleString()} XP</p>
+                          <p className="text-[9px] font-black text-slate-400 uppercase mb-1">
+                            {viewMode === 'global' ? 'Global Rank' : `Rank in ${selectedCategory}`}
+                          </p>
+                          <p className="text-2xl font-black text-indigo-600">#{standingUser.rank}</p>
+                          <p className="text-[10px] text-slate-500 font-bold">{standingUser.xp.toLocaleString()} XP</p>
                         </div>
                         <div className="text-right">
                           <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Level</p>

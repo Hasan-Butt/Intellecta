@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Moon, Timer, BrainCircuit, Play, FileText, AlertCircle } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Timer, BrainCircuit, Play, FileText, AlertCircle } from 'lucide-react';
 
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
+import Avatar from '../../components/common/Avatar';
 import api from '../../services/api';
 
 // --- START: HEATMAP COMPONENTS ---
@@ -135,8 +136,8 @@ const PeerComparisonTitle = ({ data }) => {
   if (!data || !data.me || !data.peer) return null;
 
   const participants = [
-    { id: 1, name: data.me.username || 'You', image: 'https://ui-avatars.com/api/?name=' + (data.me.username || 'You') + '&background=0D8ABC&color=fff' },
-    { id: 2, name: data.peer.username || 'Peer', image: 'https://ui-avatars.com/api/?name=' + (data.peer.username || 'Peer') + '&background=4c35b5&color=fff' }
+    { id: 1, name: data.me.username || 'You', avatarUrl: data.me.avatarUrl },
+    { id: 2, name: data.peer.username || 'Peer', avatarUrl: data.peer.avatarUrl }
   ];
 
   return (
@@ -156,11 +157,7 @@ const PeerComparisonTitle = ({ data }) => {
           <div className="flex -space-x-4 shrink-0">
             {participants.map((user) => (
               <div key={user.id} className="relative inline-block">
-                <img
-                  className="h-12 w-12 rounded-full ring-4 ring-[#f4f7f9] object-cover"
-                  src={user.image}
-                  alt={user.name}
-                />
+                <Avatar src={user.avatarUrl} name={user.name} size="w-12 h-12" className="ring-4 ring-[#f4f7f9]" />
               </div>
             ))}
           </div>
@@ -302,21 +299,22 @@ const DailyFocusIntensity = ({ data }) => {
   if (!data) return null;
 
   const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-  
-  // Use heatmap data, slice to 7 days
+  const weekDays = [...days, ...days];
+
+  // Use heatmap data (all 14 days)
   const peerHeatmap = data.peer.heatmap || [1, 2, 2, 3, 1, 0, 4, 2, 3, 1, 1, 2, 4, 0];
   const meHeatmap = data.me.heatmap || [2, 1, 3, 2, 4, 2, 1, 3, 1, 2, 1, 0, 1, 3];
-  
-  const peerWeek = peerHeatmap.slice(0, 7);
-  const meWeek = meHeatmap.slice(0, 7);
+
+  const peerWeek = peerHeatmap.slice(0, 14);
+  const meWeek = meHeatmap.slice(0, 14);
 
   // SVG Chart Dimensions
   const w = 400;
   const h = 160;
-  
+
   // Map values to coordinates
   const mapPoints = (arr) => arr.map((val, i) => ({
-    x: (i / 6) * w,
+    x: (i / 13) * w,
     y: h - (val / 4) * h
   }));
 
@@ -336,11 +334,11 @@ const DailyFocusIntensity = ({ data }) => {
   const peerPath = getSmoothPath(mapPoints(peerWeek));
   const mePath = getSmoothPath(mapPoints(meWeek));
 
-  const peerAvg = Math.round((peerWeek.reduce((a, b) => a + b, 0) / (7 * 4)) * 100);
-  const meAvg = Math.round((meWeek.reduce((a, b) => a + b, 0) / (7 * 4)) * 100);
+  const peerAvg = Math.round((peerWeek.reduce((a, b) => a + b, 0) / (14 * 4)) * 100);
+  const meAvg = Math.round((meWeek.reduce((a, b) => a + b, 0) / (14 * 4)) * 100);
 
   return (
-    <Card title="Daily Focus Intensity" subtitle="Cognitive load tracking over the last 7 days" badge="WEEKLY VIEW">
+    <Card title="Daily Focus Intensity" subtitle="Cognitive load tracking over the last 14 days" badge="14-DAY VIEW">
       <div className="flex-1 flex flex-col justify-between mt-6">
         
         {/* Chart Area */}
@@ -358,8 +356,8 @@ const DailyFocusIntensity = ({ data }) => {
 
           {/* X Axis Labels */}
           <div className="absolute bottom-0 left-4 right-2 flex justify-between">
-            {days.map((day, i) => (
-              <span key={i} className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{day}</span>
+            {weekDays.map((day, i) => (
+              <span key={i} className={`text-[10px] font-bold text-gray-400 uppercase tracking-widest ${i % 2 === 0 ? '' : 'invisible'}`}>{day}</span>
             ))}
           </div>
         </div>
@@ -391,21 +389,35 @@ const BehavioralInsights = ({ data }) => {
   if (!data) return null;
 
   const getInsight = () => {
-    if (data.me.focusHours > data.peer.focusHours) {
+    const diffMinutes = (data.me.focusMinutes || 0) - (data.peer.focusMinutes || 0);
+    const formatDuration = (mins) => {
+      const m = Math.abs(mins);
+      if (m === 0) return '0 minutes';
+      const h = Math.floor(m / 60);
+      const r = m % 60;
+      return h > 0 ? (r > 0 ? `${h}h ${r}m` : `${h} hours`) : `${m} minutes`;
+    };
+    if (diffMinutes > 0) {
         return {
             title: "Focus Champion",
-            description: `You have ${data.me.focusHours - data.peer.focusHours} more focus hours than ${data.peer.username}. Keep up the deep work!`,
+            description: `You have ${formatDuration(diffMinutes)} more focus time than ${data.peer.username}. Keep up the deep work!`,
             icon: <Timer className="w-8 h-8" />,
             variant: "primary"
         };
-    } else {
+    } else if (diffMinutes < 0) {
         return {
             title: "Focus Gap",
-            description: `${data.peer.username} has accumulated more focus hours. Try scheduling more study sessions!`,
+            description: `${data.peer.username} has accumulated ${formatDuration(diffMinutes)} more focus time. Try scheduling more study sessions!`,
             icon: <Timer className="w-8 h-8" />,
             variant: "secondary"
         };
     }
+    return {
+        title: "Evenly Matched",
+        description: `You and ${data.peer.username} have logged the same amount of focus time. Keep the competition alive!`,
+        icon: <Timer className="w-8 h-8" />,
+        variant: "secondary"
+    };
   };
 
   const getNotesInsight = () => {
@@ -472,6 +484,7 @@ const BehavioralInsights = ({ data }) => {
 };
 
 const ComparisonCTA = () => {
+  const navigate = useNavigate();
   return (
     <section className="bg-white p-16 md:p-20 rounded-[40px] border border-gray-100 shadow-sm mt-10 flex flex-col items-center text-center">
       <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight max-w-2xl">
@@ -483,11 +496,11 @@ const ComparisonCTA = () => {
       </p>
 
       <div className="flex flex-col sm:flex-row gap-6">
-        <button className="flex items-center gap-3 px-10 py-5 rounded-full text-white bg-[#5D2ECC] hover:bg-[#4c35b5] transition-all hover:scale-105 shadow-xl shadow-purple-200 text-base font-bold">
+        <button onClick={() => navigate('/schedule')} className="flex items-center gap-3 px-10 py-5 rounded-full text-white bg-[#5D2ECC] hover:bg-[#4c35b5] transition-all hover:scale-105 shadow-xl shadow-purple-200 text-base font-bold">
           <Play className="w-6 h-6 fill-current" />
           Apply Schedule Optimization
         </button>
-        <button className="flex items-center gap-3 px-10 py-5 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all text-base font-bold">
+        <button onClick={() => window.print()} className="flex items-center gap-3 px-10 py-5 rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all text-base font-bold">
           <FileText className="w-6 h-6 text-gray-500" />
           Download PDF Report
         </button>
@@ -521,11 +534,11 @@ const PeerComparisonPage = () => {
         // Fetch both comparison data and available categories concurrently
         const [resCompare, resCategories] = await Promise.all([
           api.get(`/leaderboards/compare/${userId}/${peerId}`),
-          api.get('/content/categories')
+          api.get('/leaderboards/sectional/categories')
         ]);
         
         setData(resCompare.data);
-        const names = (resCategories.data || []).map(c => c.name).filter(Boolean);
+        const names = (resCategories.data || []).filter(Boolean);
         setDbCategories(names.length > 0 ? names : ["Computer Science", "Mathematics", "Physics"]); // Fallback just in case
         
       } catch (err) {
@@ -579,6 +592,9 @@ const PeerComparisonPage = () => {
 
               {/* Weekly Focus Heatmap Section */}
               <WeeklyFocusHeatmap data={data} />
+
+              {/* CTA Section */}
+              <ComparisonCTA />
             </>
           )}
         </main>
