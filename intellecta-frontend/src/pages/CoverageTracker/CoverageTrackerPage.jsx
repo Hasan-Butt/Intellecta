@@ -804,11 +804,11 @@ const CoverageTrackerPage = () => {
                 <div className="mb-6">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                      <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
                         Coverage Tracker
                       </h1>
-                      <p className="text-gray-400 text-sm mt-1">
-                        Monitor your curriculum mastery in real-time.
+                      <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
+                        Map your curriculum, track topic mastery, and schedule upcoming exams.
                       </p>
                     </div>
 

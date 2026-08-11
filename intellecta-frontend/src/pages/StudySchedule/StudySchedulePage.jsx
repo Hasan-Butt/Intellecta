@@ -678,10 +678,10 @@ export default function StudySchedulePage() {
           <div className="px-12 py-10">
             {/* Page heading */}
             <div className="mb-10">
-              <h1 className="font-[sans-serif] font-extrabold text-5xl tracking-[-1.2px] text-[#161c27] leading-[48px]">
+              <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
                 Study Schedule
               </h1>
-              <p className="font-[sans-serif] text-[#484554] text-lg leading-relaxed mt-2">
+              <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
                 Manage your academic trajectory with editorial precision.
               </p>
             </div>
