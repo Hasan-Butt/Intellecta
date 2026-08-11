@@ -201,7 +201,7 @@ const StudySessionDashboard = () => {
         gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
         oscillator.start(audioCtx.currentTime);
-        oscillator.stop(audioCtx.currentTime + 1.5);
+        oscillator.stop(audioCtx.currentTime + 2);
       } catch (e) {
         console.error("Audio playback failed", e);
       }
