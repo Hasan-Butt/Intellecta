@@ -141,9 +141,10 @@ const FullAssessmentInterface = () => {
       submittingRef.current = false;
       setSubmitting(false);
       console.error("Error submitting quiz:", error);
+      const message = error.response?.data?.message || 'There was an error submitting your quiz. Please try again.';
       Swal.fire({
         title: 'Submission Error',
-        text: 'There was an error submitting your quiz. Please try again.',
+        text: message,
         icon: 'error',
         confirmButtonColor: '#6C5DD3'
       });

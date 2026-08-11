@@ -7,5 +7,6 @@ import java.util.List;
 public interface LeaderboardService {
     List<LeaderboardEntryDTO> getGlobalLeaderboard(Long userId);
     List<LeaderboardEntryDTO> getSectionalLeaderboard(Long userId, String category);
+    List<String> getSectionalCategories();
     PeerComparisonDTO comparePeers(Long userId, Long peerId);
 }

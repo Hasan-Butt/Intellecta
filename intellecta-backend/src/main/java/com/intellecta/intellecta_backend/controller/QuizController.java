@@ -27,9 +27,12 @@ public class QuizController {
 
     @GetMapping
     public ResponseEntity<List<Quiz>> getAllQuizzes(@RequestParam(required = false) Long userId) {
-        if (userId != null) {
-            SecurityUtils.validateUser(userId);
+        // Always scope the query to an authenticated identity — never serve an
+        // unscoped listing to a caller who omits the userId parameter.
+        if (userId == null) {
+            userId = SecurityUtils.getAuthenticatedUser().getId();
         }
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(quizService.getAllQuizzes(userId));
     }
 
@@ -41,6 +44,10 @@ public class QuizController {
     @GetMapping("/{id}")
     public ResponseEntity<Quiz> getQuizById(@PathVariable Long id,
                                             @RequestParam(required = false) Long userId) {
+        if (userId == null) {
+            userId = SecurityUtils.getAuthenticatedUser().getId();
+        }
+        SecurityUtils.validateUser(userId);
         return ResponseEntity.ok(quizService.getQuizById(id, userId));
     }
 
@@ -61,7 +68,8 @@ public class QuizController {
     @GetMapping("/submissions/{attemptId}")
     public ResponseEntity<SubmissionDetailResponse> getSubmissionForStudent(@PathVariable Long attemptId) {
         QuizAttempt attempt = quizAttemptRepository.findById(attemptId)
-                .orElseThrow(() -> new RuntimeException("Attempt not found: " + attemptId));
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Attempt not found: " + attemptId));
         if (attempt.getUser() != null) {
             SecurityUtils.validateUser(attempt.getUser().getId());
         }

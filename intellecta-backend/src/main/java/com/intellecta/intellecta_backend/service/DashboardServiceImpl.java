@@ -35,6 +35,7 @@ import com.intellecta.intellecta_backend.repository.NotesRepository;
 import com.intellecta.intellecta_backend.repository.StudySessionRepository;
 import com.intellecta.intellecta_backend.repository.SubjectRepository;
 import com.intellecta.intellecta_backend.repository.UserRepository;
+import com.intellecta.intellecta_backend.util.LevelUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -93,12 +94,10 @@ public class DashboardServiceImpl implements DashboardService {
 
         // ── XP / Level ────────────────────────────────────────────────────────
         long currentXp    = user.getXp();
-        int  level        = user.getLevel();
-        // Exponential curve: level N requires 100 * N^1.5 total XP
-        long nextLevelXp  = (long)(100.0 * Math.pow(level + 1, 1.5));
-        long prevLevelXp  = level <= 1 ? 0L : (long)(100.0 * Math.pow(level, 1.5));
-        int  xpPct        = (int) Math.min(100,
-            ((currentXp - prevLevelXp) * 100.0) / Math.max(1, nextLevelXp - prevLevelXp));
+        int  level        = LevelUtils.calculateLevel(currentXp);
+        long nextLevelXp  = LevelUtils.nextLevelXp(level);
+        long prevLevelXp  = LevelUtils.prevLevelXp(level);
+        int  xpPct        = LevelUtils.xpProgressPct(currentXp, level);
         String levelTitle = resolveLevelTitle(level);
 
         // ── Recent badges ─────────────────────────────────────────────────────
@@ -162,11 +161,10 @@ public class DashboardServiceImpl implements DashboardService {
                     .findByUserIdOrderByStartTimeDesc(u.getId())
                     .stream().mapToLong(StudySession::getDurationMinutes).sum() / 60;
 
-                int uLevel = u.getLevel();
-                long uNextLevelXp = (long)(100.0 * Math.pow(uLevel + 1, 1.5));
-                long uPrevLevelXp = uLevel <= 1 ? 0L : (long)(100.0 * Math.pow(uLevel, 1.5));
-                int uXpPct = (int) Math.min(100,
-                    ((u.getXp() - uPrevLevelXp) * 100.0) / Math.max(1, uNextLevelXp - uPrevLevelXp));
+                int uLevel = LevelUtils.calculateLevel(u.getXp());
+                long uNextLevelXp = LevelUtils.nextLevelXp(uLevel);
+                long uPrevLevelXp = LevelUtils.prevLevelXp(uLevel);
+                int uXpPct = LevelUtils.xpProgressPct(u.getXp(), uLevel);
 
                 leaderboard.add(LeaderboardEntryDTO.builder()
                     .rank(displayRank)

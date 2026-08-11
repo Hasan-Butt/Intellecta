@@ -11,8 +11,10 @@ import com.intellecta.intellecta_backend.repository.QuizAttemptRepository;
 import com.intellecta.intellecta_backend.repository.SectionalXPRepository;
 import com.intellecta.intellecta_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ public class QuizGradingService {
     @Transactional(readOnly = true)
     public SubmissionDetailResponse getSubmissionDetail(Long attemptId) {
         QuizAttempt attempt = quizAttemptRepository.findById(attemptId)
-                .orElseThrow(() -> new RuntimeException("Attempt not found: " + attemptId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Attempt not found: " + attemptId));
 
         Quiz quiz = attempt.getQuiz();
         User user = attempt.getUser();
@@ -85,9 +87,14 @@ public class QuizGradingService {
         SecurityUtils.validateAdmin();
 
         QuizAttempt attempt = quizAttemptRepository.findById(attemptId)
-                .orElseThrow(() -> new RuntimeException("Attempt not found: " + attemptId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Attempt not found: " + attemptId));
         Quiz quiz = attempt.getQuiz();
         User user = attempt.getUser();
+
+        // Remember what was already awarded so re-grading adjusts by delta
+        // instead of stacking XP on top (prevents double-award on re-grade).
+        int previousTotal = attempt.getTotalMarks() != null ? attempt.getTotalMarks() : 0;
+        int previousXp = attempt.getXpGained() != null ? attempt.getXpGained() : 0;
 
         int awardedTotal = 0;
         int objectiveScore = attempt.getScore() != null ? attempt.getScore() : 0;
@@ -112,21 +119,24 @@ public class QuizGradingService {
         attempt.setStatus("COMPLETED");
         attempt.setXpGained(xpGained);
 
-        user.setXp(user.getXp() + xpGained);
-        userRepository.save(user);
+        int xpDelta = xpGained - previousXp;
+        if (xpDelta != 0) {
+            user.setXp(Math.max(0, user.getXp() + xpDelta));
+            userRepository.save(user);
 
-        String category = quiz.getCategory();
-        if (category == null || category.trim().isEmpty()) {
-            category = "General";
+            String category = quiz.getCategory();
+            if (category == null || category.trim().isEmpty()) {
+                category = "General";
+            }
+            SectionalXP sectionalXP = sectionalXPRepository.findByUserAndCategory(user, category)
+                    .orElse(SectionalXP.builder()
+                            .user(user)
+                            .category(category)
+                            .xp(0L)
+                            .build());
+            sectionalXP.setXp(Math.max(0, sectionalXP.getXp() + xpDelta));
+            sectionalXPRepository.save(sectionalXP);
         }
-        SectionalXP sectionalXP = sectionalXPRepository.findByUserAndCategory(user, category)
-                .orElse(SectionalXP.builder()
-                        .user(user)
-                        .category(category)
-                        .xp(0L)
-                        .build());
-        sectionalXP.setXp(sectionalXP.getXp() + xpGained);
-        sectionalXPRepository.save(sectionalXP);
 
         return quizAttemptRepository.save(attempt);
     }

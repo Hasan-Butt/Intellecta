@@ -25,6 +25,11 @@ public class LeaderboardController {
         return ResponseEntity.ok(leaderboardService.getGlobalLeaderboard(userId));
     }
 
+    @GetMapping("/sectional/categories")
+    public ResponseEntity<List<String>> getSectionalCategories() {
+        return ResponseEntity.ok(leaderboardService.getSectionalCategories());
+    }
+
     @GetMapping("/sectional/{userId}")
     public ResponseEntity<List<LeaderboardEntryDTO>> getSectionalLeaderboard(
             @PathVariable Long userId,
