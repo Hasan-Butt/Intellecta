@@ -189,6 +189,23 @@ const StudySessionDashboard = () => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
     } else if (isActive && timeLeft === 0) {
+      // Play a short beep when timer finishes
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 1.5);
+      } catch (e) {
+        console.error("Audio playback failed", e);
+      }
+
       if (mode === "Work") {
         setPomodorosCompleted((prev) => prev + 1);
         setMode("Break");
@@ -338,7 +355,7 @@ const StudySessionDashboard = () => {
   };
 
   const TimerCard = ({ zen = false }) => (
-    <section className={`p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-1000 ${zen ? "bg-white/5 border border-white/10 w-full max-w-3xl py-20 shadow-2xl backdrop-blur-xl scale-110" : "glass-neu col-span-12 lg:col-span-7"}`}>
+    <section className={`p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-1000 ${zen ? "bg-white/5 border border-white/10 rounded-[3rem] w-full max-w-3xl py-20 shadow-2xl backdrop-blur-xl scale-110" : "glass-neu col-span-12 lg:col-span-7"}`}>
       {zen && (
         <button 
           onClick={() => setAmbientMode(false)}
