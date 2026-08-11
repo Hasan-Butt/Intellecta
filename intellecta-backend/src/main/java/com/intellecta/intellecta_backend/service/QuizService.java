@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -141,27 +143,9 @@ public class QuizService {
         }
     }
 
+    // Bug 1.2.2: return EVERY attempt (with quiz questions eagerly fetched) so the
+    // frontend can average the full mastery history — not just the latest per quiz.
     public List<QuizAttempt> getAttemptsByUserId(Long userId) {
-        List<QuizAttempt> attempts = quizAttemptRepository.findByUserIdWithQuiz(userId);
-
-        Map<Long, QuizAttempt> latestPerQuiz = new LinkedHashMap<>();
-        for (QuizAttempt attempt : attempts) {
-            if (attempt.getQuiz() == null) continue; // skip orphaned attempts
-            Long quizId = attempt.getQuiz().getId();
-            QuizAttempt existing = latestPerQuiz.get(quizId);
-            if (existing == null || isAfter(attempt, existing)) {
-                latestPerQuiz.put(quizId, attempt);
-            }
-        }
-
-        return latestPerQuiz.values().stream()
-                .sorted(Comparator.comparing(QuizAttempt::getEndTime, Comparator.nullsLast(Comparator.reverseOrder())))
-                .toList();
-    }
-
-    private boolean isAfter(QuizAttempt a, QuizAttempt b) {
-        if (a.getEndTime() == null) return false;
-        if (b.getEndTime() == null) return true;
-        return a.getEndTime().isAfter(b.getEndTime());
+        return quizAttemptRepository.findByUserIdWithQuiz(userId);
     }
 }
