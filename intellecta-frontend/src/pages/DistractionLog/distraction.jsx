@@ -25,13 +25,60 @@ import Navbar from '../../components/dashboard/Navbar';
 import api from '../../services/api';
 import { getUserId } from '../../utils/auth';
 
+// --- Trigger categorization (Bugs 2.1.1, 2.1.4, 2.3.3) ---------------------
+// Single client-side scheme used for the Triggers card, the Filter Logs
+// dropdown, and the log-table category chips. Mirrors the backend's
+// AdminService.categorizeDistraction keyword buckets.
+
+const categorizeReason = (reason) => {
+  const l = (reason || '').toLowerCase();
+  if (l.includes('social') || l.includes('video') || l.includes('watch') ||
+      l.includes('instagram') || l.includes('reel') || l.includes('twitter') ||
+      l.includes('tiktok') || l.includes('youtube') || l.includes('scroll')) {
+    return 'Social Media';
+  }
+  if (l.includes('phone') || l.includes('notification') || l.includes('message') ||
+      l.includes('chat') || l.includes('whatsapp') || l.includes('call')) {
+    return 'Notifications';
+  }
+  if (l.includes('break') || l.includes('noise') || l.includes('tired') ||
+      l.includes('snack') || l.includes('hunger') || l.includes('hungry') ||
+      l.includes('chai') || l.includes('eat') || l.includes('food')) {
+    return 'Physical Breaks';
+  }
+  return 'Other Distractions';
+};
+
+const TRIGGER_BUCKETS = {
+  'Social Media':       { icon: Globe,       bar: 'bg-[#4F27B8]', chip: 'bg-[#4F27B8]/10 text-[#4F27B8]' },
+  'Notifications':      { icon: Bell,        bar: 'bg-[#3B82F6]', chip: 'bg-[#3B82F6]/10 text-[#3B82F6]' },
+  'Physical Breaks':    { icon: Utensils,    bar: 'bg-[#F97316]', chip: 'bg-[#F97316]/10 text-[#F97316]' },
+  'Other Distractions': { icon: MoreVertical, bar: 'bg-[#9CA3AF]', chip: 'bg-[#9CA3AF]/10 text-[#9CA3AF]' },
+};
+
+// Bug 2.3.2: serialize/parse range inputs via LOCAL date parts — using
+// toISOString() shifts dates by the UTC offset and `new Date('YYYY-MM-DD')`
+// parses as UTC midnight, which silently drops one day from the range.
+const toLocalDateInput = (d) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
+const fromLocalDateInput = (s) => {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d, 0, 0, 0, 0);
+};
+
 // --- Components ---
 
-const TriggerItem = ({ icon: Icon, label, percentage, colorClass }) => (
+const TriggerItem = ({ icon: Icon, label, percentage, barClass, chipClass }) => (
   <div className="group cursor-default">
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-xl ${colorClass.replace('bg-', 'bg-opacity-10 text-')}`}>
+        {/* Bug 2.1.2: chip uses a real bg tint (e.g. bg-[#4F27B8]/10) + a text color */}
+        <div className={`p-2 rounded-xl ${chipClass}`}>
           <Icon size={18} />
         </div>
         <span className="text-[15px] font-semibold text-[#1A1D1F] tracking-tight">{label}</span>
@@ -40,7 +87,7 @@ const TriggerItem = ({ icon: Icon, label, percentage, colorClass }) => (
     </div>
     <div className="w-full h-3 bg-[#F4F6F8] rounded-full overflow-hidden">
       <div 
-        className={`h-full rounded-full transition-all duration-1000 ease-out ${colorClass}`} 
+        className={`h-full rounded-full transition-all duration-1000 ease-out ${barClass}`} 
         style={{ width: `${percentage}%` }}
       />
     </div>
@@ -49,9 +96,26 @@ const TriggerItem = ({ icon: Icon, label, percentage, colorClass }) => (
 
 const WeeklyBarChart = ({ data }) => {
   const maxVal = Math.max(...data.map(d => d.value));
+  const hasData = data.some(d => d.value > 0);
 
   const yTicks = 5;
   const safeMax = maxVal || 1;
+
+  // Bug 2.2.3: all-zero days render a proper empty state instead of stubs
+  if (!hasData) {
+    return (
+      <div className="relative flex-1 w-full mt-4 flex items-center justify-center rounded-2xl border-2 border-dashed border-gray-100">
+        <div className="text-center">
+          <p className="text-sm font-black text-[#9CA3AF] uppercase tracking-widest">
+            No leaks in this period
+          </p>
+          <p className="text-[10px] font-medium text-[#C4C9D1] mt-2">
+            Log a distraction to start the trend.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex-1 w-full mt-4 flex flex-row">
@@ -165,9 +229,14 @@ const AnalyticsDashboard = () => {
                impactColor = "bg-emerald-50 text-emerald-600 border-emerald-100";
            }
 
-           const durationStr = item.duration 
-             ? (item.duration.includes("min") ? item.duration : `${item.duration} min`) 
-             : "5 min";
+           // Bug 2.3.1: parse an explicit minutes value; null durations show "—"
+           // and never contribute to time sums or averages.
+           let durationMins = null;
+           if (item.duration) {
+             const parsed = parseInt(item.duration.replace(/[^0-9]/g, ''), 10);
+             if (!Number.isNaN(parsed)) durationMins = parsed;
+           }
+           const durationStr = durationMins !== null ? `${durationMins} min` : "—";
 
            const dateObj2 = new Date(item.loggedAt);
            const dateStr = dateObj2.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -178,7 +247,13 @@ const AnalyticsDashboard = () => {
              date: dateStr,
              rawDate: item.loggedAt,
              duration: durationStr,
-             category: { label, icon, color },
+             durationMins,
+             category: {
+               label,
+               bucket: categorizeReason(label),
+               icon,
+               color
+             },
              impact: { label: impactLabel, color: impactColor }
            };
         });
@@ -203,41 +278,28 @@ const AnalyticsDashboard = () => {
     });
   }, [logData, dateRange]);
 
+  // Bug 2.3.3: filter by trigger bucket (category), not raw reason text
   const filteredLogData = selectedCategory === 'All' 
     ? filteredByDateLogs 
-    : filteredByDateLogs.filter(row => row.category.label === selectedCategory);
+    : filteredByDateLogs.filter(row => row.category.bucket === selectedCategory);
 
-  // Compute total minutes lost today from log entries
-  const timeLostToday = React.useMemo(() => {
-    const todayStr = new Date().toDateString();
-    const totalMins = logData
-      .filter(row => {
-        // Always compute 'Today' card from raw logData for 'Today' specifically
-        return row.rawDate && new Date(row.rawDate).toDateString() === todayStr;
-      })
-      .reduce((sum, row) => {
-        const match = row.duration?.match(/(\d+)/);
-        return sum + (match ? parseInt(match[1]) : 0);
-      }, 0);
+  // Bug 2.4.1: all three cards read from the same selected date range
+  const timeLostInRange = React.useMemo(() => {
+    const totalMins = filteredByDateLogs.reduce((sum, row) => sum + (row.durationMins || 0), 0);
     if (totalMins === 0) return '0m';
     const h = Math.floor(totalMins / 60);
     const m = totalMins % 60;
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
-  }, [logData]);
+  }, [filteredByDateLogs]);
 
-  const distractionsToday = React.useMemo(() => {
-    const todayStr = new Date().toDateString();
-    return logData.filter(row => row.rawDate && new Date(row.rawDate).toDateString() === todayStr).length;
-  }, [logData]);
+  const distractionsInRange = filteredByDateLogs.length;
 
   const avgDistractionTime = React.useMemo(() => {
-    // Use filteredByDateLogs for Average to match the selected range
-    if (filteredByDateLogs.length === 0) return '0m';
-    const totalMins = filteredByDateLogs.reduce((sum, row) => {
-      const match = row.duration?.match(/(\d+)/);
-      return sum + (match ? parseInt(match[1]) : 0);
-    }, 0);
-    const avg = Math.round(totalMins / filteredByDateLogs.length);
+    // Bug 2.3.1: entries without a duration are excluded from the average
+    const withDuration = filteredByDateLogs.filter(row => row.durationMins != null);
+    if (withDuration.length === 0) return '0m';
+    const totalMins = withDuration.reduce((sum, row) => sum + row.durationMins, 0);
+    const avg = Math.round(totalMins / withDuration.length);
     if (avg === 0) return '< 1m';
     const h = Math.floor(avg / 60);
     const m = avg % 60;
@@ -245,49 +307,37 @@ const AnalyticsDashboard = () => {
   }, [filteredByDateLogs]);
 
 
+  // Bug 2.1.1/2.4.1: triggers aggregate the selected date range's entries
+  // by centralized bucket, so chips, the Triggers card, and the log-table
+  // categories all describe the same sets of logs.
   const triggerData = React.useMemo(() => {
-    if (filteredByDateLogs.length === 0) return [];
-    
-    // Group by reason
+    const totalCount = filteredByDateLogs.length;
+    if (totalCount === 0) return [];
+
     const counts = filteredByDateLogs.reduce((acc, row) => {
-      const label = row.category.label;
-      acc[label] = (acc[label] || 0) + 1;
+      const bucket = row.category.bucket;
+      acc[bucket] = (acc[bucket] || 0) + 1;
       return acc;
     }, {});
 
-    const totalCount = filteredByDateLogs.length;
-
     return Object.entries(counts)
-      .map(([label, count], index) => {
-        let icon, colorClass;
-        const lowerLabel = label.toLowerCase();
-        
-        if (lowerLabel.includes('social')) {
-           icon = Globe; colorClass = 'bg-[#4F27B8]';
-        } else if (lowerLabel.includes('family') || lowerLabel.includes('friend')) {
-           icon = Users; colorClass = 'bg-[#7C3AED]';
-        } else if (lowerLabel.includes('hunger') || lowerLabel.includes('food')) {
-           icon = Utensils; colorClass = 'bg-[#F97316]';
-        } else if (lowerLabel.includes('notification') || lowerLabel.includes('phone')) {
-           icon = Bell; colorClass = 'bg-[#3B82F6]';
-        } else if (lowerLabel === 'others') {
-           icon = MoreVertical; colorClass = 'bg-[#9CA3AF]';
-        } else {
-           const colors = ['bg-[#4F27B8]', 'bg-[#7C3AED]', 'bg-[#F97316]', 'bg-[#3B82F6]'];
-           icon = Zap; colorClass = colors[index % colors.length];
-        }
-
-        return { 
-          icon, 
-          label, 
-          percentage: Math.round((count / totalCount) * 100), 
-          colorClass, 
-          count 
+      .map(([bucket, count]) => {
+        const meta = TRIGGER_BUCKETS[bucket] || TRIGGER_BUCKETS['Other Distractions'];
+        return {
+          icon: meta.icon,
+          label: bucket,
+          percentage: Math.round((count / totalCount) * 100),
+          barClass: meta.bar,
+          chipClass: meta.chip,
+          count,
         };
       })
       .sort((a, b) => b.count - a.count); // Most frequent first
   }, [filteredByDateLogs]);
 
+  // Bug 2.2.2: weekly trend is built from the selected date range's entries
+  // (filteredByDateLogs), not the unfiltered logData — the chart now tracks
+  // the same data that the stat cards and table show.
   const weeklyTrend = React.useMemo(() => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const result = Array.from({ length: 7 }, (_, i) => {
@@ -296,19 +346,18 @@ const AnalyticsDashboard = () => {
       return { day: days[d.getDay()], dateStr: d.toDateString(), value: 0, count: 0 };
     });
 
-    logData.forEach(row => {
+    filteredByDateLogs.forEach(row => {
       if (!row.rawDate) return;
       const entryDateStr = new Date(row.rawDate).toDateString();
       const slot = result.find(r => r.dateStr === entryDateStr);
       if (slot) {
-        const match = row.duration?.match(/(\d+)/);
-        slot.value += match ? parseInt(match[1]) : 0;
+        slot.value += row.durationMins || 0;
         slot.count += 1;
       }
     });
 
     return result;
-  }, [logData]);
+  }, [filteredByDateLogs]);
 
   return (
     <div className="bg-[#F8F9FB] min-h-screen font-sans selection:bg-purple-100 antialiased text-[#1A1D1F]">
@@ -379,8 +428,9 @@ const AnalyticsDashboard = () => {
                         <input 
                           type="date" 
                           className="w-full text-[12px] p-2 rounded-lg border border-gray-100"
-                          value={dateRange.start.toISOString().split('T')[0]}
-                          onChange={(e) => setDateRange(prev => ({ ...prev, start: new Date(e.target.value), label: null }))}
+                          // Bug 2.3.2: local date parts, no toISOString
+                          value={dateRange.start ? toLocalDateInput(dateRange.start) : ''}
+                          onChange={(e) => e.target.value && setDateRange(prev => ({ ...prev, start: fromLocalDateInput(e.target.value), label: null }))}
                         />
                       </div>
                       <div className="space-y-1">
@@ -388,8 +438,9 @@ const AnalyticsDashboard = () => {
                         <input 
                           type="date" 
                           className="w-full text-[12px] p-2 rounded-lg border border-gray-100"
-                          value={dateRange.end.toISOString().split('T')[0]}
-                          onChange={(e) => setDateRange(prev => ({ ...prev, end: new Date(e.target.value), label: null }))}
+                          // Bug 2.3.2: local date parts, no toISOString
+                          value={dateRange.end ? toLocalDateInput(dateRange.end) : ''}
+                          onChange={(e) => e.target.value && setDateRange(prev => ({ ...prev, end: fromLocalDateInput(e.target.value), label: null }))}
                         />
                       </div>
                     </div>
@@ -402,7 +453,7 @@ const AnalyticsDashboard = () => {
           {/* Top Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { label: 'Time Lost Today', value: timeLostToday, sub: `${distractionsToday} distraction${distractionsToday !== 1 ? 's' : ''} today`, icon: TimerOff, color: 'text-red-500', bg: 'bg-red-50' },
+              { label: 'Time Lost', value: timeLostInRange, sub: `${distractionsInRange} distraction${distractionsInRange !== 1 ? 's' : ''} in range`, icon: TimerOff, color: 'text-red-500', bg: 'bg-red-50' },
               { label: 'Prime Trigger', value: triggerData.length > 0 ? triggerData[0].label : '-', sub: `${triggerData.length > 0 ? triggerData[0].count : 0} occurrences`, icon: Zap, color: 'text-[#4F27B8]', bg: 'bg-purple-50' },
               { label: 'Avg. Distraction', value: avgDistractionTime, sub: (() => {
                   if (filteredByDateLogs.length === 0) return 'no data yet';
@@ -458,8 +509,8 @@ const AnalyticsDashboard = () => {
                   <p className="text-xs text-[#9CA3AF] font-bold uppercase tracking-widest mt-1 truncate">Click a bar to explore data</p>
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
-                  <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[#4F27B8]" /><span className="text-[9px] font-bold text-[#1A1D1F] uppercase tracking-widest whitespace-nowrap">Hours Lost</span></div>
-                  <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-gray-200" /><span className="text-[9px] font-bold text-[#9CA3AF] uppercase tracking-widest whitespace-nowrap">Baseline</span></div>
+                  <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[#4F27B8]" /><span className="text-[9px] font-bold text-[#1A1D1F] uppercase tracking-widest whitespace-nowrap">Minutes Lost</span></div>
+                  {/* Bug 2.2.1: phantom "Baseline" legend removed — the chart has only one series */}
                 </div>
               </div>
               <div className="flex-1 flex flex-col justify-center">
@@ -483,7 +534,8 @@ const AnalyticsDashboard = () => {
                 {isFilterOpen && (
                   <div className="absolute right-0 top-full mt-2 w-48 neu z-50 overflow-hidden">
                     <div className="max-h-[200px] overflow-y-auto custom-scrollbar">
-                      {['All', ...new Set(logData.map(item => item.category.label))].map((cat, idx) => (
+                      {/* Bug 2.1.1/2.3.3: dropdown options are the centralized trigger buckets */}
+                      {['All', ...Object.keys(TRIGGER_BUCKETS)].map((cat, idx) => (
                         <button
                           key={idx}
                           onClick={() => {
@@ -522,9 +574,13 @@ const AnalyticsDashboard = () => {
                     <td className="px-4 lg:px-6 py-5 text-[14px] text-[#1A1D1F] font-semibold whitespace-nowrap">{row.duration}</td>
                     <td className="px-4 lg:px-6 py-5">
                       <div className="flex items-center gap-2 whitespace-nowrap">
-                        <row.category.icon size={16} className={row.category.color} />
-                        <span className="text-[14px] font-semibold text-[#1A1D1F]">{row.category.label}</span>
-                      </div>
+                      {/* Bug 2.3.3: chip is styled from the row's trigger bucket, so
+                          table chips and trigger-card bars share colors/labels */}
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg ${TRIGGER_BUCKETS[row.category.bucket].chip} text-[11px] font-bold`}>
+                        <row.category.icon size={13} />
+                        {row.category.label}
+                      </span>
+                    </div>
                     </td>
                     <td className="px-4 lg:px-6 py-5 text-right">
                       <span className={`${row.impact.color} border text-[10px] font-bold px-3 py-1 rounded-lg uppercase`}>

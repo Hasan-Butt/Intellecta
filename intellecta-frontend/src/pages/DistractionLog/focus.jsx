@@ -84,7 +84,6 @@ const MasteryItem = ({ title, subtitle, percentage, type }) => {
 
 const PerformanceDashboard = () => {
   const navigate = useNavigate();
-  const [isHovered, setIsHovered] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [attempts, setAttempts] = useState([]);
   const [distractions, setDistractions] = useState([]);
@@ -109,9 +108,9 @@ const PerformanceDashboard = () => {
       .catch(err => console.error("Error fetching distractions:", err));
   }, []);
 
-  const { allocationData, totalHours, totalSessions, maxSessionDuration } = useMemo(() => {
+  const { allocationData, totalHours, totalSessions, maxSessionDuration, deepWorkRatio } = useMemo(() => {
     if (sessions.length === 0) {
-      return { allocationData: [], totalHours: 0 };
+      return { allocationData: [], totalHours: 0, deepWorkRatio: 0 };
     }
 
     const groups = sessions.reduce((acc, s) => {
@@ -124,15 +123,23 @@ const PerformanceDashboard = () => {
     const totalMinutes = Object.values(groups).reduce((a, b) => a + b, 0);
     const colors = ["#5D5FEF", "#A5A6F6", "#E2E2F2", "#C7D2FE", "#818CF8"];
 
+    // Bug 1.3.1: keep exact shares, round all slices, then move any rounding
+    // remainder onto the largest slice so the ring always sums to exactly 100.
     const data = Object.entries(groups)
       .map(([label, mins], i) => ({
         label,
-        value: Math.round((mins / totalMinutes) * 100),
-        color: colors[i % colors.length],
-        bgClass: `bg-[${colors[i % colors.length]}]`, // fallback
+        exact: (mins / totalMinutes) * 100,
         rawColor: colors[i % colors.length]
       }))
-      .sort((a, b) => b.value - a.value);
+      .sort((a, b) => b.exact - a.exact)
+      .map(item => ({ ...item, value: Math.round(item.exact) }));
+
+    const roundedSum = data.reduce((a, b) => a + b.value, 0);
+    const diff = 100 - roundedSum;
+    if (diff !== 0 && data.length > 0) {
+      const maxIdx = data.reduce((best, it, i, arr) => (it.value > arr[best].value ? i : best), 0);
+      data[maxIdx].value = Math.max(0, data[maxIdx].value + diff);
+    }
 
     const deepSessions = sessions.filter(s => s.deepWork).length;
     const ratio = sessions.length > 0 ? Math.round((deepSessions / sessions.length) * 100) : 0;
@@ -144,18 +151,28 @@ const PerformanceDashboard = () => {
       totalHours: (totalMinutes / 60).toFixed(1),
       totalSessions: sessions.length,
       avgSessionDuration: avg,
-      maxSessionDuration: maxSession
+      maxSessionDuration: maxSession,
+      deepWorkRatio: ratio
     };
   }, [sessions]);
 
   const masteryDeficits = useMemo(() => {
-    if (attempts.length === 0) return [];
+    // Bug 1.2.1: ungraded (PENDING_REVIEW) attempts have score 0 — never
+    // treat them as mastery failures.
+    const gradedAttempts = attempts.filter(a => a.graded === true);
+    if (gradedAttempts.length === 0) return [];
 
     const scoresByTopic = {};
-    attempts.forEach(a => {
-      const topic = a.quiz?.category || a.quiz?.topic || "General";
+    gradedAttempts.forEach(a => {
+      // Bug 1.2.4: group by topic first, then category.
+      const topic = a.quiz?.topic || a.quiz?.category || "General";
       if (!scoresByTopic[topic]) scoresByTopic[topic] = [];
-      const pct = a.totalQuestions > 0 ? (a.score / a.totalQuestions) * 100 : 0;
+      // Bug 1.2.3: score only counts OBJECTIVE questions; divide by the
+      // objective count, not by totalQuestions (which includes descriptive).
+      const objectiveCount = (a.quiz?.questions || [])
+        .filter(q => q.questionType === 'OBJECTIVE').length;
+      const denominator = objectiveCount > 0 ? objectiveCount : (a.totalQuestions || 0);
+      const pct = denominator > 0 ? (a.score / denominator) * 100 : 0;
       scoresByTopic[topic].push(pct);
     });
 
@@ -237,7 +254,7 @@ const PerformanceDashboard = () => {
     "09:00 PM",
     "12:00 AM",
   ];
-  const { heatmapData, dayLabels, primeSlot, behavioralInsights } = useMemo(() => {
+  const { heatmapData, dayLabels, primeSlot, hasPrimeSlotData, behavioralInsights } = useMemo(() => {
     // Generate past 7 days (including today)
     const days = [];
     for (let i = 6; i >= 0; i--) {
@@ -265,11 +282,41 @@ const PerformanceDashboard = () => {
       }
     });
 
+    // All-sessions slot grid for the audit's Circadian Rhythm — same scope as
+    // Sustainability / Depth / Velocity (Bug 1.1.3: one scope for all four metrics)
+    const allTimeSlots = Array(12).fill(0);
+    sessions.forEach(s => {
+      const sDate = new Date(s.startTime);
+      const hour = sDate.getHours();
+      let slot = Math.floor((hour - 6 + 24) % 24 / 2);
+      if (slot >= 0 && slot < 12) {
+        allTimeSlots[slot] += (s.deepWork ? 3 : 1);
+      }
+    });
+
     const labels = days.map(d => 
       d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()
     );
 
-    // Deduce Prime Slot (column with highest sum)
+    const formatHour = (h) => `${h.toString().padStart(2, '0')}:00`;
+
+    // Circadian Rhythm — prime slot over ALL sessions (Bug 1.1.3)
+    let maxAllIntensity = -1;
+    let allPrimeSlotIdx = 0;
+    for (let c = 0; c < 12; c++) {
+      if (allTimeSlots[c] > maxAllIntensity) {
+        maxAllIntensity = allTimeSlots[c];
+        allPrimeSlotIdx = c;
+      }
+    }
+    const allStartHour = (6 + allPrimeSlotIdx * 2) % 24;
+    const allEndHour = (allStartHour + 2) % 24;
+    const circadianRhythm = maxAllIntensity > 0
+      ? `${formatHour(allStartHour)} — ${formatHour(allEndHour)}`
+      : "No data yet";
+
+    // Deduce Prime Slot (column with highest sum over the last 7 days)
+    // Bug 1.1.2: never fabricate a window when that week has no data
     let maxIntensity = -1;
     let primeSlotIdx = 0;
     for (let c = 0; c < 12; c++) {
@@ -283,10 +330,12 @@ const PerformanceDashboard = () => {
       }
     }
 
+    const hasPrimeSlotData = maxIntensity > 0;
     const startHour = (6 + primeSlotIdx * 2) % 24;
     const endHour = (startHour + 2) % 24;
-    const formatHour = (h) => `${h.toString().padStart(2, '0')}:00`;
-    const primeSlotStr = `${formatHour(startHour)} — ${formatHour(endHour)}`;
+    const primeSlotStr = hasPrimeSlotData
+      ? `${formatHour(startHour)} — ${formatHour(endHour)}`
+      : "No data yet";
 
     // Mastery vs Focus Correlation (Efficiency)
     const subjectStats = {};
@@ -296,10 +345,14 @@ const PerformanceDashboard = () => {
       subjectStats[sub].hours += (s.durationMinutes || 30) / 60;
     });
 
-    attempts.forEach(a => {
-      const sub = a.quiz?.category || a.quiz?.topic || "General";
+    // Bug 1.2.1/1.2.3: same grading/denominator discipline as Mastery Deficits
+    attempts.filter(a => a.graded === true).forEach(a => {
+      const sub = a.quiz?.topic || a.quiz?.category || "General";
       if (!subjectStats[sub]) subjectStats[sub] = { hours: 0, mastery: 0, attempts: 0 };
-      const pct = a.totalQuestions > 0 ? (a.score / a.totalQuestions) * 100 : 0;
+      const objectiveCount = (a.quiz?.questions || [])
+        .filter(q => q.questionType === 'OBJECTIVE').length;
+      const denominator = objectiveCount > 0 ? objectiveCount : (a.totalQuestions || 0);
+      const pct = denominator > 0 ? (a.score / denominator) * 100 : 0;
       subjectStats[sub].mastery = (subjectStats[sub].mastery * subjectStats[sub].attempts + pct) / (subjectStats[sub].attempts + 1);
       subjectStats[sub].attempts += 1;
     });
@@ -333,8 +386,9 @@ const PerformanceDashboard = () => {
       heatmapData: grid.map(row => row.map(val => Math.min(5, val))),
       dayLabels: labels,
       primeSlot: primeSlotStr,
+      hasPrimeSlotData,
       behavioralInsights: {
-        circadianRhythm: primeSlotStr,
+        circadianRhythm,
         sustainability: `${avgDuration}m`,
         depth: `${concentrationQuality}%`,
         velocity: `${velocity}h/day`
@@ -342,7 +396,12 @@ const PerformanceDashboard = () => {
     };
   }, [sessions, attempts, distractions]);
 
-  const hourLabels = ["06", "08", "10", "12", "02", "04", "06", "08", "10", "12", "02", "04"];
+  // Bug 1.4.3: 12 two-hour buckets starting at 06:00, with explicit AM/PM
+  const hourLabels = Array.from({ length: 12 }, (_, i) => {
+    const h = (6 + i * 2) % 24;
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${h12.toString().padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+  });
 
   const radius = 100;
   const circumference = 2 * Math.PI * radius;
@@ -377,8 +436,6 @@ const PerformanceDashboard = () => {
               {/* Focus Chart Card */}
               <section
                 className="col-span-12 lg:col-span-8 neu overflow-hidden transition-all duration-500 hover:scale-[1.01]"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
               >
                 <div className="p-10 flex justify-between items-start">
                   <header>
@@ -389,11 +446,13 @@ const PerformanceDashboard = () => {
                       Biometric tracking of cognitive load over 24h
                     </p>
                   </header>
-                  <button
-                    className={`px-6 py-2.5 rounded-full text-[11px] font-black tracking-[0.15em] uppercase transition-all duration-300 ${isHovered ? "bg-[#3f2da1] -translate-y-1 shadow-indigo-200 shadow-xl" : "bg-[#4F39C3]"} text-white shadow-lg`}
+                  {/* Bug 1.4.1: static status indicator — live tracking isn't wired up */}
+                  <div
+                    className="px-6 py-2.5 rounded-full text-[11px] font-black tracking-[0.15em] uppercase bg-[#E8FFF3] text-emerald-600 shadow-sm flex items-center gap-2"
                   >
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     Live Tracking
-                  </button>
+                  </div>
                 </div>
 
                 <div className="relative h-72 w-full px-2">
@@ -537,10 +596,12 @@ const PerformanceDashboard = () => {
                     </div>
                   </div>
 
-                  {/* The right side badge */}
-                  <span className="translate-y-2 flex-shrink-0 px-4 py-2 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-xl">
-                    Optimal Flow
-                  </span>
+                  {/* Bug 1.4.2: hide the badge when there's no prime-slot data */}
+                  {hasPrimeSlotData && (
+                    <span className="translate-y-2 flex-shrink-0 px-4 py-2 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-xl">
+                      Optimal Flow
+                    </span>
+                  )}
                 </footer>
               </section>
 
@@ -581,6 +642,20 @@ const PerformanceDashboard = () => {
                   Focus Allocation
                 </h2>
 
+                {allocationData.length === 0 ? (
+                  /* Bug 1.3.3: explicit empty state instead of a bare "0h" donut */
+                  <div className="flex-1 flex items-center justify-center my-8 rounded-3xl border-2 border-dashed border-gray-100 py-14">
+                    <div className="text-center">
+                      <p className="text-sm font-black text-gray-400 uppercase tracking-widest">
+                        No study data available yet.
+                      </p>
+                      <p className="text-[10px] font-medium text-gray-300 mt-2">
+                        Complete a focus session to unlock allocation.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                <>
                 <div className="relative flex items-center justify-center my-8">
                   <svg
                     className="w-72 h-72 transform -rotate-90"
@@ -608,7 +683,8 @@ const PerformanceDashboard = () => {
                           fill="transparent"
                           strokeDasharray={circumference}
                           strokeDashoffset={dashOffset}
-                          strokeLinecap="round"
+                          /* Bug 1.3.1: square caps so segments don't bleed into each other */
+                          strokeLinecap="butt"
                           style={{ 
                             transform: `rotate(${rotation}deg)`,
                             transformOrigin: 'center',
@@ -629,6 +705,10 @@ const PerformanceDashboard = () => {
                     <span className="text-[11px] font-bold tracking-[0.25em] text-gray-400 mt-2 uppercase">
                       Total Focused
                     </span>
+                    {/* Bug 1.3.4: surface the previously unused deep-work ratio */}
+                    <span className="text-[10px] font-black text-indigo-600 mt-2 uppercase tracking-widest">
+                      {deepWorkRatio}% Deep Work
+                    </span>
                   </div>
                 </div>
 
@@ -642,6 +722,8 @@ const PerformanceDashboard = () => {
                     </div>
                   ))}
                 </div>
+                </>
+                )}
               </section>
 
               {/* Analytical Charts Section */}
@@ -661,6 +743,18 @@ const PerformanceDashboard = () => {
                     </div>
                   </div>
 
+                  {sessions.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center rounded-3xl border-2 border-dashed border-gray-100">
+                      <div className="text-center">
+                        <p className="text-sm font-black text-gray-400 uppercase tracking-widest">
+                          No study data available yet.
+                        </p>
+                        <p className="text-[10px] font-medium text-gray-300 mt-2">
+                          Complete a focus session to unlock this audit.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="flex-1 grid grid-cols-2 gap-6">
                     <div className="bg-gray-50 rounded-3xl p-6 flex flex-col justify-between group hover:bg-indigo-600 transition-all duration-500">
                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-white/60 transition-colors">Circadian Rhythm</span>
@@ -691,6 +785,7 @@ const PerformanceDashboard = () => {
                       </div>
                     </div>
                   </div>
+                  )}
 
                   <div className="mt-10 pt-8 border-t border-gray-50">
                     <div className="flex items-start gap-4">

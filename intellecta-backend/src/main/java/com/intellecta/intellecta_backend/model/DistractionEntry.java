@@ -1,7 +1,6 @@
 package com.intellecta.intellecta_backend.model;
 
 import java.time.LocalDateTime;
-import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,7 +28,13 @@ public class DistractionEntry {
     @Column(nullable = true)
     private String impact;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private LocalDateTime loggedAt;
+
+    @PrePersist
+    private void ensureLoggedAt() {
+        if (loggedAt == null) {
+            loggedAt = LocalDateTime.now();
+        }
+    }
 }

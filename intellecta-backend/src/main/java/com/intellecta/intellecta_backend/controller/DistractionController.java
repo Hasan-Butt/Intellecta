@@ -10,11 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.intellecta.intellecta_backend.dto.response.TriggerStatDTO;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.intellecta.intellecta_backend.security.SecurityUtils;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/distractions")
@@ -59,30 +56,6 @@ public class DistractionController {
             .build();
 
         return ResponseEntity.ok(distractionRepository.save(entry));
-    }
-
-    @GetMapping("/user/{userId}/triggers")
-    public ResponseEntity<List<TriggerStatDTO>> getTriggers(@PathVariable Long userId) {
-        SecurityUtils.validateUser(userId);
-        List<Object[]> results = distractionRepository.findTriggerCountsByUserId(userId);
-        
-        long totalCount = 0;
-        for (Object[] row : results) {
-            totalCount += ((Number) row[1]).longValue();
-        }
-
-        List<TriggerStatDTO> dtoList = new ArrayList<>();
-        if (totalCount == 0) return ResponseEntity.ok(dtoList);
-        
-        for (Object[] row : results) {
-            String reason = (String) row[0];
-            long count = ((Number) row[1]).longValue();
-            
-            int percentage = (int) Math.round((count * 100.0) / totalCount);
-            dtoList.add(new TriggerStatDTO(reason != null ? reason : "Unknown", percentage, count));
-        }
-
-        return ResponseEntity.ok(dtoList);
     }
 
     @GetMapping("/user/{userId}/logs")
