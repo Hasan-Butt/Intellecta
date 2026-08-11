@@ -7,7 +7,8 @@ import {
 import { cn } from "../../lib/utils";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
-import { getSubjects } from "../../services/documentService";
+import api from "../../services/api";
+import { getUserId } from "../../utils/auth";
 import {
   getTopicsBySubject, getTopicsByExam, createTopic,
   bulkUpdateTopicStatuses, deleteTopic,
@@ -348,7 +349,7 @@ const ExamDetailModal = ({
           onClick={() =>
             openConfirm(
               `Delete "${exam.name}"?`,
-              "This exam and all its linked data will be permanently removed.",
+              "Are you sure you want to delete this exam permenantly?",
               () => onDeleteExam(exam.id)
             )
           }
@@ -542,19 +543,20 @@ const CoverageTrackerPage = () => {
   const closeConfirm = () =>
     setConfirmDialog({ open: false, title: "", message: "", onConfirm: null });
 
-  // ── Fetch subjects ────────────────────────────────────────────────────────
+  // ── Fetch subjects (enrolled courses from Study Schedule) ────────────────
 
   useEffect(() => {
-    getSubjects()
+    const userId = getUserId();
+    if (!userId) return;
+    api.get(`/courses/user/${userId}`)
       .then((res) => {
-        let data = res.data;
-        if (data && !Array.isArray(data) && Array.isArray(data.data))
-          data = data.data;
-        if (!Array.isArray(data)) data = [];
+        const raw = Array.isArray(res.data) ? res.data : [];
+        // Normalise course objects so the rest of the page can use .name and .id
+        const data = raw.map((c) => ({ ...c, name: c.courseName }));
         setSubjects(data);
         if (data.length > 0) setActiveSubject(data[0]);
       })
-      .catch((err) => console.error("Failed to load subjects:", err));
+      .catch((err) => console.error("Failed to load enrolled subjects:", err));
   }, []);
 
   const fetchTopics = useCallback(async (subjectId) => {
@@ -774,6 +776,23 @@ const CoverageTrackerPage = () => {
 };
 
   const handleDeleteExam = async (examId) => {
+    // Check if this exam has any topics linked to it before attempting deletion
+    try {
+      const topicsRes = await getTopicsByExam(examId);
+      const linkedTopics = Array.isArray(topicsRes.data) ? topicsRes.data : [];
+      if (linkedTopics.length > 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Cannot Delete Exam',
+          html: `This exam has <strong>${linkedTopics.length} topic${linkedTopics.length !== 1 ? 's' : ''}</strong> linked to it.<br/>Please remove or reassign all topics first before deleting the exam.`,
+          confirmButtonColor: '#7c3aed',
+        });
+        return;
+      }
+    } catch (err) {
+      console.error("Failed to check linked topics:", err);
+    }
+
     try {
       await deleteExam(examId);
       await fetchExams(activeSubject.id);
@@ -781,6 +800,12 @@ const CoverageTrackerPage = () => {
       if (selectedExam?.id === examId) setSelectedExam(null);
     } catch (err) {
       console.error("Failed to delete exam:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to delete the exam. Please try again.',
+        confirmButtonColor: '#7c3aed',
+      });
     }
   };
 
@@ -1190,12 +1215,12 @@ const CoverageTrackerPage = () => {
                     </div>
                   )}
 
-                  {/* Pre-Exam Checklist */}
+                  {/* Exam Checklist */}
                   <div className="neu overflow-hidden">
                     <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between bg-white/50">
                       <div className="flex flex-col gap-1.5">
                         <h3 className="text-sm font-extrabold text-gray-800">
-                          Pre-Exam Checklist
+                          Exam Checklist
                         </h3>
                         {exams.length > 1 && (
                           <div className="flex gap-1 flex-wrap">
@@ -1271,7 +1296,8 @@ const CoverageTrackerPage = () => {
                           </span>
                           <button
                             onClick={() => handleDeleteCheckItem(item.id)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500"
+                            className="flex-shrink-0 p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-colors"
+                            title="Remove item"
                           >
                             <Trash2 size={12} />
                           </button>
@@ -1303,16 +1329,6 @@ const CoverageTrackerPage = () => {
         </main>
       </div>
 
-      {/* FAB */}
-      <button
-        onClick={() => {
-          setTopicForm({ title: "", description: "", examId: "" });
-          setTopicModal(true);
-        }}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-[#7c3aed] text-white rounded-2xl shadow-xl shadow-indigo-200 flex items-center justify-center hover:bg-[#6d28d9] transition-all hover:scale-105 active:scale-95 z-50"
-      >
-        <Zap size={22} fill="white" />
-      </button>
 
       {/* ── Add Topic Modal ── */}
       <Modal
