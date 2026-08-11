@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Swal from 'sweetalert2';
 import {
   Plus, ChevronDown, ChevronRight, AlertTriangle,
-  Shuffle, Check, Zap, Trash2, X, Loader2,
+  Check, Zap, Trash2, X, Loader2, BookOpen, Target, CalendarClock,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import Navbar from "../../components/dashboard/Navbar";
@@ -19,10 +19,10 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG = {
-  MASTERED:    { label: "MASTERED",    color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
-  IN_PROGRESS: { label: "IN PROGRESS", color: "text-violet-600",  bg: "bg-violet-50",  border: "border-violet-200"  },
-  REVIEWED:    { label: "REVIEWED",    color: "text-blue-600",    bg: "bg-blue-50",    border: "border-blue-200"    },
-  NOT_STARTED: { label: "NOT STARTED", color: "text-gray-400",    bg: "bg-gray-50",    border: "border-gray-200"    },
+  MASTERED:    { label: "MASTERED",    color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", ring: "#10B981" },
+  IN_PROGRESS: { label: "IN PROGRESS", color: "text-violet-600",  bg: "bg-violet-50",  border: "border-violet-200",  ring: "#7C3AED" },
+  REVIEWED:    { label: "REVIEWED",    color: "text-blue-600",    bg: "bg-blue-50",    border: "border-blue-200",    ring: "#3B82F6" },
+  NOT_STARTED: { label: "NOT STARTED", color: "text-gray-400",    bg: "bg-gray-50",    border: "border-gray-200",    ring: "#D1D5DB" },
 };
 
 const STATUS_ORDER = ["NOT_STARTED", "IN_PROGRESS", "REVIEWED", "MASTERED"];
@@ -69,13 +69,56 @@ const formatDate = (isoString) => {
   });
 };
 
-// ── Sub Components ────────────────────────────────────────────────────────────
+// ── Shared presentational primitives ─────────────────────────────────────────
+
+/** Small stat pill for the header strip — scannable page state at a glance. */
+const StatChip = ({ value, label }) => (
+  <div className="neu-sm px-5 py-3 flex flex-col items-center min-w-[86px]">
+    <span className="font-mono text-lg font-bold text-gray-900 leading-none">{value}</span>
+    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">{label}</span>
+  </div>
+);
+
+/** Unified circular progress ring — the same visual language used for both
+ *  "days left" (exam countdown) and "% mastered" (subject/exam progress),
+ *  so the page has one consistent way of showing "how far along". */
+const ProgressRing = ({
+  pct, size = 140, stroke = 12,
+  trackColor = "rgba(124,58,237,0.08)", fillColor = "#7C3AED",
+}) => {
+  const radius = (size - stroke) / 2;
+  const circ = 2 * Math.PI * radius;
+  const dash = Math.max(0, Math.min(1, pct / 100)) * circ;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90 flex-shrink-0">
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={trackColor} strokeWidth={stroke} />
+      <circle
+        cx={size / 2} cy={size / 2} r={radius} fill="none"
+        stroke={fillColor} strokeWidth={stroke}
+        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+        className="transition-all duration-700 ease-out"
+      />
+    </svg>
+  );
+};
+
+/** Colored icon badge for a topic's status — one shared component so the
+ *  main topic list and the exam-detail modal read as the same system. */
+const StatusIconBadge = ({ status, size = "md" }) => {
+  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.NOT_STARTED;
+  const dims = size === "sm" ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm";
+  return (
+    <span className={cn("rounded-xl flex items-center justify-center font-bold flex-shrink-0", dims, cfg.bg, cfg.color)}>
+      {STATUS_ICONS[status]}
+    </span>
+  );
+};
 
 const StatusBadge = ({ status }) => {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.NOT_STARTED;
   return (
     <span className={cn(
-      "text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border cursor-pointer select-none",
+      "text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border cursor-pointer select-none transition-transform hover:scale-105",
       cfg.color, cfg.bg, cfg.border
     )}>
       {cfg.label}
@@ -83,18 +126,18 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-const CircularCountdown = ({ days }) => {
+const CircularCountdown = ({ days, pulse = false }) => {
   const radius = 28;
   const circ = 2 * Math.PI * radius;
   const pct = Math.max(0, Math.min(1, 1 - days / 30));
   const dash = pct * circ;
   return (
-    <svg width="72" height="72" viewBox="0 0 72 72">
+    <svg width="72" height="72" viewBox="0 0 72 72" className={cn(pulse && "animate-pulse")}>
       <circle cx="36" cy="36" r={radius} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="6" />
       <circle cx="36" cy="36" r={radius} fill="none" stroke="white" strokeWidth="6"
         strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
         transform="rotate(-90 36 36)" />
-      <text x="36" y="33" textAnchor="middle" fill="white" fontSize="13" fontWeight="800">
+      <text x="36" y="33" textAnchor="middle" fill="white" fontSize="13" fontWeight="800" className="font-mono">
         {days < 0 ? "—" : days}
       </text>
       <text x="36" y="46" textAnchor="middle" fill="rgba(255,255,255,0.7)" fontSize="7" fontWeight="700">
@@ -110,7 +153,7 @@ const Modal = ({ isOpen, onClose, title, children, wide = false }) => {
   if (!isOpen) return null;
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-md"
       onClick={onClose}
     >
       <div
@@ -287,7 +330,7 @@ const ExamDetailModal = ({
             {exam.daysLeft < 0 ? (
               <span className="text-red-500 font-bold">Expired</span>
             ) : (
-              <span className="text-[#7c3aed] font-bold">
+              <span className="text-[#7c3aed] font-bold font-mono">
                 {exam.daysLeft} days left
               </span>
             )}
@@ -315,13 +358,13 @@ const ExamDetailModal = ({
         </button>
       </div>
 
-      {/* Exam Progress Bar */}
+      {/* Exam Progress */}
       <div className="neu-inset bg-transparent border-none px-5 py-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
             Exam Coverage Progress
           </span>
-          <span className="text-lg font-black text-gray-900">{examProgress}%</span>
+          <span className="font-mono text-lg font-black text-gray-900">{examProgress}%</span>
         </div>
         <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
           <div
@@ -381,14 +424,7 @@ const ExamDetailModal = ({
                   className="flex items-center justify-between py-3.5 px-4 hover:bg-gray-50 transition-colors group"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <span
-                      className={cn(
-                        "text-base w-5 text-center flex-shrink-0",
-                        STATUS_CONFIG[topic.status]?.color
-                      )}
-                    >
-                      {STATUS_ICONS[topic.status]}
-                    </span>
+                    <StatusIconBadge status={topic.status} size="sm" />
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-gray-800 truncate">
                         {topic.title}
@@ -619,6 +655,12 @@ const CoverageTrackerPage = () => {
     daysLeft <= 14 &&
     (examTopicsForCalc.length > 0 ? examProgress : progressPct) < 50;
 
+  // Status breakdown for the hero mastery ring — presentational only
+  const statusCounts = STATUS_ORDER.reduce((acc, status) => {
+    acc[status] = effectiveTopics.filter((t) => t.status === status).length;
+    return acc;
+  }, {});
+
   // ── Topic handlers ────────────────────────────────────────────────────────
 
   const cycleStatus = async (topicId, currentStatus) => {
@@ -687,7 +729,7 @@ const CoverageTrackerPage = () => {
     Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Please select or create a subject first.' });
     return;
   }
-  
+
   // Check if date is in the past
   const selectedDate = new Date(examForm.examDate);
   const today = new Date();
@@ -696,7 +738,7 @@ const CoverageTrackerPage = () => {
     Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Cannot create exam with a past date. Please select today or a future date.' });
     return;
   }
-  
+
   setModalLoading(true);
   try {
     await createExam({ name: examForm.name.trim(), examDate: examForm.examDate, subjectId: activeSubject.id });
@@ -720,7 +762,7 @@ const CoverageTrackerPage = () => {
     Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Cannot set exam date to a past date. Please select today or a future date.' });
     return;
   }
-  
+
   try {
     await updateExamDate(examId, newDate);
     await fetchExams(activeSubject.id);
@@ -792,438 +834,467 @@ const CoverageTrackerPage = () => {
     <div className="flex-1 flex flex-col min-w-0">
       <Navbar />
 
-      <div className="bg-[#f9f9ff] min-h-screen flex w-full">
+      <div className="bg-[var(--color-base,#f9f9ff)] min-h-screen flex w-full">
         <Sidebar />
 
         <main className="flex-1 overflow-y-auto">
           <div className="px-10 py-10">
-            <div className="grid grid-cols-[1fr_380px] gap-8 max-w-6xl">
+            <div className="max-w-6xl">
 
-              {/* ── LEFT ── */}
-              <div>
-                <div className="mb-6">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
-                        Coverage Tracker
-                      </h1>
-                      <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
-                        Map your curriculum, track topic mastery, and schedule upcoming exams.
-                      </p>
-                    </div>
-
-                    {/* Subject Dropdown */}
-                    <div className="relative">
-                      <button
-                        onClick={() => setSubjectOpen(!subjectOpen)}
-                        className="flex items-center gap-2 px-4 py-2 neu-inset bg-transparent border-none text-xs font-bold text-gray-700 transition-colors"
-                      >
-                        {activeSubject?.name || "Select Subject"}
-                        <ChevronDown
-                          size={13}
-                          className={cn(
-                            "transition-transform",
-                            subjectOpen && "rotate-180"
-                          )}
-                        />
-                      </button>
-                      {subjectOpen && (
-                        <div className="absolute right-0 mt-2 w-56 neu py-1.5 z-20">
-                          {subjects.length === 0 && (
-                            <p className="text-xs text-gray-400 px-4 py-3 italic">
-                              No subjects yet.
-                            </p>
-                          )}
-                          {subjects.map((s) => (
-                            <button
-                              key={s.id}
-                              onClick={() => {
-                                setActiveSubject(s);
-                                setSubjectOpen(false);
-                              }}
-                              className={cn(
-                                "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-2",
-                                activeSubject?.id === s.id
-                                  ? "text-[#7c3aed] bg-[#f5f3ff]"
-                                  : "text-gray-600 hover:bg-gray-50"
-                              )}
-                            >
-                              <span className="truncate">{s.name}</span>
-                              <span className="text-gray-400 text-[9px] shrink-0">
-                                {s.semester}
-                              </span>
-                              {activeSubject?.id === s.id && (
-                                <Check size={12} className="shrink-0" />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Subject-level progress */}
-                <div className="flex flex-col flex-1 min-h-0">
-                <div className="neu px-6 py-5 mb-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                      Overall Subject Progress — {activeSubject?.name || "—"}
+              {/* ── PAGE HEADER ── */}
+              <header className="mb-8">
+                <div className="flex items-start justify-between gap-6 flex-wrap">
+                  <div>
+                    <span className="font-mono text-[11px] font-bold tracking-[0.3em] text-[#7c3aed] uppercase">
+                      Coverage Tracker
                     </span>
-                    <span className="text-2xl font-black text-gray-900">
-                      {progressPct}%
-                    </span>
-                  </div>
-                  <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#7c3aed] rounded-full transition-all duration-700"
-                      style={{ width: `${progressPct}%` }}
-                    />
-                  </div>
-                  <p className="text-[10px] text-gray-400 mt-2">
-                    All topics · NOT STARTED=0% · IN PROGRESS=25% · REVIEWED=50% · MASTERED=100%
-                  </p>
-                </div>
-                </div>
-
-                {/* Topic List */}
-                <div className="neu overflow-hidden mb-5">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-12 text-gray-400 gap-2">
-                      <Loader2 size={18} className="animate-spin" /> Loading topics…
-                    </div>
-                  ) : effectiveTopics.length === 0 ? (
-                    <p className="text-center text-gray-400 text-sm py-10">
-                      No topics yet. Click "+ Add Topic" or the ⚡ button.
+                    <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mt-1">
+                      {activeSubject?.name || "Your Curriculum"}
+                    </h1>
+                    <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
+                      Map your curriculum, track topic mastery, and prep for what's next.
                     </p>
-                  ) : (
-                    <div className="divide-y divide-gray-50">
-                      {effectiveTopics.map((topic) => (
-                        <div
-                          key={topic.id}
-                          className="flex items-center justify-between py-4 px-5 hover:bg-gray-50 transition-colors group"
-                        >
-                          <div className="flex items-center gap-4 flex-1 min-w-0">
-                            <span
-                              className={cn(
-                                "text-lg w-6 text-center flex-shrink-0",
-                                STATUS_CONFIG[topic.status]?.color
-                              )}
-                            >
-                              {STATUS_ICONS[topic.status]}
+                  </div>
+
+                  {/* Subject Dropdown */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setSubjectOpen(!subjectOpen)}
+                      className="flex items-center gap-2 px-5 py-3 neu-inset bg-transparent border-none text-xs font-bold text-gray-700 transition-colors"
+                    >
+                      {activeSubject?.name || "Select Subject"}
+                      <ChevronDown
+                        size={13}
+                        className={cn(
+                          "transition-transform",
+                          subjectOpen && "rotate-180"
+                        )}
+                      />
+                    </button>
+                    {subjectOpen && (
+                      <div className="absolute right-0 mt-2 w-56 neu py-1.5 z-20">
+                        {subjects.length === 0 && (
+                          <p className="text-xs text-gray-400 px-4 py-3 italic">
+                            No subjects yet.
+                          </p>
+                        )}
+                        {subjects.map((s) => (
+                          <button
+                            key={s.id}
+                            onClick={() => {
+                              setActiveSubject(s);
+                              setSubjectOpen(false);
+                            }}
+                            className={cn(
+                              "w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-2",
+                              activeSubject?.id === s.id
+                                ? "text-[#7c3aed] bg-[#f5f3ff]"
+                                : "text-gray-600 hover:bg-gray-50"
+                            )}
+                          >
+                            <span className="truncate">{s.name}</span>
+                            <span className="text-gray-400 text-[9px] shrink-0">
+                              {s.semester}
                             </span>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-bold text-gray-800 truncate">
-                                  {topic.title}
-                                </p>
-                                {topic.examId && (
-                                  <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-[#f0eeff] text-[#7c3aed] border border-[#ddd6fe] shrink-0">
-                                    {exams.find((e) => e.id === topic.examId)?.name || "Exam"}
-                                  </span>
-                                )}
-                                {!topic.examId && (
-                                  <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 shrink-0">
-                                    General
-                                  </span>
+                            {activeSubject?.id === s.id && (
+                              <Check size={12} className="shrink-0" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* At-a-glance stat strip */}
+                <div className="flex gap-3 mt-6 flex-wrap">
+                  <StatChip value={effectiveTopics.length} label="Topics" />
+                  <StatChip value={statusCounts.MASTERED} label="Mastered" />
+                  <StatChip value={upcomingExams.length} label="Upcoming Exams" />
+                  <StatChip value={`${progressPct}%`} label="Overall" />
+                </div>
+              </header>
+
+              <div className="grid grid-cols-[1fr_380px] gap-8">
+
+                {/* ── LEFT ── */}
+                <div className="flex flex-col gap-6">
+
+                  {/* Hero: Subject Mastery ring — the page's opening thesis */}
+                  <div className="neu p-8 flex items-center gap-8 flex-wrap">
+                    <div className="relative inline-flex items-center justify-center">
+                      <ProgressRing pct={progressPct} />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="font-mono text-3xl font-black text-gray-900">
+                          {progressPct}%
+                        </span>
+                        <span className="text-[9px] uppercase tracking-widest text-gray-400 font-bold mt-0.5">
+                          Mastery
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 min-w-[180px]">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                        Subject Breakdown — {activeSubject?.name || "—"}
+                      </p>
+                      <div className="flex flex-col gap-2.5">
+                        {STATUS_ORDER.slice().reverse().map((status) => (
+                          <div key={status} className="flex items-center gap-3">
+                            <span
+                              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: STATUS_CONFIG[status].ring }}
+                            />
+                            <span className="text-xs font-semibold text-gray-600 flex-1">
+                              {STATUS_CONFIG[status].label}
+                            </span>
+                            <span className="font-mono text-sm font-bold text-gray-900">
+                              {statusCounts[status]}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Topic List */}
+                  <div className="neu overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-50">
+                      <h3 className="text-sm font-extrabold text-gray-800">
+                        All Topics
+                      </h3>
+                    </div>
+                    {loading ? (
+                      <div className="flex items-center justify-center py-12 text-gray-400 gap-2">
+                        <Loader2 size={18} className="animate-spin" /> Loading topics…
+                      </div>
+                    ) : effectiveTopics.length === 0 ? (
+                      <div className="text-center py-12 px-6">
+                        <BookOpen size={28} className="text-gray-200 mx-auto mb-3" />
+                        <p className="text-gray-400 text-sm">
+                          No topics yet. Add your first one below to start tracking mastery.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-gray-50">
+                        {effectiveTopics.map((topic) => (
+                          <div
+                            key={topic.id}
+                            className="flex items-center justify-between py-4 px-5 hover:bg-gray-50/80 transition-colors group"
+                          >
+                            <div className="flex items-center gap-4 flex-1 min-w-0">
+                              <StatusIconBadge status={topic.status} />
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-bold text-gray-800 truncate">
+                                    {topic.title}
+                                  </p>
+                                  {topic.examId ? (
+                                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-[#f0eeff] text-[#7c3aed] border border-[#ddd6fe] shrink-0">
+                                      {exams.find((e) => e.id === topic.examId)?.name || "Exam"}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 shrink-0">
+                                      General
+                                    </span>
+                                  )}
+                                </div>
+                                {topic.description && (
+                                  <p className="text-[11px] text-gray-400 mt-0.5 truncate">
+                                    {topic.description}
+                                  </p>
                                 )}
                               </div>
-                              {topic.description && (
-                                <p className="text-[11px] text-gray-400 mt-0.5 truncate">
-                                  {topic.description}
-                                </p>
-                              )}
+                            </div>
+                            <div className="flex items-center gap-3 ml-4 flex-shrink-0">
+                              <button
+                                onClick={() => cycleStatus(topic.id, topic.status)}
+                              >
+                                <StatusBadge status={topic.status} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTopic(topic.id)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500"
+                              >
+                                <Trash2 size={14} />
+                              </button>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3 ml-4 flex-shrink-0">
-                            <button
-                              onClick={() => cycleStatus(topic.id, topic.status)}
-                            >
-                              <StatusBadge status={topic.status} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTopic(topic.id)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => {
-                      setTopicForm({ title: "", description: "", examId: "" });
-                      setTopicModal(true);
-                    }}
-                    className="w-full flex items-center gap-2 px-5 py-4 text-[#7c3aed] text-xs font-black hover:bg-[#f5f3ff] transition-colors border-t border-gray-50"
-                  >
-                    <Plus size={14} /> Add Topic
-                  </button>
-                </div>
-              </div>
-
-              {/* ── RIGHT ── */}
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-2xl font-extrabold text-gray-900">
-                    Exam Prep
-                  </h2>
-                  <button
-                    onClick={() => {
-                      setExamForm({ name: "", examDate: "" });
-                      setExamModal(true);
-                    }}
-                    className="flex items-center gap-1.5 text-[#7c3aed] text-xs font-bold hover:underline"
-                  >
-                    <Plus size={13} /> Add Exam
-                  </button>
-                </div>
-
-                {primaryExam ? (
-                  <div
-                    className="bg-[#7c3aed] rounded-3xl p-6 mb-4 relative overflow-hidden cursor-pointer hover:bg-[#6d28d9] transition-colors"
-                    onClick={() => setExamDetailModal(primaryExam)}
-                  >
-                    <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-white/5 rounded-full pointer-events-none" />
-                    <div className="absolute -right-2 -bottom-2 w-24 h-24 bg-white/5 rounded-full pointer-events-none" />
-                    <div className="flex items-start justify-between mb-4 relative z-10">
-                      <div>
-                        <h3 className="text-white font-extrabold text-lg leading-tight">
-                          {primaryExam.name}
-                        </h3>
-                        <p className="text-white/60 text-xs mt-1">
-                          {formatDate(primaryExam.examDate)}
-                        </p>
+                        ))}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-6 relative z-10">
-                      <CircularCountdown days={primaryExam.daysLeft} />
-                      <div>
-                        <p className="text-white/60 text-[10px] uppercase tracking-widest font-bold mb-1">
-                          Panic Level
-                        </p>
-                        <p className="text-white font-extrabold text-xl">
-                          {panicLevel}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-gray-100 rounded-3xl p-6 mb-4 text-center text-gray-400 text-sm">
-                    No exams yet. Click "+ Add Exam" above.
-                  </div>
-                )}
+                    )}
 
-                {secondaryExams.map((exam) => (
-                  <div
-                    key={exam.id}
-                    className="neu px-5 py-4 mb-3 flex items-center justify-between cursor-pointer hover:scale-[1.02] transition-transform"
-                    onClick={() => setExamDetailModal(exam)}
-                  >
-                    <div>
-                      <p className="text-sm font-bold text-gray-800">
-                        {exam.name}
-                      </p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">
-                        {formatDate(exam.examDate)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-black text-[#7c3aed] bg-[#f5f3ff] px-3 py-1.5 rounded-full">
-                        {exam.daysLeft < 0
-                          ? "EXPIRED"
-                          : `${exam.daysLeft} DAYS LEFT`}
-                      </span>
-                      <ChevronRight size={16} className="text-gray-300" />
-                    </div>
-                  </div>
-                ))}
-
-                {/* Panic Meter + Recommended */}
-                <div className="flex flex-col gap-4">
-                  <div className="neu p-4">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                      Panic Meter
-                    </p>
-                    <div className="flex items-center gap-2 mb-2">
-                      <AlertTriangle
-                        size={16}
-                        className={panicColors[panicLevel]?.text}
-                      />
-                      <span
-                        className={cn(
-                          "text-sm font-black",
-                          panicColors[panicLevel]?.text
-                        )}
-                      >
-                        {panicLevel}
-                      </span>
-                    </div>
-                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className={cn(
-                          "h-full bg-gradient-to-r rounded-full",
-                          panicColors[panicLevel]?.bar,
-                          panicColors[panicLevel]?.width
-                        )}
-                      />
-                    </div>
-                    <p className="text-[9px] text-gray-400 mt-2">
-                      {nearestExamTopics.length > 0
-                        ? `Based on ${nearestExamTopics.length} topics linked to nearest exam`
-                        : "Based on days left + coverage"}
-                    </p>
-                  </div>
-                  <div className="neu p-4">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                      Recommended
-                    </p>
-                    <p className="text-3xl font-black text-gray-900">
-                      {recommendedHours === "0.0" || recommendedHours === "0"
-                        ? "0 hrs"
-                        : `~${recommendedHours} hrs`}
-                    </p>
-                    <p className="text-[10px] text-gray-400 mt-1">
-                      Daily study target
-                    </p>
-                  </div>
-                </div>
-
-                {/* Behind Alert */}
-                {showBehindAlert && lowestTopic && (
-                  <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3 mt-4">
-                    <AlertTriangle
-                      size={15}
-                      className="text-red-500 flex-shrink-0 mt-0.5"
-                    />
-                    <div>
-                      <p className="text-xs font-black text-red-600">
-                        You're falling behind
-                      </p>
-                      <p className="text-[11px] text-red-400 mt-0.5 leading-relaxed">
-                        You're falling behind on{" "}
-                        <strong>{activeSubject?.name}</strong>. Your exam is in{" "}
-                        <strong>{daysLeft} days</strong> but you've only covered{" "}
-                        <strong>
-                          {examTopicsForCalc.length > 0
-                            ? examProgress
-                            : progressPct}
-                          %
-                        </strong>{" "}
-                        of topics. Focus on{" "}
-                        <strong>"{lowestTopic.title}"</strong>.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Pre-Exam Checklist */}
-                <div className="neu overflow-hidden mt-4">
-                  <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between bg-white/50">
-                    <div className="flex flex-col gap-1.5">
-                      <h3 className="text-sm font-extrabold text-gray-800">
-                        Pre-Exam Checklist
-                      </h3>
-                      {exams.length > 1 && (
-                        <div className="flex gap-1 flex-wrap">
-                          {exams.map((exam) => (
-                            <button
-                              key={exam.id}
-                              onClick={() => setSelectedExam(exam)}
-                              className={cn(
-                                "text-[9px] font-black px-2 py-0.5 rounded-full border transition-colors",
-                                selectedExam?.id === exam.id
-                                  ? "bg-[#7c3aed] text-white border-[#7c3aed]"
-                                  : "text-gray-500 border-gray-200 hover:border-[#c4b5fd]"
-                              )}
-                            >
-                              {exam.name}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                      {selectedExam && (
-                        <span className="text-[10px] text-gray-400 font-bold">
-                          {checklist.filter((c) => c.done).length}/
-                          {checklist.length} checked
-                        </span>
-                      )}
-                    </div>
                     <button
-                      onClick={() => setAddingCheckItem(true)}
-                      disabled={!selectedExam}
-                      className="flex items-center gap-1 text-[#7c3aed] text-[11px] font-black hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+                      onClick={() => {
+                        setTopicForm({ title: "", description: "", examId: "" });
+                        setTopicModal(true);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 px-5 py-4 text-[#7c3aed] text-xs font-black hover:bg-[#f5f3ff] transition-colors border-t border-gray-50"
                     >
-                      <Plus size={12} /> Add Item
+                      <Plus size={14} /> Add Topic
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── RIGHT ── */}
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-extrabold text-gray-900">
+                      Exam Prep
+                    </h2>
+                    <button
+                      onClick={() => {
+                        setExamForm({ name: "", examDate: "" });
+                        setExamModal(true);
+                      }}
+                      className="flex items-center gap-1.5 text-[#7c3aed] text-xs font-bold hover:underline"
+                    >
+                      <Plus size={13} /> Add Exam
                     </button>
                   </div>
 
-                  <div className="px-5 py-3 divide-y divide-gray-50">
-                    {!selectedExam && (
-                      <p className="text-xs text-gray-400 text-center py-6 italic">
-                        Add an exam first.
-                      </p>
-                    )}
-                    {checklist.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-3 py-3 group"
-                      >
-                        <button
-                          onClick={() => handleToggleCheck(item.id)}
-                          className={cn(
-                            "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
-                            item.done
-                              ? "bg-[#7c3aed] border-[#7c3aed]"
-                              : "border-gray-200 hover:border-[#c4b5fd]"
-                          )}
-                        >
-                          {item.done && (
-                            <Check
-                              size={10}
-                              className="text-white"
-                              strokeWidth={3}
-                            />
-                          )}
-                        </button>
-                        <span
-                          className={cn(
-                            "text-sm font-medium flex-1 transition-colors",
-                            item.done
-                              ? "text-gray-400 line-through"
-                              : "text-gray-700"
-                          )}
-                        >
-                          {item.description}
-                        </span>
-                        <button
-                          onClick={() => handleDeleteCheckItem(item.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500"
-                        >
-                          <Trash2 size={12} />
-                        </button>
+                  {primaryExam ? (
+                    <div
+                      className={cn(
+                        "bg-[#7c3aed] rounded-3xl p-6 relative overflow-hidden cursor-pointer hover:bg-[#6d28d9] transition-colors",
+                        panicLevel === "Critical" && "animate-pulse"
+                      )}
+                      onClick={() => setExamDetailModal(primaryExam)}
+                    >
+                      <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-white/5 rounded-full pointer-events-none" />
+                      <div className="absolute -right-2 -bottom-2 w-24 h-24 bg-white/5 rounded-full pointer-events-none" />
+                      <div className="flex items-start justify-between mb-4 relative z-10">
+                        <div>
+                          <h3 className="text-white font-extrabold text-lg leading-tight">
+                            {primaryExam.name}
+                          </h3>
+                          <p className="text-white/60 text-xs mt-1">
+                            {formatDate(primaryExam.examDate)}
+                          </p>
+                        </div>
                       </div>
-                    ))}
-                    {addingCheckItem && (
-                      <input
-                        autoFocus
-                        type="text"
-                        value={newCheckText}
-                        onChange={(e) => setNewCheckText(e.target.value)}
-                        onKeyDown={handleAddCheckItem}
-                        onBlur={() =>
-                          setTimeout(() => {
-                            setAddingCheckItem(false);
-                            setNewCheckText("");
-                          }, 200)
-                        }
-                        placeholder="Type item and press Enter…"
-                        className="w-full py-3 text-sm outline-none placeholder:text-gray-300 text-gray-700"
+                      <div className="flex items-center gap-6 relative z-10">
+                        <CircularCountdown days={primaryExam.daysLeft} />
+                        <div>
+                          <p className="text-white/60 text-[10px] uppercase tracking-widest font-bold mb-1">
+                            Panic Level
+                          </p>
+                          <p className="text-white font-extrabold text-xl">
+                            {panicLevel}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="neu p-6 text-center text-gray-400 text-sm">
+                      <CalendarClock size={22} className="text-gray-200 mx-auto mb-2" />
+                      No exams yet. Click "+ Add Exam" above to set your first countdown.
+                    </div>
+                  )}
+
+                  {secondaryExams.map((exam) => (
+                    <div
+                      key={exam.id}
+                      className="neu px-5 py-4 flex items-center justify-between cursor-pointer hover:scale-[1.01] transition-transform"
+                      onClick={() => setExamDetailModal(exam)}
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-gray-800">
+                          {exam.name}
+                        </p>
+                        <p className="text-[11px] text-gray-400 mt-0.5">
+                          {formatDate(exam.examDate)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] font-black text-[#7c3aed] bg-[#f5f3ff] px-3 py-1.5 rounded-full">
+                          {exam.daysLeft < 0
+                            ? "EXPIRED"
+                            : `${exam.daysLeft} DAYS LEFT`}
+                        </span>
+                        <ChevronRight size={16} className="text-gray-300" />
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Exam Readiness — panic + recommended hours, one decision */}
+                  <div className="neu p-5">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
+                      Exam Readiness
+                    </p>
+                    <div className="grid grid-cols-2 divide-x divide-gray-100">
+                      <div className="pr-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <AlertTriangle
+                            size={15}
+                            className={panicColors[panicLevel]?.text}
+                          />
+                          <span
+                            className={cn(
+                              "text-sm font-black",
+                              panicColors[panicLevel]?.text
+                            )}
+                          >
+                            {panicLevel}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className={cn(
+                              "h-full bg-gradient-to-r rounded-full",
+                              panicColors[panicLevel]?.bar,
+                              panicColors[panicLevel]?.width
+                            )}
+                          />
+                        </div>
+                        <p className="text-[9px] text-gray-400 mt-2 leading-relaxed">
+                          {nearestExamTopics.length > 0
+                            ? `Based on ${nearestExamTopics.length} topics for your nearest exam`
+                            : "Based on days left + coverage"}
+                        </p>
+                      </div>
+                      <div className="pl-4">
+                        <div className="flex items-baseline gap-1 mb-2">
+                          <span className="font-mono text-2xl font-black text-gray-900">
+                            {recommendedHours === "0.0" || recommendedHours === "0" ? "0" : `~${recommendedHours}`}
+                          </span>
+                          <span className="text-xs font-bold text-gray-400">hrs/day</span>
+                        </div>
+                        <p className="text-[9px] text-gray-400 leading-relaxed">
+                          Suggested daily study target to stay on track
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Behind Alert */}
+                  {showBehindAlert && lowestTopic && (
+                    <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3 flex items-start gap-3">
+                      <AlertTriangle
+                        size={15}
+                        className="text-red-500 flex-shrink-0 mt-0.5"
                       />
-                    )}
+                      <div>
+                        <p className="text-xs font-black text-red-600">
+                          You're falling behind
+                        </p>
+                        <p className="text-[11px] text-red-400 mt-0.5 leading-relaxed">
+                          Your exam is in <strong>{daysLeft} days</strong> but you've
+                          only covered{" "}
+                          <strong>
+                            {examTopicsForCalc.length > 0 ? examProgress : progressPct}%
+                          </strong>{" "}
+                          of topics. Focus on <strong>"{lowestTopic.title}"</strong> next.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pre-Exam Checklist */}
+                  <div className="neu overflow-hidden">
+                    <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between bg-white/50">
+                      <div className="flex flex-col gap-1.5">
+                        <h3 className="text-sm font-extrabold text-gray-800">
+                          Pre-Exam Checklist
+                        </h3>
+                        {exams.length > 1 && (
+                          <div className="flex gap-1 flex-wrap">
+                            {exams.map((exam) => (
+                              <button
+                                key={exam.id}
+                                onClick={() => setSelectedExam(exam)}
+                                className={cn(
+                                  "text-[9px] font-black px-2 py-0.5 rounded-full border transition-colors",
+                                  selectedExam?.id === exam.id
+                                    ? "bg-[#7c3aed] text-white border-[#7c3aed]"
+                                    : "text-gray-500 border-gray-200 hover:border-[#c4b5fd]"
+                                )}
+                              >
+                                {exam.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {selectedExam && (
+                          <span className="font-mono text-[10px] text-gray-400 font-bold">
+                            {checklist.filter((c) => c.done).length}/
+                            {checklist.length} checked
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => setAddingCheckItem(true)}
+                        disabled={!selectedExam}
+                        className="flex items-center gap-1 text-[#7c3aed] text-[11px] font-black hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <Plus size={12} /> Add Item
+                      </button>
+                    </div>
+
+                    <div className="px-5 py-3 divide-y divide-gray-50">
+                      {!selectedExam && (
+                        <p className="text-xs text-gray-400 text-center py-6 italic">
+                          Add an exam first.
+                        </p>
+                      )}
+                      {checklist.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-3 py-3 group"
+                        >
+                          <button
+                            onClick={() => handleToggleCheck(item.id)}
+                            className={cn(
+                              "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
+                              item.done
+                                ? "bg-[#7c3aed] border-[#7c3aed]"
+                                : "border-gray-200 hover:border-[#c4b5fd]"
+                            )}
+                          >
+                            {item.done && (
+                              <Check
+                                size={10}
+                                className="text-white"
+                                strokeWidth={3}
+                              />
+                            )}
+                          </button>
+                          <span
+                            className={cn(
+                              "text-sm font-medium flex-1 transition-colors",
+                              item.done
+                                ? "text-gray-400 line-through"
+                                : "text-gray-700"
+                            )}
+                          >
+                            {item.description}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteCheckItem(item.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      ))}
+                      {addingCheckItem && (
+                        <input
+                          autoFocus
+                          type="text"
+                          value={newCheckText}
+                          onChange={(e) => setNewCheckText(e.target.value)}
+                          onKeyDown={handleAddCheckItem}
+                          onBlur={() =>
+                            setTimeout(() => {
+                              setAddingCheckItem(false);
+                              setNewCheckText("");
+                            }, 200)
+                          }
+                          placeholder="Type item and press Enter…"
+                          className="w-full py-3 text-sm outline-none placeholder:text-gray-300 text-gray-700"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
