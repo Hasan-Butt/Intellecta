@@ -543,20 +543,18 @@ const CoverageTrackerPage = () => {
   const closeConfirm = () =>
     setConfirmDialog({ open: false, title: "", message: "", onConfirm: null });
 
-  // ── Fetch subjects (enrolled courses from Study Schedule) ────────────────
+  // ── Fetch subjects from the Subjects table (what topics & exams are linked to) ──
 
   useEffect(() => {
     const userId = getUserId();
     if (!userId) return;
-    api.get(`/courses/user/${userId}`)
+    api.get(`/subjects/user/${userId}`)
       .then((res) => {
-        const raw = Array.isArray(res.data) ? res.data : [];
-        // Normalise course objects so the rest of the page can use .name and .id
-        const data = raw.map((c) => ({ ...c, name: c.courseName }));
+        const data = Array.isArray(res.data) ? res.data : [];
         setSubjects(data);
         if (data.length > 0) setActiveSubject(data[0]);
       })
-      .catch((err) => console.error("Failed to load enrolled subjects:", err));
+      .catch((err) => console.error("Failed to load subjects:", err));
   }, []);
 
   const fetchTopics = useCallback(async (subjectId) => {
