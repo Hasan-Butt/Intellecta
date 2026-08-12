@@ -19,6 +19,12 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      // Cap the heaviest utilities at 700 so the UI fonts never trigger
+      // browser-synthesised faux bold (which renders much heavier than intended).
+      fontWeight: {
+        extrabold: "700",
+        black: "700",
+      },
     },
   },
   plugins: [],

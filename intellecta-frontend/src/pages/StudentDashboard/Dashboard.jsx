@@ -551,10 +551,10 @@ export default function DashboardPage() {
             <div className="flex items-end justify-between mb-10">
               <div className="flex flex-col gap-4 max-w-xl">
                 <div>
-                  <h1 className="font-['Manrope',sans-serif] font-extrabold text-5xl tracking-[-1.2px] text-[#161c27] leading-[48px]">
+                  <h1 className="font-['Manrope',sans-serif] font-[900] text-5xl tracking-[-1.2px] text-[#161c27] leading-[48px]">
                     Welcome back, {username}!
                   </h1>
-                  <h1 className="font-['Manrope',sans-serif] font-extrabold text-5xl tracking-[-1.2px] text-[#451ebb] leading-[48px]">
+                  <h1 className="font-['Manrope',sans-serif] font-[900] text-5xl tracking-[-1.2px] text-[#451ebb] leading-[48px]">
                     Ready to focus?
                   </h1>
                 </div>
