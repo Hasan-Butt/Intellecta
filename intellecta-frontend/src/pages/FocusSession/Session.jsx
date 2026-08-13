@@ -14,7 +14,6 @@ import {
   Zap,
   CheckCircle2,
   BellOff,
-  Moon,
   MousePointer2,
   X,
   ListTodo,
@@ -22,8 +21,11 @@ import {
   Trash2,
   Star,
   Image as ImageIcon,
+  Focus,
+  Sparkles,
 } from "lucide-react";
 import Avatar from "../../components/common/Avatar";
+import LofiPlayer from "../../components/LofiPlayer";
 
 const ZEN_THEMES = [
   { id: "default", name: "Deep Void (Default)", image: null },
@@ -505,25 +507,33 @@ const StudySessionDashboard = () => {
                  <TimerCard zen={true} />
                </div>
 
-               {/* Theme Selector */}
+               {/* Lofi Player — bottom-left */}
+               <div className="absolute bottom-8 left-8 z-20">
+                 <LofiPlayer isSessionActive={isActive} />
+               </div>
+
+               {/* Theme Selector — bottom-right */}
                <div className="absolute bottom-8 right-8 z-20">
-                 <div className="group relative">
-                   <button className="px-4 py-2 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 backdrop-blur-md transition-all shadow-lg border border-white/10 font-bold text-sm tracking-wide">
-                     Theme change
-                   </button>
-                   <div className="absolute bottom-full right-0 mb-4 bg-[#0A0A1B]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                     <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest px-3 py-2 mb-1">Themes</p>
-                     {ZEN_THEMES.map(theme => (
-                       <button
-                         key={theme.id}
-                         onClick={() => setActiveThemeId(theme.id)}
-                         className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-between ${activeThemeId === theme.id ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}
-                       >
-                         {theme.name}
-                         {activeThemeId === theme.id && <CheckCircle2 size={14} className="text-indigo-400" />}
-                       </button>
-                     ))}
+                 <div className="group relative inline-block">
+                   <div className="absolute bottom-full right-0 pb-4 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0 z-50">
+                     <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-2 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] flex flex-col gap-1">
+                       <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest px-3 py-2 mb-1">Themes</p>
+                       {ZEN_THEMES.map(theme => (
+                         <button
+                           key={theme.id}
+                           onClick={() => setActiveThemeId(theme.id)}
+                           className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-between border ${activeThemeId === theme.id ? 'bg-white/20 border-white/40 text-white' : 'bg-transparent border-transparent text-white/60 hover:bg-white/10 hover:text-white'}`}
+                         >
+                           {theme.name}
+                           {activeThemeId === theme.id && <CheckCircle2 size={14} className="text-white" />}
+                         </button>
+                       ))}
+                     </div>
                    </div>
+                   <button className="px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center backdrop-blur-xl transition-all duration-300 shadow-[0_8px_32px_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.2)] border border-white/20 hover:border-white/40 font-bold text-sm tracking-widest uppercase hover:-translate-y-1">
+                     <Sparkles size={18} className="mr-2 text-white animate-pulse opacity-80" />
+                     Change Theme
+                   </button>
                  </div>
                </div>
             </div>
@@ -842,10 +852,11 @@ const StudySessionDashboard = () => {
               <div className="flex items-center gap-4">
                 <div 
                   onClick={() => setAmbientMode(!ambientMode)}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center shadow-sm cursor-pointer transition-all ${ambientMode ? "bg-amber-500 text-white" : "bg-white text-amber-500 hover:scale-110"}`}
-                  title="Ambient Focus Mode"
+                  className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all duration-300 relative group ${ambientMode ? "bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)]" : "bg-white text-indigo-600 hover:bg-indigo-50 hover:scale-110 hover:-translate-y-1 hover:shadow-xl"}`}
+                  title="Zen Focus Mode"
                 >
-                  <Moon size={18} fill="currentColor" />
+                  <div className={`absolute inset-0 rounded-full bg-indigo-400 opacity-0 transition-opacity duration-300 group-hover:opacity-20 ${!ambientMode ? 'group-hover:animate-ping' : ''}`} />
+                  <Focus size={24} className={ambientMode ? "animate-[spin_4s_linear_infinite]" : "animate-pulse"} />
                 </div>
                 <div 
                   onClick={() => setShowTasks(true)}
