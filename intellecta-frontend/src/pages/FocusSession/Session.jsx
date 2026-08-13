@@ -21,8 +21,19 @@ import {
   Plus,
   Trash2,
   Star,
+  Image as ImageIcon,
 } from "lucide-react";
 import Avatar from "../../components/common/Avatar";
+
+const ZEN_THEMES = [
+  { id: "default", name: "Deep Void (Default)", image: null },
+  { id: "nature", name: "Nature Retreat", image: "/themes/theme1.jpeg" },
+  { id: "lofi", name: "Focus Flow", image: "/themes/theme2.png" },
+  { id: "space", name: "Deep Forest", image: "/themes/theme3.jpeg" },
+  { id: "space3", name: "Fantasy World", image: "/themes/newtheme1.png" },
+  { id: "space4", name: "Starlight", image: "/themes/newtheme2.png" },
+  { id: "space5", name: "Sparkling Sunshine", image: "/themes/newtheme3.png" },
+];
 
 const StatCard = ({ label, value, subtext, color = "text-slate-900" }) => (
   <div className="flex flex-col">
@@ -113,6 +124,8 @@ const StudySessionDashboard = () => {
   const [newTask, setNewTask] = useState("");
   const [showAchievementModal, setShowAchievementModal] = useState(false);
   const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
+
+  const [activeThemeId, setActiveThemeId] = useState("default");
 
   useEffect(() => {
     let timer;
@@ -364,8 +377,8 @@ const StudySessionDashboard = () => {
   };
 
   const TimerCard = ({ zen = false }) => (
-    <section className={`p-8 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-1000 ${zen ? "bg-white/5 border border-white/10 rounded-[3rem] w-full max-w-3xl py-20 shadow-2xl backdrop-blur-xl scale-110" : "glass-neu col-span-12 lg:col-span-7"}`}>
-      {zen && (
+    <section className={`p-8 flex flex-col items-center justify-center relative transition-all duration-1000 ${zen ? (activeThemeId === 'default' ? "bg-white/5 border border-white/10 rounded-[3rem] w-full max-w-3xl py-20 shadow-2xl backdrop-blur-xl scale-110 overflow-hidden" : "w-full max-w-3xl scale-110") : "glass-neu col-span-12 lg:col-span-7 overflow-hidden"}`}>
+      {zen && activeThemeId === 'default' && (
         <button 
           onClick={() => setAmbientMode(false)}
           className="absolute top-8 right-8 w-10 h-10 rounded-full bg-white/10 text-white/40 flex items-center justify-center hover:bg-white/20 transition-all z-20"
@@ -374,8 +387,12 @@ const StudySessionDashboard = () => {
         </button>
       )}
       
-      <div className={`absolute -top-24 -left-24 w-96 h-96 ${zen ? "bg-indigo-400/20" : "bg-indigo-600/10"} blur-[80px] rounded-full`} />
-      <div className={`absolute -bottom-24 -right-24 w-96 h-96 ${zen ? "bg-emerald-400/10" : "bg-emerald-500/10"} blur-[80px] rounded-full`} />
+      {(!zen || activeThemeId === 'default') && (
+        <>
+          <div className={`absolute -top-24 -left-24 w-96 h-96 ${zen ? "bg-indigo-400/20" : "bg-indigo-600/10"} blur-[80px] rounded-full`} />
+          <div className={`absolute -bottom-24 -right-24 w-96 h-96 ${zen ? "bg-emerald-400/10" : "bg-emerald-500/10"} blur-[80px] rounded-full`} />
+        </>
+      )}
 
       <div className="z-10 flex flex-col items-center gap-5 w-full">
         <div
@@ -463,8 +480,52 @@ const StudySessionDashboard = () => {
         <main className={`flex-1 transition-all duration-1000 ${ambientMode ? "p-0" : "lg:p-10"} overflow-y-auto relative`}>
           {/* ZEN OVERLAY */}
           {ambientMode && (
-            <div className="fixed inset-0 z-[115] flex items-center justify-center p-6 animate-in fade-in zoom-in duration-500">
-               <TimerCard zen={true} />
+            <div 
+              className="fixed inset-0 z-[115] flex items-center justify-center p-6 animate-in fade-in zoom-in duration-500 bg-cover bg-no-repeat bg-center transition-all duration-1000"
+              style={{
+                backgroundImage: ZEN_THEMES.find(t => t.id === activeThemeId)?.image 
+                  ? `url(${ZEN_THEMES.find(t => t.id === activeThemeId)?.image})`
+                  : 'none',
+                backgroundColor: ZEN_THEMES.find(t => t.id === activeThemeId)?.image ? '#0A0A1B' : '#0A0A1B'
+              }}
+            >
+               {/* Overlay removed to preserve original image quality */}
+               
+               {/* Global Close Button for Zen Mode when custom theme is active */}
+               {activeThemeId !== 'default' && (
+                 <button 
+                   onClick={() => setAmbientMode(false)}
+                   className="absolute top-8 right-8 w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 backdrop-blur-md transition-all shadow-lg border border-white/10 z-20"
+                 >
+                   <X size={24} />
+                 </button>
+               )}
+
+               <div className="relative z-10 w-full flex justify-center">
+                 <TimerCard zen={true} />
+               </div>
+
+               {/* Theme Selector */}
+               <div className="absolute bottom-8 right-8 z-20">
+                 <div className="group relative">
+                   <button className="px-4 py-2 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 backdrop-blur-md transition-all shadow-lg border border-white/10 font-bold text-sm tracking-wide">
+                     Theme change
+                   </button>
+                   <div className="absolute bottom-full right-0 mb-4 bg-[#0A0A1B]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                     <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest px-3 py-2 mb-1">Themes</p>
+                     {ZEN_THEMES.map(theme => (
+                       <button
+                         key={theme.id}
+                         onClick={() => setActiveThemeId(theme.id)}
+                         className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-between ${activeThemeId === theme.id ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}
+                       >
+                         {theme.name}
+                         {activeThemeId === theme.id && <CheckCircle2 size={14} className="text-indigo-400" />}
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+               </div>
             </div>
           )}
 
