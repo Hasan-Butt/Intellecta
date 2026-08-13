@@ -21,13 +21,11 @@ const badgeService = {
     return response.data;
   },
 
-  // Admin: Upload image
-  uploadBadgeImage: async (badgeKey, file) => {
-  const formData = new FormData();
-  formData.append('file', file);
-  const response = await api.post(`/admin/badges/${badgeKey}/image`, formData);
-  return response.data;
-},
+  // Admin: Upload image — sends CDN URL to backend (file already uploaded to UploadThing)
+  uploadBadgeImage: async (badgeKey, imageUrl) => {
+    const response = await api.post(`/admin/badges/${badgeKey}/image`, { imageUrl });
+    return response.data;
+  },
 
   // Admin: Delete badge
   deleteBadgeDef: async (badgeKey) => {
