@@ -28,11 +28,11 @@ import Avatar from "../../components/common/Avatar";
 const ZEN_THEMES = [
   { id: "default", name: "Deep Void (Default)", image: null },
   { id: "nature", name: "Nature Retreat", image: "/themes/theme1.jpeg" },
-  { id: "lofi", name: "Lo-Fi Cafe", image: "/themes/theme2.png" },
-  { id: "space", name: "Deep Space", image: "/themes/theme3.jpeg" },
-  { id: "space3", name: "Cosmic Dust", image: "/themes/newtheme1.png" },
+  { id: "lofi", name: "Focus Flow", image: "/themes/theme2.png" },
+  { id: "space", name: "Deep Forest", image: "/themes/theme3.jpeg" },
+  { id: "space3", name: "Fantasy World", image: "/themes/newtheme1.png" },
   { id: "space4", name: "Starlight", image: "/themes/newtheme2.png" },
-  { id: "space5", name: "Astral Void", image: "/themes/newtheme3.png" },
+  { id: "space5", name: "Sparkling Sunshine", image: "/themes/newtheme3.png" },
 ];
 
 const StatCard = ({ label, value, subtext, color = "text-slate-900" }) => (
