@@ -89,7 +89,7 @@ const AchievementsPage = () => {
         <div className="space-y-16 pb-20">
           
           {/* Rare/Legendary Earned */}
-          {badges.some(b => b.earned && (b.rarity === 'LEGENDARY' || b.rarity === 'EPIC')) && (
+          {badges.some(b => b.earned && b.rarity === 'LEGENDARY') && (
             <div>
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-1.5 h-6 bg-amber-400 rounded-full" />
@@ -97,7 +97,7 @@ const AchievementsPage = () => {
               </div>
               
               <div className="grid grid-cols-2 gap-8">
-                {badges.filter(b => b.earned && (b.rarity === 'LEGENDARY' || b.rarity === 'EPIC')).map(badge => (
+                {badges.filter(b => b.earned && b.rarity === 'LEGENDARY').map(badge => (
                   <AchievementCard key={badge.badgeKey} badge={badge} onClick={() => setSelectedBadge(badge)} />
                 ))}
               </div>

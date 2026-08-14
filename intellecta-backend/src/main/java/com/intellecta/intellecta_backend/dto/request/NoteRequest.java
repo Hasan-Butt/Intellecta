@@ -12,7 +12,7 @@ public class NoteRequest {
     @NotBlank @Size(max = 300)
     private String title;
 
-    @Size(max = 10000)
+    @Size(max = 5_000_000)
     private String content;
 
     private NoteCategory category;

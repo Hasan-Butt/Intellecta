@@ -5,9 +5,7 @@ import badgeService from '../../services/badgeService';
 import { 
   Award, 
   Plus, 
-  Filter, 
-  LayoutGrid, 
-  PieChart, 
+
   Search, 
   MoreVertical,
   ArrowUpRight,
@@ -238,19 +236,6 @@ const RewardsPage = () => {
               className="bg-[#633ECD] text-white px-5 py-3 rounded-xl flex items-center gap-2 text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-[#572FC1] transition-all">
               <Plus size={18} />
               Create New Reward
-            </button>
-            <button className="bg-white text-[#633ECD] border border-gray-100 px-5 py-3 rounded-xl flex items-center gap-2 text-sm font-bold hover:bg-gray-50 transition-all">
-              <Filter size={18} />
-              Filter Logic
-            </button>
-          </div>
-
-          <div className="bg-gray-100 p-1.5 rounded-xl flex gap-1">
-            <button className="bg-white shadow-sm text-[#633ECD] px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2">
-              <LayoutGrid size={14} /> Hierarchy View
-            </button>
-            <button className="text-gray-500 px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2">
-              <PieChart size={14} /> Distribution Map
             </button>
           </div>
         </div>
