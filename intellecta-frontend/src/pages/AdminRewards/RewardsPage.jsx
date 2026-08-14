@@ -390,16 +390,6 @@ const RewardsPage = () => {
               </div>
             ))}
           </div>
-
-          <div className="bg-[#006A33]/5 border border-[#006A33]/10 rounded-xl p-6 flex gap-4">
-            <ShieldCheck className="text-[#006A33] shrink-0" size={20} />
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.1em] text-[#006A33] mb-1">Sanctuary Health Check</p>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                The hierarchy is currently well-balanced. We recommend adding 2 more Legendary rewards to incentivize power-users who have cleared existing Epic tiers.
-              </p>
-            </div>
-          </div>
         </div>
       </main>
 
