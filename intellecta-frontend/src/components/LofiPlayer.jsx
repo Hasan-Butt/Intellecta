@@ -3,10 +3,10 @@ import { Music, Play, Pause, Volume2, VolumeX } from "lucide-react";
 
 // ── Added own YouTube video IDs here ──────────────────────────────────────
 const LOFI_TRACKS = [
-  { name: "Lofi Girl",        mood: "Chill & Calm",   videoId: "9kzE8isXlQY" },
-  { name: "Chillhop Radio",   mood: "Relaxed Focus",  videoId: "nWPnLX0deGw" },
+  { name: "Calming Lofi",        mood: "Chill & Calm",   videoId: "9kzE8isXlQY" },
+  { name: "Nasheed",   mood: "Relaxed Focus",  videoId: "nWPnLX0deGw" },
   { name: "Late Night Study", mood: "Deep Work",      videoId: "DEWzT1geuPU" },
-  { name: "lofi chill",       mood: "chill",          videoId: "D4VpVRtbx7w"},
+  { name: "Rainy Day",       mood: "chill",          videoId: "D4VpVRtbx7w"},
   
 ];
 // ─────────────────────────────────────────────────────────────────────────────
