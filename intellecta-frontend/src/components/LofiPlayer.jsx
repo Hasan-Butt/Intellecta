@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Music, Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Music, Play, Pause, Volume2, VolumeX, Loader2 } from "lucide-react";
 
 // ── Added own YouTube video IDs here ──────────────────────────────────────
 const LOFI_TRACKS = [
@@ -19,6 +19,7 @@ export default function LofiPlayer({ isSessionActive }) {
   const [volume,    setVolume]    = useState(100);
   const [selected,  setSelected]  = useState(null);
   const [isMuted,   setIsMuted]   = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // ── Load YouTube IFrame API once ──────────────────────────────────────────
   useEffect(() => {
@@ -56,6 +57,12 @@ export default function LofiPlayer({ isSessionActive }) {
         },
         onStateChange: (e) => {
           setIsPlaying(e.data === 1);
+          if (e.data === 1 || e.data === 2 || e.data === 0) {
+            setIsLoading(false);
+          }
+          if (e.data === 3) {
+            setIsLoading(true);
+          }
           if (e.data === 0) { // YT.PlayerState.ENDED
             playerRef.current.playVideo();
           }
@@ -75,6 +82,7 @@ export default function LofiPlayer({ isSessionActive }) {
   // ── Controls ─────────────────────────────────────────────────────────────
   const handleSelect = (index) => {
     if (!isReady || !playerRef.current) return;
+    if (selected !== index) setIsLoading(true);
     setSelected(index);
     playerRef.current.loadVideoById(LOFI_TRACKS[index].videoId);
     playerRef.current.setVolume(isMuted ? 0 : volume);
@@ -154,10 +162,13 @@ export default function LofiPlayer({ isSessionActive }) {
                 </div>
                 {selected === i && (
                   <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                    {isPlaying
-                      ? <Pause size={10} fill="currentColor" className="text-white" />
-                      : <Play  size={10} fill="currentColor" className="text-white ml-[1px]" />
-                    }
+                    {isLoading ? (
+                      <Loader2 size={10} className="text-white animate-spin" />
+                    ) : isPlaying ? (
+                      <Pause size={10} fill="currentColor" className="text-white" />
+                    ) : (
+                      <Play  size={10} fill="currentColor" className="text-white ml-[1px]" />
+                    )}
                   </div>
                 )}
               </button>
@@ -179,10 +190,13 @@ export default function LofiPlayer({ isSessionActive }) {
                 disabled={!isReady}
                 className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-all disabled:opacity-30 shrink-0 shadow-sm"
               >
-                {isPlaying
-                  ? <Pause size={13} fill="currentColor" />
-                  : <Play  size={13} fill="currentColor" className="ml-[1px]" />
-                }
+                {isLoading ? (
+                  <Loader2 size={13} className="text-white animate-spin" />
+                ) : isPlaying ? (
+                  <Pause size={13} fill="currentColor" />
+                ) : (
+                  <Play  size={13} fill="currentColor" className="ml-[1px]" />
+                )}
               </button>
 
               {/* Volume */}
