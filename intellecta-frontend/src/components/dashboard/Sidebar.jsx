@@ -10,7 +10,8 @@ import {
   LogOut,
   ChevronDown,
   ChevronRight,
-  Award
+  Award,
+  Video
 } from 'lucide-react';
 import { logout } from '../../utils/auth';
 
@@ -39,6 +40,7 @@ const Sidebar = () => {
     },
     { name: 'Analytics', icon: BarChart3, path: '/analytics' },
     { name: 'Trends', icon: TrendingUp, path: '/trends' },
+    { name: 'Lectures', icon: Video, path: '/admin-lectures' },
     { name: 'Rewards', icon: Award, path: '/rewards' },
   ];
 

@@ -25,9 +25,9 @@ import StudySessionPage from "./pages/FocusSession/Session"
 import StudySchedulePage from "./pages/StudySchedule/StudySchedulePage"
 import RewardsPage from "./pages/AdminRewards/RewardsPage";
 import AchievementsPage from "./pages/StudentAchievements/AchievementsPage";
+import AdminLecturesPage from "./pages/Lectures/AdminLecturesPage";
+import StudentLecturesPage from "./pages/Lectures/StudentLecturesPage";
 import SettingsPage from "./pages/Settings/SettingsPage";
-
-
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function AppRoutes() {
@@ -56,6 +56,7 @@ export default function AppRoutes() {
         <Route path="/schedule" element={<StudySchedulePage/>}/>
         <Route path="/light-review" element={<LightReview />} />
         <Route path="/achievements" element={<AchievementsPage />} />
+        <Route path="/lectures" element={<StudentLecturesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
@@ -68,6 +69,7 @@ export default function AppRoutes() {
         <Route path="/trends" element={<PerformanceTrends />} />
         <Route path="/create-quiz" element={<CreateQuizPage />} />
         <Route path="/quiz-submissions" element={<ManageQuizzes />} />
+        <Route path="/admin-lectures" element={<AdminLecturesPage />} />
         <Route path="/rewards" element={<RewardsPage />} />
       </Route>
     </Routes>
