@@ -5,7 +5,7 @@ import {
   Brain, CalendarDays, NotebookPen, Timer, Trophy, BarChart3,
   ShieldOff, Flame, ArrowRight, ChevronDown, Zap,
   Target, BookOpen, TrendingUp, CheckCircle2, Menu, X,
-  Layers, BrainCog, SlidersHorizontal,
+  Layers, BrainCog, SlidersHorizontal, Music,
   ChevronLeft, ChevronRight
 } from "lucide-react";
 import intellectaLogo from "../assets/intellectaLogo.jpeg";
@@ -16,6 +16,8 @@ import screenshot3 from "../assets/app-screenshots/screenshot3.png";
 import screenshot4 from "../assets/app-screenshots/screenshot4.png";
 import screenshot5 from "../assets/app-screenshots/screenshot5.png";
 import screenshot6 from "../assets/app-screenshots/screenshot6.png";
+import screenshot7 from "../assets/app-screenshots/screenshot-7.png";
+import screenshot8 from "../assets/app-screenshots/screenshot-8.png";
 
 /* ─── HELPERS ───────────────────────────────────────────── */
 const fadeUp = {
@@ -271,7 +273,7 @@ function Hero() {
 
 /* ─── TICKER ─────────────────────────────────────────────── */
 function Ticker() {
-  const items = ["Deep Work Sessions", "Study Planning", "Smart Notes", "Distraction Analytics", "Coverage Tracker", "Quiz Engine", "Global Leaderboard", "Focus Intensity", "Peer Comparison", "Exam Prep", "Strategic Planning", "Scholar Streaks"];
+  const items = ["Deep Work Sessions", "Study Planning", "Smart Notes", "Distraction Analytics", "Coverage Tracker", "Quiz Engine", "Global Leaderboard", "Focus Intensity", "Peer Comparison", "Exam Prep", "Strategic Planning", "Scholar Streaks", "Lofi Music", "Theme Changer"];
   const doubled = [...items, ...items];
   return (
     <div style={{ background: "linear-gradient(135deg,#1DA8B8 0%,#53D2E0 100%)", padding: "13px 0", overflow: "hidden", boxShadow: "0 4px 20px rgba(83,210,224,0.28)" }}>
@@ -405,6 +407,7 @@ const SCREENS = [
   { label: "Study Schedule", color: "#F97316", bg: "rgba(249,115,22,0.1)",   icon: CalendarDays, desc: "Personalized weekly curriculum view" },
   { label: "All Notes",      color: "#10B981", bg: "rgba(16,185,129,0.1)",   icon: NotebookPen,  desc: "Searchable notes across every subject" },
   { label: "Leaderboard",    color: "#F59E0B", bg: "rgba(245,158,11,0.1)",   icon: Trophy,       desc: "Global and sectional scholar rankings" },
+  { label: "Lofi Music",     color: "#8B5CF6", bg: "rgba(139,92,246,0.12)",  icon: Music,        desc: "Ambient study soundscapes to keep you in flow" },
 ];
 
 function ScreenCard({ s, i }) {
@@ -443,7 +446,7 @@ function AppPreview() {
             A cohesive platform where every screen serves your academic performance.
           </p>
         </motion.div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: "1.1rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: "1.1rem" }}>
           {SCREENS.map((s, i) => <ScreenCard key={s.label} s={s} i={i} />)}
         </div>
       </div>
@@ -459,6 +462,8 @@ const SCREENSHOTS = [
   screenshot4,
   screenshot5,
   screenshot6,
+  screenshot7,
+  screenshot8,
 ];
 
 function AppShowcase() {
