@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800&display=swap');
 
 :root {
   --hp-bg:          #EEF0FB;
@@ -13,11 +13,11 @@
   --hp-ink:         #1A2340;
   --hp-ink-mid:     #2E3F6E;
   --hp-ink-light:   #5A6A8E;
-  --hp-muted:       #8E9BBD;
+  --hp-muted:       #7A86A6;
   --hp-border:      #CBD3EC;
   --hp-border-soft: #DDE3F4;
-  --hp-shadow-card: 0 2px 14px rgba(83,210,224,0.08);
-  --hp-shadow-hover:0 10px 40px rgba(83,210,224,0.18);
+  --hp-shadow-card: 0 2px 6px rgba(30, 41, 59, 0.05);
+  --hp-shadow-hover: 0 16px 44px rgba(30, 41, 59, 0.11);
   --hp-page-grad: linear-gradient(
     180deg,
     #F5EFE6 0%,
@@ -37,7 +37,7 @@
   --ink:          #1A2340;
   --ink-mid:      #2E3F6E;
   --ink-light:    #5A6A8E;
-  --muted:        #8E9BBD;
+  --muted:        #7A86A6;
   --border-soft:  #DDE3F4;
   --cyan:         #53D2E0;
   --cyan-dark:    #1DA8B8;
@@ -47,9 +47,11 @@
   background: var(--hp-page-grad);
   background-attachment: fixed;
   color: var(--hp-ink);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   overflow-x: hidden;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* Anchor-jump targets sit below the fixed navbar unless we give them breathing room */
@@ -57,8 +59,12 @@ section[id] {
   scroll-margin-top: 84px;
 }
 
-.serif { font-family: 'Instrument Serif', serif; }
-.syne  { font-family: 'Syne', sans-serif; }
+/* Display + body pairing: Space Grotesk (headings) + Plus Jakarta Sans (body).
+   .serif/.syne kept as aliases so existing markup keeps working. */
+.serif { font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.02em; }
+.syne  { font-family: 'Space Grotesk', sans-serif; }
+
+h1, h2, h3, h4 { text-wrap: balance; }
 
 .cyan-text {
   background: linear-gradient(135deg, #1DA8B8 0%, #53D2E0 60%, #7EEAF4 100%);
@@ -125,7 +131,7 @@ section[id] {
   font-weight: 500;
   padding: 9px 22px;
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   transition: color 0.35s ease, border-color 0.35s ease;
   z-index: 0;
 }
@@ -143,16 +149,6 @@ section[id] {
 
 .nav-login-btn:hover { color: white; border-color: transparent; }
 .nav-login-btn:hover::before { transform: translateX(0); }
-
-.nav-wave-wrap {
-  position: absolute;
-  bottom: -19px; left: 0;
-  width: 100%; height: 20px;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.nav-wave-wrap svg { display: block; width: 100%; height: 100%; }
 
 @media(max-width: 768px) {
   .nav-center-links { display: none !important; }
@@ -181,11 +177,11 @@ section[id] {
   justify-content: center;
   pointer-events: auto;
   padding: 0 2rem;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6), 0 2px 16px rgba(83, 210, 224, 0.07);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7), 0 4px 24px rgba(30, 41, 59, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
   transition: background 0.5s ease, box-shadow 0.5s ease;
   position: relative;
   z-index: 1000; /* Sit above the dropdown pill */
@@ -193,8 +189,8 @@ section[id] {
 
 /* On scroll, deepen the background slightly */
 .hp-navbar-topbar.scrolled {
-  background: rgba(255, 255, 255, 0.97);
-  box-shadow: 0 2px 24px rgba(83, 210, 224, 0.1), 0 1px 0 rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 2px 24px rgba(30, 41, 59, 0.07), 0 1px 0 rgba(255,255,255,0.8);
 }
 
 /* Row inside topbar */
@@ -234,13 +230,13 @@ section[id] {
   gap: 2.2rem;
   margin-top: -1px;            /* pull up 1px to cover the border exactly */
   padding: 0.55rem 2rem;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-top: none; /* Remove top border so it blends */
-  border-radius: 0 0 24px 24px; /* Flat on top, rounded on bottom */
-  box-shadow: 0 10px 24px rgba(83, 210, 224, 0.08); /* Only shadow downwards */
+  border-radius: 0 0 22px 22px; /* Flat on top, rounded on bottom */
+  box-shadow: 0 12px 32px rgba(30, 41, 59, 0.07); /* Only shadow downwards */
   pointer-events: auto;
   position: relative;
   z-index: 999; /* Just below the topbar */
@@ -256,7 +252,7 @@ section[id] {
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   transition: all 0.3s ease;
   box-shadow: 0 4px 18px rgba(83, 210, 224, 0.35);
 }
@@ -264,4 +260,40 @@ section[id] {
 .hp-nav-btn-started:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 26px rgba(83, 210, 224, 0.5);
+}
+
+/* ─── POLISH PASS ───────────────────────────────────────── */
+
+html { scroll-behavior: smooth; }
+
+/* Active section link */
+.nav-link-top.active { color: var(--hp-cyan-dark); }
+.nav-link-top.active::after { width: 100%; }
+
+/* Ticker pauses on hover */
+.hp-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker 28s linear infinite;
+}
+.hp-ticker:hover .hp-ticker-track { animation-play-state: paused; }
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hp-ticker-track { animation: none !important; }
+  .hp-body [style*="animation"] { animation: none !important; }
+  .hp-ticker:hover .hp-ticker-track { animation-play-state: running; }
+}
+
+/* ─── RESPONSIVE LAYOUT ──────────────────────────────────── */
+
+/* About: single column below the hero breakpoint */
+@media (max-width: 900px) {
+  .hp-about-grid    { grid-template-columns: 1fr !important; gap: 2.5rem !important; }
+}
+
+/* About pillars: 2-up until small phones, then stack */
+@media (max-width: 600px) {
+  .hp-pillars-grid  { grid-template-columns: 1fr !important; }
 }
