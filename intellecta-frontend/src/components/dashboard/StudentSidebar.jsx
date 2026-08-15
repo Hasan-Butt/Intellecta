@@ -18,7 +18,8 @@ import {
   HelpCircle, 
   LogOut,
   Trophy,
-  Target
+  Target,
+  Video
 } from 'lucide-react';
 
 import { logout, getUserId } from '../../utils/auth';
@@ -86,6 +87,7 @@ const Sidebar = () => {
     { name: 'Study Schedule', icon: Calendar, path: '/schedule' },
     { name: 'Focus Sessions', icon: Zap, path: '/focus' },
     { name: 'All Notes', icon: FileText, path: '/notes' },
+    { name: 'Video Lectures', icon: Video, path: '/lectures' },
     { name: 'Subject Folders', icon: Folder, path: '/folders' },
     { 
       name: 'Quiz', 
