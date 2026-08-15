@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Pencil, Eye, EyeOff, ChevronDown, X, GripVertical } from "lucide-react";
+import { Plus, Trash2, Pencil, Eye, EyeOff, ChevronDown, X } from "lucide-react";
+import api from "../../services/api";
 
 // Inline YouTube icon (lucide-react no longer exports 'Youtube')
 function Youtube({ size = 24, className = "" }) {
@@ -16,7 +17,6 @@ function Youtube({ size = 24, className = "" }) {
     </svg>
   );
 }
-import api from "../../services/api";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
