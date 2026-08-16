@@ -9,6 +9,7 @@ import com.intellecta.intellecta_backend.repository.VideoLectureRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +54,7 @@ public class VideoLectureService {
                 .topic(request.getTopic())
                 .orderIndex(request.getOrderIndex() != null ? request.getOrderIndex() : 0)
                 .published(true)
+                .resourceLinks(request.getResourceLinks() != null ? request.getResourceLinks() : new ArrayList<>())
                 .build();
 
         return toResponse(videoLectureRepository.save(lecture));
@@ -73,6 +75,7 @@ public class VideoLectureService {
         lecture.setYoutubeVideoId(videoId);
         lecture.setTopic(request.getTopic());
         if (request.getOrderIndex() != null) lecture.setOrderIndex(request.getOrderIndex());
+        lecture.setResourceLinks(request.getResourceLinks() != null ? request.getResourceLinks() : new ArrayList<>());
 
         return toResponse(videoLectureRepository.save(lecture));
     }
@@ -134,6 +137,7 @@ public class VideoLectureService {
                 .topic(lecture.getTopic())
                 .orderIndex(lecture.getOrderIndex())
                 .published(lecture.isPublished())
+                .resourceLinks(lecture.getResourceLinks() != null ? lecture.getResourceLinks() : new ArrayList<>())
                 .createdAt(lecture.getCreatedAt())
                 .build();
     }

@@ -1,10 +1,14 @@
 package com.intellecta.intellecta_backend.model;
 
+import com.intellecta.intellecta_backend.dto.ResourceLinkDto;
+import com.intellecta.intellecta_backend.util.ResourceLinkConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "video_lectures")
@@ -23,7 +27,7 @@ public class VideoLecture {
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Column(nullable = false)
@@ -41,6 +45,12 @@ public class VideoLecture {
 
     @Builder.Default
     private boolean published = true;
+
+    // Resource links stored as a JSON array of {label, url} objects
+    @Convert(converter = ResourceLinkConverter.class)
+    @Column(name = "resource_links", columnDefinition = "NVARCHAR(MAX)")
+    @Builder.Default
+    private List<ResourceLinkDto> resourceLinks = new ArrayList<>();
 
     @CreationTimestamp
     @Column(updatable = false)
