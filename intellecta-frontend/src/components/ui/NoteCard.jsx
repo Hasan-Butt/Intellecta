@@ -96,7 +96,7 @@ const NoteCard = ({ note, onRefresh, isSelected, onSelect, onEdit }) => {
 
         {/* Content preview */}
         <div
-          className="text-zinc-500 leading-relaxed mb-8 line-clamp-3 flex-grow text-sm break-words overflow-hidden"
+          className="text-zinc-500 leading-relaxed mb-8 line-clamp-3 flex-grow text-sm break-words overflow-hidden whitespace-pre-wrap"
           dangerouslySetInnerHTML={{ __html: note.content || "" }}
         />
 

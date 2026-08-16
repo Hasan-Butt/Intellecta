@@ -1,9 +1,12 @@
 package com.intellecta.intellecta_backend.dto.request;
 
+import com.intellecta.intellecta_backend.dto.ResourceLinkDto;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -14,13 +17,14 @@ public class VideoLectureRequest {
 
     private String description;
 
-    // Full YouTube URL e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ
-    // OR short form https://youtu.be/dQw4w9WgXcQ
     @NotBlank(message = "YouTube URL is required")
     private String youtubeUrl;
 
-    @NotNull(message = "Course ID is required")
-    private Long courseId;
+    // Optional label e.g. "DSA", "OOP", "Networking" — no FK, just a plain string
+    private String topic;
 
-    private Integer orderIndex; // optional: position within course playlist
+    private Integer orderIndex;
+
+    // Optional list of resource links (label + URL pairs)
+    private List<ResourceLinkDto> resourceLinks = new ArrayList<>();
 }
