@@ -15,15 +15,10 @@ public class VideoLecture {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // The admin who created this lecture
+    // Admin who created this lecture
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id", nullable = false)
     private User admin;
-
-    // Which course this lecture belongs to
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
 
     @Column(nullable = false)
     private String title;
@@ -31,20 +26,19 @@ public class VideoLecture {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    // Full original URL stored for reference
     @Column(nullable = false)
     private String youtubeUrl;
 
-    // Extracted 11-character YouTube video ID (e.g. "dQw4w9WgXcQ")
-    // Used to build the embed URL: https://www.youtube.com/embed/{youtubeVideoId}
+    // Extracted 11-char YouTube video ID, used for embed + thumbnail
     @Column(nullable = false, length = 20)
     private String youtubeVideoId;
 
-    // Position within the course — allows ordering lectures like a playlist
+    // Optional plain-text label: "DSA", "OOP", "Networking" — no FK
+    private String topic;
+
     @Builder.Default
     private Integer orderIndex = 0;
 
-    // Admin can save as draft before publishing to students
     @Builder.Default
     private boolean published = true;
 

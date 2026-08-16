@@ -9,12 +9,12 @@ import java.util.List;
 @Repository
 public interface VideoLectureRepository extends JpaRepository<VideoLecture, Long> {
 
-    // Student view: only published lectures for a specific course, ordered by position
-    List<VideoLecture> findByCourseIdAndPublishedTrueOrderByOrderIndexAsc(Long courseId);
+    // Student view: only published lectures, ordered by position
+    List<VideoLecture> findAllByPublishedTrueOrderByOrderIndexAsc();
 
-    // Admin view: all lectures for a course regardless of published state
-    List<VideoLecture> findByCourseIdOrderByOrderIndexAsc(Long courseId);
+    // Admin view: all lectures regardless of published state
+    List<VideoLecture> findAllByOrderByOrderIndexAsc();
 
-    // Admin view: all lectures they created
-    List<VideoLecture> findByAdminIdOrderByCreatedAtDesc(Long adminId);
+    // Admin view: filter by topic if needed
+    List<VideoLecture> findByTopicOrderByOrderIndexAsc(String topic);
 }

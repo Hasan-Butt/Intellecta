@@ -177,45 +177,26 @@ function CurriculumItem({ lecture, index, active, progress, onClick }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function StudentLecturesPage() {
-  const [courses, setCourses] = useState([]);
-  const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [lectures, setLectures] = useState([]);
   const [activeLecture, setActiveLecture] = useState(null);
   const [loadingLectures, setLoadingLectures] = useState(false);
   const [error, setError] = useState("");
-
-  // watchProgress: { [lectureId]: percentage }
   const [watchProgress, setWatchProgress] = useState({});
-
-  // Quick-notes state
   const [noteText, setNoteText] = useState("");
   const [noteSaved, setNoteSaved] = useState(false);
 
-  // Load enrolled courses
+  // Load all published lectures in one shot
   useEffect(() => {
-    api
-      .get("/courses")
-      .then((res) => {
-        setCourses(res.data);
-        if (res.data.length > 0) setSelectedCourseId(res.data[0].id);
-      })
-      .catch(() => setError("Failed to load your courses."));
-  }, []);
-
-  // Load lectures when course changes
-  useEffect(() => {
-    if (!selectedCourseId) return;
     setLoadingLectures(true);
-    setActiveLecture(null);
     api
-      .get(`/lectures/course/${selectedCourseId}`)
+      .get("/lectures")
       .then((res) => {
         setLectures(res.data);
         if (res.data.length > 0) setActiveLecture(res.data[0]);
       })
       .catch(() => setError("Failed to load lectures."))
       .finally(() => setLoadingLectures(false));
-  }, [selectedCourseId]);
+  }, []);
 
   // Called by YouTubePlayer every 5 s with current watch percentage
   const handleProgress = useCallback(
@@ -249,9 +230,7 @@ export default function StudentLecturesPage() {
 
   const activeIdx = lectures.findIndex((l) => l.id === activeLecture?.id);
   const watchedCount = Object.values(watchProgress).filter((p) => p >= 90).length;
-  const selectedCourse = courses.find((c) => c.id === selectedCourseId);
-  const progressPct =
-    lectures.length > 0 ? Math.round((watchedCount / lectures.length) * 100) : 0;
+  const progressPct = lectures.length > 0 ? Math.round((watchedCount / lectures.length) * 100) : 0;
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -280,24 +259,6 @@ export default function StudentLecturesPage() {
               </div>
             )}
 
-            {/* ── Course Tabs ── */}
-            {courses.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
-                {courses.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedCourseId(c.id)}
-                    className={`shrink-0 px-5 py-2 rounded-full text-sm font-bold transition-all border ${
-                      selectedCourseId === c.id
-                        ? "bg-[#451ebb] text-white border-[#451ebb] shadow-lg shadow-indigo-200"
-                        : "bg-white text-gray-500 border-gray-200 hover:border-[#451ebb]/40 hover:text-[#451ebb]"
-                    }`}
-                  >
-                    {c.courseName}
-                  </button>
-                ))}
-              </div>
-            )}
 
             {/* ── Loading skeleton ── */}
             {loadingLectures ? (
@@ -349,15 +310,16 @@ export default function StudentLecturesPage() {
                     </div>
                   )}
 
-                  {/* Video title */}
                   {activeLecture && (
                     <div>
                       <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
                         {activeLecture.title}
                       </h2>
-                      <p className="text-[#451ebb] text-sm font-semibold mt-1">
-                        {activeLecture.courseName}
-                      </p>
+                      {activeLecture.topic && (
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-[#451ebb] bg-[#451ebb]/10 px-2.5 py-0.5 rounded-full mt-1">
+                          {activeLecture.topic}
+                        </span>
+                      )}
                     </div>
                   )}
 
@@ -465,8 +427,8 @@ export default function StudentLecturesPage() {
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
                           <BookOpen size={14} className="text-[#451ebb]" />
-                          <h3 className="text-sm font-bold text-gray-800">
-                            {selectedCourse?.courseName ?? "Course"} Curriculum
+                      <h3 className="text-sm font-bold text-gray-800">
+                            Lecture Playlist
                           </h3>
                         </div>
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">

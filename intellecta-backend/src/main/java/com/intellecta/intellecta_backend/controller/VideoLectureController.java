@@ -18,15 +18,14 @@ public class VideoLectureController {
     private final VideoLectureService videoLectureService;
 
     // ---------------------------------------------------------------
-    // ADMIN ENDPOINTS — all under /api/admin/lectures
-    // Covered by existing SecurityConfig: .requestMatchers("/api/admin/**").hasRole("ADMIN")
+    // ADMIN — /api/admin/lectures
+    // Covered by existing SecurityConfig: /api/admin/** → hasRole("ADMIN")
     // ---------------------------------------------------------------
 
     @PostMapping("/api/admin/lectures")
     public ResponseEntity<VideoLectureResponse> createLecture(
             @Valid @RequestBody VideoLectureRequest request,
             Principal principal) {
-        // principal.getName() returns the authenticated admin's email (set by JwtAuthFilter)
         return ResponseEntity.ok(videoLectureService.createLecture(request, principal.getName()));
     }
 
@@ -48,26 +47,24 @@ public class VideoLectureController {
         return ResponseEntity.ok(videoLectureService.togglePublished(id));
     }
 
-    // Admin: see all lectures for a course (including unpublished drafts)
-    @GetMapping("/api/admin/lectures/course/{courseId}")
-    public ResponseEntity<List<VideoLectureResponse>> getLecturesForCourseAdmin(
-            @PathVariable Long courseId) {
-        return ResponseEntity.ok(videoLectureService.getLecturesByCourseAdmin(courseId));
+    // Admin: all lectures including drafts
+    @GetMapping("/api/admin/lectures")
+    public ResponseEntity<List<VideoLectureResponse>> getAllLecturesAdmin() {
+        return ResponseEntity.ok(videoLectureService.getAllLecturesAdmin());
     }
 
     // ---------------------------------------------------------------
-    // STUDENT ENDPOINTS — under /api/lectures
-    // Covered by: .requestMatchers("/api/**").authenticated()
+    // STUDENT — /api/lectures
+    // Covered by: /api/** → authenticated()
     // ---------------------------------------------------------------
 
-    // Student: only published lectures for a course
-    @GetMapping("/api/lectures/course/{courseId}")
-    public ResponseEntity<List<VideoLectureResponse>> getLecturesForCourseStudent(
-            @PathVariable Long courseId) {
-        return ResponseEntity.ok(videoLectureService.getLecturesByCourseStudent(courseId));
+    // Student: published lectures only
+    @GetMapping("/api/lectures")
+    public ResponseEntity<List<VideoLectureResponse>> getAllLecturesStudent() {
+        return ResponseEntity.ok(videoLectureService.getAllLecturesStudent());
     }
 
-    // Both roles: get a single lecture by ID (for the player page)
+    // Both roles: single lecture by ID (for player page deeplink)
     @GetMapping("/api/lectures/{id}")
     public ResponseEntity<VideoLectureResponse> getLectureById(@PathVariable Long id) {
         return ResponseEntity.ok(videoLectureService.getLectureById(id));
