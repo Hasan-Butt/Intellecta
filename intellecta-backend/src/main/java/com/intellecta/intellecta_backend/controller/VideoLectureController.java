@@ -2,6 +2,7 @@ package com.intellecta.intellecta_backend.controller;
 
 import com.intellecta.intellecta_backend.dto.request.VideoLectureRequest;
 import com.intellecta.intellecta_backend.dto.response.VideoLectureResponse;
+import com.intellecta.intellecta_backend.service.LectureProgressService;
 import com.intellecta.intellecta_backend.service.VideoLectureService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,23 +11,24 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 public class VideoLectureController {
 
     private final VideoLectureService videoLectureService;
+    private final LectureProgressService lectureProgressService;
 
     // ---------------------------------------------------------------
-    // ADMIN ENDPOINTS — all under /api/admin/lectures
-    // Covered by existing SecurityConfig: .requestMatchers("/api/admin/**").hasRole("ADMIN")
+    // ADMIN — /api/admin/lectures
+    // Covered by existing SecurityConfig: /api/admin/** → hasRole("ADMIN")
     // ---------------------------------------------------------------
 
     @PostMapping("/api/admin/lectures")
     public ResponseEntity<VideoLectureResponse> createLecture(
             @Valid @RequestBody VideoLectureRequest request,
             Principal principal) {
-        // principal.getName() returns the authenticated admin's email (set by JwtAuthFilter)
         return ResponseEntity.ok(videoLectureService.createLecture(request, principal.getName()));
     }
 
@@ -48,28 +50,54 @@ public class VideoLectureController {
         return ResponseEntity.ok(videoLectureService.togglePublished(id));
     }
 
-    // Admin: see all lectures for a course (including unpublished drafts)
-    @GetMapping("/api/admin/lectures/course/{courseId}")
-    public ResponseEntity<List<VideoLectureResponse>> getLecturesForCourseAdmin(
-            @PathVariable Long courseId) {
-        return ResponseEntity.ok(videoLectureService.getLecturesByCourseAdmin(courseId));
+    // Admin: all lectures including drafts
+    @GetMapping("/api/admin/lectures")
+    public ResponseEntity<List<VideoLectureResponse>> getAllLecturesAdmin() {
+        return ResponseEntity.ok(videoLectureService.getAllLecturesAdmin());
     }
 
     // ---------------------------------------------------------------
-    // STUDENT ENDPOINTS — under /api/lectures
-    // Covered by: .requestMatchers("/api/**").authenticated()
+    // STUDENT — /api/lectures
+    // Covered by: /api/** → authenticated()
     // ---------------------------------------------------------------
 
-    // Student: only published lectures for a course
-    @GetMapping("/api/lectures/course/{courseId}")
-    public ResponseEntity<List<VideoLectureResponse>> getLecturesForCourseStudent(
-            @PathVariable Long courseId) {
-        return ResponseEntity.ok(videoLectureService.getLecturesByCourseStudent(courseId));
+    // Student: published lectures only
+    @GetMapping("/api/lectures")
+    public ResponseEntity<List<VideoLectureResponse>> getAllLecturesStudent() {
+        return ResponseEntity.ok(videoLectureService.getAllLecturesStudent());
     }
 
-    // Both roles: get a single lecture by ID (for the player page)
+    // Both roles: single lecture by ID (for player page deeplink)
     @GetMapping("/api/lectures/{id}")
     public ResponseEntity<VideoLectureResponse> getLectureById(@PathVariable Long id) {
         return ResponseEntity.ok(videoLectureService.getLectureById(id));
+    }
+
+    // ---------------------------------------------------------------
+    // STUDENT — Watch Progress
+    // ---------------------------------------------------------------
+
+    /**
+     * Upsert watch progress for the calling user on a specific lecture.
+     * Body: { "progressPct": 45 }
+     * The service only writes if pct is strictly greater than the stored value.
+     */
+    @PostMapping("/api/lectures/{id}/progress")
+    public ResponseEntity<Void> saveProgress(
+            @PathVariable Long id,
+            @RequestBody Map<String, Integer> body,
+            Principal principal) {
+        int pct = body.getOrDefault("progressPct", 0);
+        lectureProgressService.upsertProgress(id, pct, principal.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Returns a map of lectureId → progressPct for all lectures the current
+     * user has started. Used to hydrate client-side progress state on load.
+     */
+    @GetMapping("/api/lectures/progress")
+    public ResponseEntity<Map<Long, Integer>> getProgressMap(Principal principal) {
+        return ResponseEntity.ok(lectureProgressService.getProgressMap(principal.getName()));
     }
 }

@@ -21,7 +21,7 @@
     "react-router-dom": "^7.14.2",
     "react-scripts": "5.0.1",
     "recharts": "^3.8.1",
-    "sweetalert2": "^11.26.24",
+    "sweetalert2": "^11.26.25",
     "tailwind-merge": "^3.5.0",
     "uploadthing": "^7.7.4",
     "validator": "^13.15.35",
