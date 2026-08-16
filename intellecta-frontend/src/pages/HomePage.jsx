@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Brain, CalendarDays, NotebookPen, Timer, Trophy, BarChart3,
   ShieldOff, Flame, ArrowRight, ChevronDown, Zap,
-  Target, BookOpen, TrendingUp, CheckCircle2, Sparkles, Menu, X,
-  GraduationCap, Layers, BrainCog, SlidersHorizontal, Globe,
+  Target, BookOpen, TrendingUp, CheckCircle2, Menu, X,
+  Layers, BrainCog, SlidersHorizontal, Music,
   ChevronLeft, ChevronRight
 } from "lucide-react";
 import intellectaLogo from "../assets/intellectaLogo.jpeg";
@@ -16,6 +16,8 @@ import screenshot3 from "../assets/app-screenshots/screenshot3.png";
 import screenshot4 from "../assets/app-screenshots/screenshot4.png";
 import screenshot5 from "../assets/app-screenshots/screenshot5.png";
 import screenshot6 from "../assets/app-screenshots/screenshot6.png";
+import screenshot7 from "../assets/app-screenshots/screenshot-7.png";
+import screenshot8 from "../assets/app-screenshots/screenshot-8.png";
 
 /* ─── HELPERS ───────────────────────────────────────────── */
 const fadeUp = {
@@ -68,7 +70,7 @@ function Navbar() {
           </div>
 
           {/* CENTER — Logo */}
-          <a href="#" className="hp-navbar-center-logo">
+          <Link to="/" className="hp-navbar-center-logo">
             <img src={intellectaLogo} alt="Intellecta Logo" style={{
               width: 52, height: 52, borderRadius: 13,
               objectFit: "cover", flexShrink: 0,
@@ -77,7 +79,7 @@ function Navbar() {
             <span className="syne" style={{ fontSize: 20, fontWeight: 800, color: "var(--hp-ink)", letterSpacing: "-0.025em" }}>
               Intellecta
             </span>
-          </a>
+          </Link>
 
           {/* ── When scrolled: inline links appear directly in place of the logo ── */}
           <AnimatePresence>
@@ -192,10 +194,11 @@ function Hero() {
       <div style={{ position: "absolute", top: "-5%", left: "30%", width: 500, height: 400, borderRadius: "50%", background: "radial-gradient(circle,rgba(245,230,200,0.25) 0%,transparent 60%)", pointerEvents: "none" }} />
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "4rem 2rem 5rem", width: "100%", display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: "3.5rem", alignItems: "center" }}>
-        <div>
+        <motion.div initial="hidden" animate="visible">
           <motion.div variants={fadeUp} custom={0}
             style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: "1.8rem", background: "var(--cyan-soft)", border: "1px solid var(--cyan-tag)", borderRadius: 100, padding: "6px 16px 6px 10px" }}>
-            
+            <Brain size={14} color="var(--cyan-dark)" />
+            <span style={{ fontSize: 13, color: "var(--cyan-dark)", fontWeight: 600 }}>The all-in-one study OS</span>
           </motion.div>
 
           <motion.h1 variants={fadeUp} custom={1}
@@ -225,7 +228,7 @@ function Hero() {
               </span>
             ))}
           </motion.div>
-        </div>
+        </motion.div>
 
         <motion.div style={{ y: floatY, display: "flex", flexDirection: "column", gap: "0.9rem" }} className="hero-right">
           <div style={{ display: "flex", gap: "0.9rem", justifyContent: "flex-end" }}>
@@ -270,7 +273,7 @@ function Hero() {
 
 /* ─── TICKER ─────────────────────────────────────────────── */
 function Ticker() {
-  const items = ["Deep Work Sessions", "Study Planning", "Smart Notes", "Distraction Analytics", "Coverage Tracker", "Quiz Engine", "Global Leaderboard", "Focus Intensity", "Peer Comparison", "Exam Prep", "Strategic Planning", "Scholar Streaks"];
+  const items = ["Deep Work Sessions", "Study Planning", "Smart Notes", "Distraction Analytics", "Coverage Tracker", "Quiz Engine", "Global Leaderboard", "Focus Intensity", "Peer Comparison", "Exam Prep", "Strategic Planning", "Scholar Streaks", "Lofi Music", "Theme Changer"];
   const doubled = [...items, ...items];
   return (
     <div style={{ background: "linear-gradient(135deg,#1DA8B8 0%,#53D2E0 100%)", padding: "13px 0", overflow: "hidden", boxShadow: "0 4px 20px rgba(83,210,224,0.28)" }}>
@@ -404,6 +407,7 @@ const SCREENS = [
   { label: "Study Schedule", color: "#F97316", bg: "rgba(249,115,22,0.1)",   icon: CalendarDays, desc: "Personalized weekly curriculum view" },
   { label: "All Notes",      color: "#10B981", bg: "rgba(16,185,129,0.1)",   icon: NotebookPen,  desc: "Searchable notes across every subject" },
   { label: "Leaderboard",    color: "#F59E0B", bg: "rgba(245,158,11,0.1)",   icon: Trophy,       desc: "Global and sectional scholar rankings" },
+  { label: "Lofi Music",     color: "#8B5CF6", bg: "rgba(139,92,246,0.12)",  icon: Music,        desc: "Ambient study soundscapes to keep you in flow" },
 ];
 
 function ScreenCard({ s, i }) {
@@ -442,7 +446,7 @@ function AppPreview() {
             A cohesive platform where every screen serves your academic performance.
           </p>
         </motion.div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: "1.1rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: "1.1rem" }}>
           {SCREENS.map((s, i) => <ScreenCard key={s.label} s={s} i={i} />)}
         </div>
       </div>
@@ -458,6 +462,8 @@ const SCREENSHOTS = [
   screenshot4,
   screenshot5,
   screenshot6,
+  screenshot7,
+  screenshot8,
 ];
 
 function AppShowcase() {
@@ -468,7 +474,7 @@ function AppShowcase() {
       setIndex(prev => (prev + 1) % SCREENSHOTS.length);
     }, 7000); // Auto slide every 7s
     return () => clearInterval(timer);
-  }, [SCREENSHOTS.length]);
+  }, []);
 
   const next = () => setIndex(prev => (prev + 1) % SCREENSHOTS.length);
   const prev = () => setIndex(prev => (prev - 1 + SCREENSHOTS.length) % SCREENSHOTS.length);
@@ -624,14 +630,26 @@ function CtaSection() {
 /* ─── FOOTER ─────────────────────────────────────────────── */
 function Footer() {
   const cols = [
-    { title: "Product",   links: ["Features", "How It Works", "Coverage Tracker", "Leaderboard", "Changelog"] },
-    { title: "Resources", links: ["Documentation", "Blog", "Community", "Scholar Stories", "Help Center"] },
-    { title: "Company",   links: ["About", "Careers", "Privacy Policy", "Terms of Service", "Contact"] },
+    {
+      title: "Product",
+      links: [
+        { label: "Features", anchor: "features" },
+        { label: "How It Works", anchor: "how-it-works" },
+        { label: "Coverage Tracker", to: "/coverage" },
+        { label: "Leaderboard", to: "/leaderboard" },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { label: "About", anchor: "about" },
+      ],
+    },
   ];
   return (
     <footer style={{ background: "rgba(168,232,244,0.25)", backdropFilter: "blur(16px)", borderTop: "1px solid rgba(255,255,255,0.5)", padding: "4rem 2rem 2rem" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: "3rem", marginBottom: "3rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "3rem", marginBottom: "3rem" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1rem" }}>
               <img src={intellectaLogo} alt="Intellecta Logo" style={{
@@ -649,9 +667,22 @@ function Footer() {
             <div key={col.title}>
               <div className="syne" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink)", marginBottom: "1rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>{col.title}</div>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-                {col.links.map(l => (
-                  <span key={l} style={{ fontSize: 13.5, color: "var(--ink-light)" }}>{l}</span>
-                ))}
+                {col.links.map(l => {
+                  if (l.to) {
+                    return (
+                      <Link key={l.label} to={l.to}
+                        style={{ fontSize: 13.5, color: "var(--ink-light)", textDecoration: "none", width: "fit-content" }}>
+                        {l.label}
+                      </Link>
+                    );
+                  }
+                  return (
+                    <a key={l.label} href={`#${l.anchor}`}
+                      style={{ fontSize: 13.5, color: "var(--ink-light)", textDecoration: "none", width: "fit-content" }}>
+                      {l.label}
+                    </a>
+                  );
+                })}
               </div>
             </div>
           ))}

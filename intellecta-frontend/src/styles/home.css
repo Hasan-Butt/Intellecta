@@ -31,12 +31,30 @@
 }
 
 .hp-body {
+  /* Landing-page aliases for the older --ink/--cyan token names used by
+     inline styles in HomePage.jsx. Scoped to .hp-body so they never clash
+     with the shadcn --muted HSL triplet used elsewhere via hsl(var(--muted)). */
+  --ink:          #1A2340;
+  --ink-mid:      #2E3F6E;
+  --ink-light:    #5A6A8E;
+  --muted:        #8E9BBD;
+  --border-soft:  #DDE3F4;
+  --cyan:         #53D2E0;
+  --cyan-dark:    #1DA8B8;
+  --cyan-soft:    #E6F9FB;
+  --cyan-tag:     #B8EEF4;
+
   background: var(--hp-page-grad);
   background-attachment: fixed;
   color: var(--hp-ink);
   font-family: 'DM Sans', sans-serif;
   overflow-x: hidden;
   line-height: 1.6;
+}
+
+/* Anchor-jump targets sit below the fixed navbar unless we give them breathing room */
+section[id] {
+  scroll-margin-top: 84px;
 }
 
 .serif { font-family: 'Instrument Serif', serif; }
