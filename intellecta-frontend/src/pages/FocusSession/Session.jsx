@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import Avatar from "../../components/common/Avatar";
 import LofiPlayer from "../../components/LofiPlayer";
+import Swal from "sweetalert2";
 
 const ZEN_THEMES = [
   { id: "default", name: "Deep Void (Default)", image: null },
@@ -327,6 +328,21 @@ const StudySessionDashboard = () => {
   };
 
   const handleStop = async () => {
+    if (isActive || (sessionId && timeLeft < workDuration * 60)) {
+      const result = await Swal.fire({
+        title: "End Session?",
+        text: "Are you sure you want to end your current focus session?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#451ebb",
+        cancelButtonColor: "#f1f5f9",
+        cancelButtonText: "<span style='color:#64748b'>Cancel</span>",
+        confirmButtonText: "Yes, end session",
+        customClass: { popup: "rounded-[2rem]" }
+      });
+      if (!result.isConfirmed) return;
+    }
+
     if (sessionId) {
       try {
         const response = await api.patch(`/sessions/${sessionId}/end`, { pomodorosCompleted });
@@ -373,7 +389,22 @@ const StudySessionDashboard = () => {
     setTimeLeft(workDuration * 60);
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
+    if (isActive || timeLeft < (mode === "Work" ? workDuration * 60 : breakDuration * 60)) {
+      const result = await Swal.fire({
+        title: "Restart Timer?",
+        text: "Are you sure you want to reset the timer to the beginning?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#451ebb",
+        cancelButtonColor: "#f1f5f9",
+        cancelButtonText: "<span style='color:#64748b'>Cancel</span>",
+        confirmButtonText: "Yes, restart",
+        customClass: { popup: "rounded-[2rem]" }
+      });
+      if (!result.isConfirmed) return;
+    }
+
     setIsActive(false);
     setTimeLeft(mode === "Work" ? workDuration * 60 : breakDuration * 60);
   };
