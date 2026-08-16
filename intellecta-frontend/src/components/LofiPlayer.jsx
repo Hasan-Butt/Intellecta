@@ -77,7 +77,8 @@ export default function LofiPlayer({ isSessionActive }) {
     isSessionActive
       ? playerRef.current.playVideo()
       : playerRef.current.pauseVideo();
-  }, [isSessionActive, isReady, selected]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSessionActive, isReady]);
 
   // ── Controls ─────────────────────────────────────────────────────────────
   const handleSelect = (index) => {
