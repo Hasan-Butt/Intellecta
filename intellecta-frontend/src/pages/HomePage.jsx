@@ -683,11 +683,11 @@ function Footer() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1rem" }}>
               <img src={intellectaLogo} alt="Intellecta Logo" style={{
-                width: 36, height: 36, borderRadius: 10,
+                width: 52, height: 52, borderRadius: 13,
                 objectFit: "cover", flexShrink: 0,
-                boxShadow: "0 4px 14px rgba(83,210,224,0.35)"
+                boxShadow: "0 4px 14px rgba(83,210,224,0.38)"
               }} />
-              <span className="syne" style={{ fontSize: 19, fontWeight: 800, color: "var(--ink)" }}>Intellecta</span>
+              <span className="syne" style={{ fontSize: 20, fontWeight: 800, color: "var(--ink)" }}>Intellecta</span>
             </div>
             <p style={{ fontSize: 13.5, color: "var(--ink-light)", lineHeight: 1.75, maxWidth: 240 }}>
               The cognitive sanctuary for serious scholars. Focus deeper. Learn faster. Achieve more.
@@ -695,20 +695,20 @@ function Footer() {
           </div>
           {cols.map(col => (
             <div key={col.title}>
-              <div className="syne" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink)", marginBottom: "1rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>{col.title}</div>
+              <div className="syne" style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", marginBottom: "1rem", letterSpacing: "0.06em", textTransform: "uppercase" }}>{col.title}</div>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.55rem" }}>
                 {col.links.map(l => {
                   if (l.to) {
                     return (
                       <Link key={l.label} to={l.to}
-                        style={{ fontSize: 13.5, color: "var(--ink-light)", textDecoration: "none", width: "fit-content" }}>
+                        style={{ fontSize: 14.5, color: "var(--ink-light)", textDecoration: "none", width: "fit-content" }}>
                         {l.label}
                       </Link>
                     );
                   }
                   return (
                     <a key={l.label} href={`#${l.anchor}`}
-                      style={{ fontSize: 13.5, color: "var(--ink-light)", textDecoration: "none", width: "fit-content" }}>
+                      style={{ fontSize: 14.5, color: "var(--ink-light)", textDecoration: "none", width: "fit-content" }}>
                       {l.label}
                     </a>
                   );
