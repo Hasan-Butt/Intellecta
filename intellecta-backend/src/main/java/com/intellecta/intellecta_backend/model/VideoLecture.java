@@ -27,7 +27,7 @@ public class VideoLecture {
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)
@@ -48,7 +48,7 @@ public class VideoLecture {
 
     // Resource links stored as a JSON array of {label, url} objects
     @Convert(converter = ResourceLinkConverter.class)
-    @Column(name = "resource_links", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "resource_links", columnDefinition = "TEXT")
     @Builder.Default
     private List<ResourceLinkDto> resourceLinks = new ArrayList<>();
 

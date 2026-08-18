@@ -35,11 +35,21 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        seedRichTestData();
-        seedActiveSessions();
-        seedSystemConfig();
-        seedAppGovernanceRules();
-        repairBuggySeededDistractionTimestamps();
+        Thread.ofVirtual()
+            .name("data-seeder")
+            .start(() -> {
+                try {
+                    seedRichTestData();
+                    seedActiveSessions();
+                    seedSystemConfig();
+                    seedAppGovernanceRules();
+                    repairBuggySeededDistractionTimestamps();
+                    System.out.println("[DataSeeder] All seeding tasks completed.");
+                } catch (Exception ex) {
+                    System.err.println("[DataSeeder] Background seeding failed: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            });
     }
 
     // ── Active (in-progress) sessions ────────────────────────────────────────

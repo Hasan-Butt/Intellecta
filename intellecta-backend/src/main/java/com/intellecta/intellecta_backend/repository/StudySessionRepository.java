@@ -1,10 +1,14 @@
 package com.intellecta.intellecta_backend.repository;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.intellecta.intellecta_backend.model.StudySession;
 
@@ -22,26 +26,38 @@ public interface StudySessionRepository extends JpaRepository<StudySession, Long
     @Query("SELECT SUM(s.pomodorosCompleted) FROM StudySession s WHERE s.user.id = :userId")
     Integer sumPomodorosByUserId(Long userId);
 
-    // Total focus minutes per user (single aggregate query — avoids N+1)
-    @Query(value = """
-    SELECT s.user_id AS userId,
-           SUM(DATEDIFF(minute, s.start_time, s.end_time)) AS minutes
-    FROM study_sessions s
-    WHERE s.start_time IS NOT NULL AND s.end_time IS NOT NULL
-    GROUP BY s.user_id
-    """, nativeQuery = true)
-    List<Object[]> totalFocusMinutesByUser();
+    // Fetch all completed sessions (non-null start+end) — used to compute focus minutes in Java
+    @Query("SELECT s FROM StudySession s WHERE s.startTime IS NOT NULL AND s.endTime IS NOT NULL")
+    List<StudySession> findAllCompletedSessions();
 
-    // Per-day focus minutes for the last 7 days (used by the bar chart)
-    @Query(value = """
-    SELECT CAST(s.start_time AS date) AS day,
-           SUM(DATEDIFF(minute, s.start_time, s.end_time)) AS minutes
-    FROM study_sessions s
-    WHERE s.user_id = :userId
-      AND s.start_time >= :from
-      AND s.end_time IS NOT NULL
-    GROUP BY CAST(s.start_time AS date)
-    ORDER BY CAST(s.start_time AS date)
-    """, nativeQuery = true)
-List<Object[]> dailyFocusMinutes(Long userId, LocalDateTime from);
+    // Fetch completed sessions for a user within a date range
+    @Query("SELECT s FROM StudySession s WHERE s.user.id = :userId AND s.startTime >= :from AND s.endTime IS NOT NULL")
+    List<StudySession> findCompletedByUserSince(@Param("userId") Long userId, @Param("from") LocalDateTime from);
+
+    // ── Database-agnostic aggregates (computed in Java) ──────────────────────
+
+    // Returns Object[]{userId, totalMinutes} per user — same shape as before
+    default List<Object[]> totalFocusMinutesByUser() {
+        Map<Long, Long> minutesByUser = findAllCompletedSessions().stream()
+            .collect(Collectors.groupingBy(
+                s -> s.getUser().getId(),
+                Collectors.summingLong(s -> Duration.between(s.getStartTime(), s.getEndTime()).toMinutes())
+            ));
+        return minutesByUser.entrySet().stream()
+            .map(e -> new Object[]{ e.getKey(), e.getValue() })
+            .collect(Collectors.toList());
+    }
+
+    // Returns Object[]{java.sql.Date, totalMinutes} per day — same shape as before
+    default List<Object[]> dailyFocusMinutes(@Param("userId") Long userId, @Param("from") LocalDateTime from) {
+        Map<java.time.LocalDate, Long> minutesByDay = findCompletedByUserSince(userId, from).stream()
+            .collect(Collectors.groupingBy(
+                s -> s.getStartTime().toLocalDate(),
+                Collectors.summingLong(s -> Duration.between(s.getStartTime(), s.getEndTime()).toMinutes())
+            ));
+        return minutesByDay.entrySet().stream()
+            .sorted(Map.Entry.comparingByKey())
+            .map(e -> new Object[]{ java.sql.Date.valueOf(e.getKey()), e.getValue() })
+            .collect(Collectors.toList());
+    }
 }

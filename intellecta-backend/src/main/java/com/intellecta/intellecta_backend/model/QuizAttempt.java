@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -37,27 +38,29 @@ public class QuizAttempt {
     private LocalDateTime endTime;
     private String status; // "IN_PROGRESS", "COMPLETED"
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "quiz_attempt_answers", joinColumns = @JoinColumn(name = "attempt_id"))
     @MapKeyColumn(name = "question_id")
     @Column(name = "selected_option_index")
     @Builder.Default
     private java.util.Map<Long, Integer> userAnswers = new java.util.HashMap<>();
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "quiz_attempt_text_answers", joinColumns = @JoinColumn(name = "attempt_id"))
     @MapKeyColumn(name = "question_id")
     @Column(name = "answer_text", columnDefinition = "TEXT")
     @Builder.Default
     private java.util.Map<Long, String> textAnswers = new java.util.HashMap<>();
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "quiz_attempt_question_marks", joinColumns = @JoinColumn(name = "attempt_id"))
     @MapKeyColumn(name = "question_id")
     @Column(name = "marks_awarded")
     @Builder.Default
     private java.util.Map<Long, Integer> questionMarks = new java.util.HashMap<>();
 
+    @ColumnDefault("0")
+    @Column(nullable = false)
     @Builder.Default
     private boolean graded = false;
 
