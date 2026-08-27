@@ -16,12 +16,14 @@ const GlobalLeaderboard = () => {
 
   const [globalData, setGlobalData] = useState([]);
   const [sectionalData, setSectionalData] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [selectedPeerUserId, setSelectedPeerUserId] = useState(null);
   const [showPeerDropdown, setShowPeerDropdown] = useState(false);
   const [peerSearch, setPeerSearch] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [nextAchievement, setNextAchievement] = useState(null);
 
   const fetchGlobal = async () => {
@@ -103,6 +105,7 @@ const GlobalLeaderboard = () => {
 
   useEffect(() => {
     fetchSectional();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory]);
 
   const handleToggleAnonymous = async () => {

@@ -16,6 +16,7 @@ const ContentPage = () => {
   const [activeTab, setActiveTab] = useState("Content");
   const [subjects, setSubjects] = useState([]);
   const [adaptiveStats, setAdaptiveStats] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
 
   // Modal States
