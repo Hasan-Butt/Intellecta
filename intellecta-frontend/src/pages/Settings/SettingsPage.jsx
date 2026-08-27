@@ -10,9 +10,7 @@ import {
   Save, 
   Camera,
   Check,
-  Loader2,
-  X,
-  Plus
+  Loader2
 } from 'lucide-react';
 import api from '../../services/api';
 import Swal from 'sweetalert2';

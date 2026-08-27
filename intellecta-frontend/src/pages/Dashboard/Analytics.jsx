@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Download,
   RefreshCw,
-  ShieldCheck,
   Activity,
   Users,
   BookOpen,

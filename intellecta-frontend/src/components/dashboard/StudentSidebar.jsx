@@ -9,7 +9,6 @@ import {
   FileText, 
   Folder, 
   ClipboardCheck, 
-  AlertCircle, 
   ChevronRight,
   ChevronDown,
   BarChart3, 
@@ -26,7 +25,6 @@ import { logout, getUserId } from '../../utils/auth';
 
 const Sidebar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const helpBoxRef = useRef(null);
   const [userLevel, setUserLevel] = useState(1);
   const [levelTitle, setLevelTitle] = useState('Beginner');

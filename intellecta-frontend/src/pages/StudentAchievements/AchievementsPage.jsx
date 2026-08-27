@@ -7,10 +7,7 @@ import {
   Award, 
   Lock, 
   ChevronRight, 
-  Star,
-  Zap,
-  Flame,
-  Target
+  Star
 } from 'lucide-react';
 
 const AchievementsPage = () => {

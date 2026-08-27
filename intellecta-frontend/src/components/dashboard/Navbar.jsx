@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Search, Flame, Bell, User, Mail, BookOpen, LogOut, Settings as SettingsIcon,
+  Search, Flame, Bell, Mail, BookOpen, LogOut, Settings as SettingsIcon,
   Home, Calendar, Zap, FileText, Folder, ClipboardCheck, Target, BarChart3, Trophy,
   LayoutDashboard, Users as UsersIcon, TrendingUp, Award, ChevronRight, History
 } from 'lucide-react';

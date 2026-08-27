@@ -6,7 +6,6 @@ import {
   BookOpen,
   BarChart3,
   TrendingUp,
-  Settings,
   LogOut,
   ChevronDown,
   ChevronRight,
@@ -17,7 +16,6 @@ import { logout } from '../../utils/auth';
 
 const Sidebar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [isContentOpen, setIsContentOpen] = useState(location.pathname === '/content' || location.pathname === '/create-quiz' || location.pathname === '/quiz-submissions');
 
   const handleLogout = () => {
