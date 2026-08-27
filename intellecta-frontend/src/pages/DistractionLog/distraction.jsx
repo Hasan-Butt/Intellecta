@@ -260,6 +260,7 @@ const AnalyticsDashboard = () => {
       }
     };
     fetchLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredByDateLogs = React.useMemo(() => {

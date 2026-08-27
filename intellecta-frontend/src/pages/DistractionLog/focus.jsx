@@ -106,6 +106,7 @@ const PerformanceDashboard = () => {
     api.get(`/distractions/user/${userId}/logs`)
       .then(res => setDistractions(res.data || []))
       .catch(err => console.error("Error fetching distractions:", err));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { allocationData, totalHours, totalSessions, maxSessionDuration, deepWorkRatio } = useMemo(() => {

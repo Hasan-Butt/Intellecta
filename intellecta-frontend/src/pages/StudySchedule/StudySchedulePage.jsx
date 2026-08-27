@@ -627,6 +627,7 @@ export default function StudySchedulePage() {
 
   useEffect(() => {
     fetchCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDelete = async (courseId) => {

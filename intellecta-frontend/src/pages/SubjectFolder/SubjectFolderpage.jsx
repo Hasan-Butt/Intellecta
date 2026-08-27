@@ -69,7 +69,7 @@ const openFile = (file) => {
 const suggestTagFromFilename = (filename) => {
   return filename
     .replace(/\.[^.]+$/, "")
-    .replace(/[_\-]+/g, " ")
+    .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ")
     .trim()
     .split(" ")
@@ -468,10 +468,12 @@ const SubjectFolderpage = () => {
 
   useEffect(() => {
     fetchSubjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (activeSubject) fetchFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSubject]);
 
   useEffect(() => {
@@ -480,6 +482,7 @@ const SubjectFolderpage = () => {
     } else {
       handleSearch();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   const fetchSubjects = async () => {
