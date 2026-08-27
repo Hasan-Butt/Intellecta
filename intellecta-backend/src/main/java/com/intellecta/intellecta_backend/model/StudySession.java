@@ -34,7 +34,7 @@ public class StudySession {
     private int pomodorosCompleted = 0;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
+    @ColumnDefault("false")
     @Builder.Default
     private boolean deepWork = false;
 

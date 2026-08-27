@@ -35,7 +35,7 @@ public class SystemAlert {
 
     // False = active/unresolved; true = condition has cleared or alert was auto-resolved
     @Column(name = "resolved", nullable = false)
-    @ColumnDefault("0")
+    @ColumnDefault("false")
     @Builder.Default
     private boolean resolved = false;
 }
