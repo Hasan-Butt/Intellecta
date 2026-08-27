@@ -53,15 +53,15 @@ public class User {
     private String avatarUrl;
 
     @Column(nullable = false)
-    @ColumnDefault("1")
+    @ColumnDefault("true")
     private boolean studyReminders = true;
 
     @Column(nullable = false)
-    @ColumnDefault("1")
+    @ColumnDefault("true")
     private boolean achievementAlerts = true;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
+    @ColumnDefault("false")
     private boolean weeklyReports = false;
 
     @Column(nullable = false)
@@ -69,7 +69,7 @@ public class User {
     private double dailyGoalHours = 6.0;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
+    @ColumnDefault("false")
     private boolean anonymousMode = false;
 
     // Constructors

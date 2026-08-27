@@ -59,7 +59,7 @@ public class QuizAttempt {
     @Builder.Default
     private java.util.Map<Long, Integer> questionMarks = new java.util.HashMap<>();
 
-    @ColumnDefault("0")
+    @ColumnDefault("false")
     @Column(nullable = false)
     @Builder.Default
     private boolean graded = false;
