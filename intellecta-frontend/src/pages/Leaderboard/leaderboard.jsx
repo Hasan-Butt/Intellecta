@@ -16,11 +16,13 @@ const GlobalLeaderboard = () => {
 
   const [globalData, setGlobalData] = useState([]);
   const [sectionalData, setSectionalData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [selectedPeerUserId, setSelectedPeerUserId] = useState(null);
   const [showPeerDropdown, setShowPeerDropdown] = useState(false);
   const [peerSearch, setPeerSearch] = useState("");
+  const [nextAchievement, setNextAchievement] = useState(null);
 
   const fetchGlobal = async () => {
     try {
