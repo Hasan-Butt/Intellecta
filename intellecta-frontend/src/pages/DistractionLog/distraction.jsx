@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
   ChevronDown, 
-  ExternalLink, 
   TimerOff, 
   Zap, 
   History, 
@@ -14,9 +13,6 @@ import {
   //Lightbulb,
   MoreVertical,
   Filter,
-  ArrowRight,
-  Mail,
-  Phone,
   LayoutGrid
 } from 'lucide-react';
 

@@ -5,13 +5,6 @@ import badgeService from '../../services/badgeService';
 import { 
   Award, 
   Plus, 
-
-  Search, 
-  MoreVertical,
-  ArrowUpRight,
-  TrendingUp,
-  ShieldCheck,
-  Edit,
   Upload,
   Trash2,
   X
@@ -160,7 +153,7 @@ const RewardsPage = () => {
   const rareCount = badges.filter(b => b.rarity === 'RARE').length;
   const commonCount = badges.filter(b => b.rarity === 'COMMON').length;
 
-  const totalUnlocks = badges.reduce((sum, b) => sum + (b.unlockCount || 0), 0);
+
   const avgUnlockRate = totalBadges > 0 
     ? (badges.reduce((sum, b) => sum + (b.unlockPercentage || 0), 0) / totalBadges) 
     : 0;

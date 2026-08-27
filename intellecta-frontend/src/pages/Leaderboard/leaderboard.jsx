@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Filter, Download, BarChart3, TrendingUp, Award, Lightbulb, Globe, Zap, Target, Trophy, ChevronRight, Search } from 'lucide-react';
+import { BarChart3, Award, Target, Trophy, Search } from 'lucide-react';
 
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
@@ -16,13 +16,11 @@ const GlobalLeaderboard = () => {
 
   const [globalData, setGlobalData] = useState([]);
   const [sectionalData, setSectionalData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [selectedPeerUserId, setSelectedPeerUserId] = useState(null);
   const [showPeerDropdown, setShowPeerDropdown] = useState(false);
   const [peerSearch, setPeerSearch] = useState("");
-  const [nextAchievement, setNextAchievement] = useState(null);
 
   const fetchGlobal = async () => {
     try {

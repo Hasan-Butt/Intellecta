@@ -20,7 +20,6 @@ import {
   Plus,
   Trash2,
   Star,
-  Image as ImageIcon,
   Focus,
   Sparkles,
 } from "lucide-react";

@@ -7,7 +7,6 @@ import {
   Clock, 
   Layout, 
   CheckCircle2,
-  HelpCircle,
   ArrowLeft,
   ArrowRight
 } from "lucide-react";

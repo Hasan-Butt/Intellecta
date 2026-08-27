@@ -348,7 +348,6 @@ export default function DashboardPage() {
   const [showChecklistModal, setShowChecklistModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [newDailyGoal, setNewDailyGoal] = useState(6);
-  const [checklistError, setChecklistError] = useState("");
   const [submittingChecklist, setSubmittingChecklist] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [submittingGoal, setSubmittingGoal] = useState(false);

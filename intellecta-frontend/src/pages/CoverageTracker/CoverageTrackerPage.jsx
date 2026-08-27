@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Swal from 'sweetalert2';
 import {
   Plus, ChevronDown, ChevronRight, AlertTriangle,
-  Check, Zap, Trash2, X, Loader2, BookOpen, Target, CalendarClock,
+  Check, Trash2, X, Loader2, BookOpen, CalendarClock,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import Navbar from "../../components/dashboard/Navbar";

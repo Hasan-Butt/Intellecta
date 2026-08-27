@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../../components/dashboard/Navbar";
 import Sidebar from "../../components/dashboard/StudentSidebar";
 import api from "../../services/api";
@@ -41,15 +41,7 @@ const C = {
   redBg: "rgba(255,218,214,0.5)",
 };
 
-const PRIORITY_STYLES = {
-  HIGH: { bg: C.redBg, text: C.red, label: "CRUCIAL" },
-  MEDIUM: {
-    bg: "rgba(255,223,160,0.25)",
-    text: C.amberDark,
-    label: "MODERATE",
-  },
-  LOW: { bg: "rgba(107,254,156,0.25)", text: C.greenDark, label: "LOW" },
-};
+
 
 const DIFF_COLORS = {
   HARD: { bg: C.redBg, text: C.red },

@@ -47,7 +47,7 @@ export async function uploadFile(file) {
     throw new Error("UploadThing returned no upload data.");
   }
 
-  const { presignedUrl, fields, key, fileUrl } = fileData;
+  const { presignedUrl, key, fileUrl } = fileData;
 
   // ── Step 2: Upload the file — always as multipart/form-data ────────────────
   // Let the browser set Content-Type + boundary automatically; do NOT set it manually.
