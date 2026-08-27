@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Created a central instance of Axios
 const api = axios.create({
-  baseURL: "http://localhost:8080/api", // Base URL for all Java Controllers
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8080/api", // Base URL for all Java Controllers
   withCredentials: true, // Crucial for automatic secure HttpOnly cookie transport
   timeout: 10000, // 10 second timeout to prevent hanging connections
 });
