@@ -142,6 +142,7 @@ const PerformanceDashboard = () => {
     }
 
     const deepSessions = sessions.filter(s => s.deepWork).length;
+    const ratio = sessions.length > 0 ? Math.round((deepSessions / sessions.length) * 100) : 0;
     const avg = sessions.length > 0 ? Math.round(totalMinutes / sessions.length) : 0;
     const maxSession = sessions.length > 0 ? Math.max(...sessions.map(s => s.durationMinutes || 0)) : 0;
 

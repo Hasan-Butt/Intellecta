@@ -16,6 +16,7 @@ const ContentPage = () => {
   const [activeTab, setActiveTab] = useState("Content");
   const [subjects, setSubjects] = useState([]);
   const [adaptiveStats, setAdaptiveStats] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Modal States
   const [showCategoryModal, setShowCategoryModal] = useState(false);
