@@ -32,7 +32,7 @@ export function LoginForm({ className, ...props }) {
 
       if (res.status === 200) {
         if (res.data?.userId && res.data?.role) {
-          setAuthData(res.data.userId, res.data.role);
+          setAuthData(res.data.userId, res.data.role, res.data.token);
         }
         if (res.data.role === "ADMIN") {
           navigate("/dashboard");
@@ -84,7 +84,9 @@ export function LoginForm({ className, ...props }) {
       });
 
       if (res.status === 200) {
-
+        if (res.data?.userId && res.data?.role) {
+          setAuthData(res.data.userId, res.data.role, res.data.token);
+        }
         if (res.data.role === "ADMIN") {
           navigate("/dashboard");
         } else {

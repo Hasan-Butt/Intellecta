@@ -16,8 +16,6 @@ const ContentPage = () => {
   const [activeTab, setActiveTab] = useState("Content");
   const [subjects, setSubjects] = useState([]);
   const [adaptiveStats, setAdaptiveStats] = useState([]);
-  // eslint-disable-next-line no-unused-vars
-  const [loading, setLoading] = useState(true);
 
   // Modal States
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -60,13 +58,10 @@ const ContentPage = () => {
 
   const fetchContent = async () => {
     try {
-      setLoading(true);
       const response = await api.get("/content/categories");
       setSubjects(response.data);
     } catch (error) {
       console.error("Error fetching content repository:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
