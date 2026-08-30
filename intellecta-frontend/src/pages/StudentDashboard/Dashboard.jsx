@@ -520,12 +520,12 @@ export default function DashboardPage() {
           <Sidebar />
           <main className="flex-1 px-12 py-10 flex flex-col gap-6">
             <Skeleton className="h-24 w-2/3" />
-            <div className="flex gap-8">
-              <div className="flex flex-col gap-6 w-[608px]">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-7 flex flex-col gap-6">
                 <Skeleton className="h-[217px]" />
                 <Skeleton className="h-[380px]" />
               </div>
-              <div className="flex flex-col gap-6 flex-1">
+              <div className="lg:col-span-5 flex flex-col gap-6">
                 <Skeleton className="h-[281px]" />
                 <Skeleton className="h-[400px]" />
               </div>
@@ -546,7 +546,7 @@ export default function DashboardPage() {
         <main className="flex-1">
           <div className="px-12 py-10">
             {/* ── Header / Greeting ── */}
-            <div className="flex items-end justify-between mb-10">
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-10">
               <div className="flex flex-col gap-4 max-w-xl">
                 <div>
                   <h1 className="font-['Manrope',sans-serif] font-[900] text-5xl tracking-[-1.2px] text-[#161c27] leading-[48px]">
@@ -610,9 +610,9 @@ export default function DashboardPage() {
             </div>
 
             {/* ── Grid Layout ── */}
-            <div className="flex gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* ── Left Column ── */}
-              <div className="flex flex-col gap-6 w-[608px] flex-shrink-0">
+              <div className="lg:col-span-7 flex flex-col gap-6 min-w-0">
                 {/* CTA Banner */}
                 <div className="rounded-3xl overflow-hidden relative min-h-[217px] bg-gradient-to-br from-[#451ebb] to-[#5d3fd3] shadow-lg">
                   <div className="absolute w-64 h-64 rounded-full opacity-10 bg-white blur-[32px] -bottom-14 -right-14 pointer-events-none" />
@@ -711,7 +711,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ── Review Queue + Checklist ── */}
-                <div className="flex gap-6">
+                <div className="flex flex-col xl:flex-row gap-6">
                   {/* Review Queue — from API (read-only display) */}
                   <div className="neu p-6 flex flex-col gap-4 flex-1">
                     <div className="flex items-center justify-between">
@@ -906,7 +906,7 @@ export default function DashboardPage() {
               </div>
 
               {/* ── Right Column ── */}
-              <div className="flex flex-col gap-6 flex-1 min-w-0">
+              <div className="lg:col-span-5 flex flex-col gap-6 min-w-0">
                 {/* Distraction Log — wired */}
                 <DistractionLog
                   summary={data?.distractionSummary}
