@@ -270,7 +270,7 @@ const Sidebar = () => {
                     Experiencing issues or have a suggestion? Reach out to our support team:
                   </p>
                   <div className="mt-1 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
-                    <span className="block text-[11px] font-bold text-[#451ebb] select-all">contact@intellecta.com</span>
+                    <span className="block text-[11px] font-bold text-[#451ebb] select-all">contact@hasanbutt.me</span>
                   </div>
                   <p className="text-[10px] text-gray-400 font-bold uppercase mt-1">Average response time: &lt; 24h</p>
                 </div>
