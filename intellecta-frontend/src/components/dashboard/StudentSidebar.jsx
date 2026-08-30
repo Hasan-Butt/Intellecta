@@ -188,33 +188,36 @@ const Sidebar = () => {
           // Special handling for Subject Folders with toggle icon
           if (item.name === 'Subject Folders') {
             return (
-              <div key={item.name} className="flex items-center w-full">
+              <div key={item.name} className="relative flex items-center w-full group">
                 <Link
                   to={item.path}
                   state={{ showTree: false }}
                   className={`
-                    flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group flex-1
+                    w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200
                     ${isActive 
                       ? 'bg-[#F5F6FF] text-[#451ebb]' 
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-[#451ebb]'}
+                      : 'text-gray-500 hover:bg-gray-50 group-hover:text-[#451ebb]'}
                   `}
                 >
-                  <item.icon 
-                    size={20} 
-                    strokeWidth={isActive ? 2.5 : 2}
-                    className={isActive ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'} 
-                  />
-                  <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap">
-                    {item.name}
-                  </span>
+                  <div className="flex items-center gap-4 min-w-0">
+                    <item.icon 
+                      size={20} 
+                      strokeWidth={isActive ? 2.5 : 2}
+                      className={isActive ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'} 
+                    />
+                    <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap overflow-hidden text-ellipsis">
+                      {item.name}
+                    </span>
+                  </div>
+                  <div className="w-4 h-4 flex-shrink-0" />
                 </Link>
                 <Link
                   to={item.path}
                   state={{ showTree: true }}
-                  className="p-3 rounded-xl hover:bg-gray-100 transition-colors"
+                  className="absolute right-3 p-1.5 rounded-lg hover:bg-gray-200/60 transition-colors flex items-center justify-center"
                   title="Show folder tree"
                 >
-                  <ChevronRight size={16} className="text-gray-400" />
+                  <ChevronRight size={16} className={isActive ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'} />
                 </Link>
               </div>
             );
