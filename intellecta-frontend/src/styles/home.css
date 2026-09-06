@@ -117,8 +117,10 @@ h1, h2, h3, h4 { text-wrap: balance; }
   transition: width 0.22s ease;
 }
 
-.nav-link-top:hover { color: var(--hp-cyan-dark); }
-.nav-link-top:hover::after { width: 100%; }
+@media (hover: hover) {
+  .nav-link-top:hover { color: var(--hp-cyan-dark); }
+  .nav-link-top:hover::after { width: 100%; }
+}
 
 .nav-login-btn {
   position: relative;
@@ -147,8 +149,10 @@ h1, h2, h3, h4 { text-wrap: balance; }
   border-radius: 50px;
 }
 
-.nav-login-btn:hover { color: white; border-color: transparent; }
-.nav-login-btn:hover::before { transform: translateX(0); }
+@media (hover: hover) {
+  .nav-login-btn:hover { color: white; border-color: transparent; }
+  .nav-login-btn:hover::before { transform: translateX(0); }
+}
 
 @media(max-width: 768px) {
   .nav-center-links { display: none !important; }
@@ -285,9 +289,11 @@ h1, h2, h3, h4 { text-wrap: balance; }
   box-shadow: 0 4px 18px rgba(83, 210, 224, 0.35);
 }
 
-.hp-nav-btn-started:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 26px rgba(83, 210, 224, 0.5);
+@media (hover: hover) {
+  .hp-nav-btn-started:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 26px rgba(83, 210, 224, 0.5);
+  }
 }
 
 /* ─── POLISH PASS ───────────────────────────────────────── */
@@ -304,7 +310,9 @@ html { scroll-behavior: smooth; }
   width: max-content;
   animation: ticker 28s linear infinite;
 }
-.hp-ticker:hover .hp-ticker-track { animation-play-state: paused; }
+@media (hover: hover) {
+  .hp-ticker:hover .hp-ticker-track { animation-play-state: paused; }
+}
 
 /* Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
