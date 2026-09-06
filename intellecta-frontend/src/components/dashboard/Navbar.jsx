@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, Flame, Bell, Mail, BookOpen, LogOut, Settings as SettingsIcon,
   Home, Calendar, Zap, FileText, Folder, ClipboardCheck, Target, BarChart3, Trophy,
-  LayoutDashboard, Users as UsersIcon, TrendingUp, Award, ChevronRight, History
+  LayoutDashboard, Users as UsersIcon, TrendingUp, Award, ChevronRight, History, Video
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import intellectaLogo from '../../assets/intellectaLogo.jpeg';
@@ -37,6 +37,7 @@ const Navbar = () => {
     // Student Pages
     { name: 'Dashboard', path: '/studentDashboard', icon: Home, category: 'Student' },
     { name: 'Study Schedule', path: '/schedule', icon: Calendar, category: 'Student' },
+    { name: 'Video Lectures', path: '/lectures', icon: Video, category: 'Student' },
     { name: 'Focus Sessions', path: '/focus', icon: Zap, category: 'Student' },
     { name: 'Focus Analytics', path: '/focusSession', icon: BarChart3, category: 'Student' },
     { name: 'Distraction Logs', path: '/distractions', icon: Flame, category: 'Student' },
@@ -139,11 +140,11 @@ const Navbar = () => {
           </button>
           
           <div className="flex items-center gap-2 group cursor-pointer" onClick={() => navigate('/studentDashboard')}>
-            <div className="relative w-10 h-10 md:w-14 md:h-16 flex items-center justify-center">
+            <div className="relative w-10 h-10 md:w-11 md:h-11 flex items-center justify-center">
               <img 
                 src={intellectaLogo} 
                 alt="Intellecta Logo" 
-                className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-200"
+                className="w-full h-full object-cover rounded-xl shadow-[0_4px_14px_rgba(83,210,224,0.38)] transform group-hover:scale-105 transition-transform duration-200"
               />
             </div>
             

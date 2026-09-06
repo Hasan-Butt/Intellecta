@@ -303,12 +303,12 @@ export default function StudentLecturesPage() {
       <div className="bg-[#f9f9ff] min-h-screen flex w-full">
         <StudentSidebar />
         <main className="flex-1 overflow-y-auto">
-          <div className="px-8 py-8 max-w-[1400px] mx-auto">
+          <div className="px-4 sm:px-6 md:px-8 py-6 md:py-8 max-w-[1400px] mx-auto">
 
             {/* Page Header */}
             <div className="mb-6">
-              <h1 className="text-4xl font-black text-gray-900 tracking-tight">Video Lectures</h1>
-              <p className="text-gray-500 text-base mt-1 leading-relaxed">Watch your course lectures at your own pace.</p>
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Video Lectures</h1>
+              <p className="text-gray-500 text-sm md:text-base mt-1 leading-relaxed">Watch your course lectures at your own pace.</p>
             </div>
 
             {error && <div className="mb-4 text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-medium">{error}</div>}
@@ -345,7 +345,7 @@ export default function StudentLecturesPage() {
                       )}
                     </div>
                     <div>
-                      <h2 className="text-3xl font-black text-gray-900 tracking-tight leading-tight">{activeLecture.title}</h2>
+                      <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-tight">{activeLecture.title}</h2>
                       {activeLecture.topic && (
                         <span className="inline-flex items-center gap-1 text-xs font-bold text-[#451ebb] bg-[#451ebb]/10 px-2.5 py-0.5 rounded-full mt-2">
                           {activeLecture.topic}
@@ -363,21 +363,21 @@ export default function StudentLecturesPage() {
                     )}
 
                   {activeLecture && (
-                    <div className="flex items-center justify-between">
-                      <button onClick={goToPrev} disabled={activeIdx <= 0} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-500 hover:text-[#451ebb] bg-white border border-gray-200 hover:border-[#451ebb]/30 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition-all">
-                        <ChevronLeft size={16} /> Previous
+                    <div className="flex flex-row items-center justify-between gap-2 mt-2 sm:mt-0">
+                      <button onClick={goToPrev} disabled={activeIdx <= 0} className="flex-1 sm:flex-none justify-center flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm font-bold text-gray-500 hover:text-[#451ebb] bg-white border border-gray-200 hover:border-[#451ebb]/30 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition-all">
+                        <ChevronLeft size={14} className="shrink-0" /> Previous
                       </button>
-                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{activeIdx + 1} / {lectures.length}</span>
-                      <button onClick={goToNext} disabled={activeIdx >= lectures.length - 1} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-500 hover:text-[#451ebb] bg-white border border-gray-200 hover:border-[#451ebb]/30 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition-all">
-                        Next <ChevronRight size={16} />
+                      <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest px-2">{activeIdx + 1} / {lectures.length}</span>
+                      <button onClick={goToNext} disabled={activeIdx >= lectures.length - 1} className="flex-1 sm:flex-none justify-center flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-[10px] sm:text-sm font-bold text-gray-500 hover:text-[#451ebb] bg-white border border-gray-200 hover:border-[#451ebb]/30 disabled:opacity-30 disabled:cursor-not-allowed rounded-xl transition-all">
+                        Next <ChevronRight size={14} className="shrink-0" />
                       </button>
                     </div>
                   )}
 
                   {/* Overview / Resources tabs */}
                   {activeLecture && (
-                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-                      <div className="flex gap-6 border-b border-gray-100 mb-5">
+                    <div className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-6 shadow-sm">
+                      <div className="flex gap-6 border-b border-gray-100 mb-4 sm:mb-5">
                         {["overview", "resources"].map((tab) => (
                           <button
                             key={tab}
