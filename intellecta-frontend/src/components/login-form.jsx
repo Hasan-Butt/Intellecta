@@ -135,6 +135,9 @@ export function LoginForm({ className, ...props }) {
           <div className="flex-1 flex items-center justify-center">
             <div className="w-full max-w-sm space-y-6">
               <div className="flex flex-col items-center gap-2 text-center">
+                <div className="md:hidden flex justify-center mb-2">
+                  <img src={loginImage} alt="Intellecta Logo" className="w-16 h-16 rounded-2xl shadow-md object-cover" />
+                </div>
                 <h1 className="text-2xl font-bold">Welcome back</h1>
                 <p className="text-sm text-muted-foreground">
                   Login to your Intellecta account

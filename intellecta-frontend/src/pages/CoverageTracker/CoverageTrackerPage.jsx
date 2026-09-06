@@ -860,13 +860,13 @@ const CoverageTrackerPage = () => {
       <div className="bg-[var(--color-base,#f9f9ff)] min-h-screen flex w-full">
         <Sidebar />
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="px-10 py-10">
-            <div className="max-w-6xl">
+        <main className="flex-1 overflow-y-auto w-full">
+          <div className="px-4 md:px-10 py-6 md:py-10 w-full max-w-7xl mx-auto">
+            <div className="w-full">
 
               {/* ── PAGE HEADER ── */}
               <header className="mb-8">
-                <div className="flex items-start justify-between gap-6 flex-wrap">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                   <div>
                     <span className="font-mono text-[11px] font-bold tracking-[0.3em] text-[#7c3aed] uppercase">
                       Coverage Tracker
@@ -874,16 +874,16 @@ const CoverageTrackerPage = () => {
                     <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mt-1">
                       {activeSubject?.name || "Your Curriculum"}
                     </h1>
-                    <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
+                    <p className="text-gray-500 text-sm md:text-base mt-2 max-w-md leading-relaxed">
                       Map your curriculum, track topic mastery, and prep for what's next.
                     </p>
                   </div>
 
                   {/* Subject Dropdown */}
-                  <div className="relative">
+                  <div className="relative w-full md:w-auto">
                     <button
                       onClick={() => setSubjectOpen(!subjectOpen)}
-                      className="flex items-center gap-2 px-5 py-3 neu-inset bg-transparent border-none text-xs font-bold text-gray-700 transition-colors"
+                      className="w-full md:w-auto flex items-center justify-between md:justify-center gap-2 px-5 py-3 neu-inset bg-transparent border-none text-xs font-bold text-gray-700 transition-colors"
                     >
                       {activeSubject?.name || "Select Subject"}
                       <ChevronDown
@@ -895,7 +895,7 @@ const CoverageTrackerPage = () => {
                       />
                     </button>
                     {subjectOpen && (
-                      <div className="absolute right-0 mt-2 w-56 neu py-1.5 z-20">
+                      <div className="absolute right-0 mt-2 w-full md:w-56 neu py-1.5 z-20">
                         {subjects.length === 0 && (
                           <p className="text-xs text-gray-400 px-4 py-3 italic">
                             No subjects yet.
@@ -930,7 +930,7 @@ const CoverageTrackerPage = () => {
                 </div>
 
                 {/* At-a-glance stat strip */}
-                <div className="flex gap-3 mt-6 flex-wrap">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
                   <StatChip value={effectiveTopics.length} label="Topics" />
                   <StatChip value={statusCounts.MASTERED} label="Mastered" />
                   <StatChip value={upcomingExams.length} label="Upcoming Exams" />
@@ -938,7 +938,7 @@ const CoverageTrackerPage = () => {
                 </div>
               </header>
 
-              <div className="grid grid-cols-[1fr_380px] gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
 
                 {/* ── LEFT ── */}
                 <div className="flex flex-col gap-6">

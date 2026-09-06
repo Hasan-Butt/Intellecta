@@ -57,8 +57,8 @@ const ResultDetail = ({ detail, summary }) => {
   return (
     <div className="max-w-5xl mx-auto pb-12">
       {/* Header */}
-      <section className="bg-white rounded-[2rem] border border-slate-200 shadow-lg p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="flex items-center gap-6">
+      <section className="bg-white rounded-[2rem] border border-slate-200 shadow-lg p-6 md:p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
           <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl"><GraduationCap size={28} /></div>
           <div>
             <p className="text-slate-400 font-black uppercase tracking-widest text-[10px] mb-1">{quiz.category}</p>
@@ -66,7 +66,7 @@ const ResultDetail = ({ detail, summary }) => {
             {graded ? (
               <p className="text-sm text-slate-500 font-medium mt-1">You scored {score} / {total}</p>
             ) : (
-              <p className="text-sm text-amber-500 font-semibold mt-1 flex items-center gap-1"><Hourglass size={14} /> Pending review — result will appear once graded</p>
+              <p className="text-sm text-amber-500 font-semibold mt-1 flex items-center justify-center md:justify-start gap-1"><Hourglass size={14} /> Pending review — result will appear once graded</p>
             )}
           </div>
         </div>
@@ -84,10 +84,10 @@ const ResultDetail = ({ detail, summary }) => {
               const awarded = graded ? (q.awardedMarks ?? null) : null;
               const maxMark = q.maxMarks || 1;
               return (
-                <div key={q.id} className={`p-6 rounded-3xl border shadow-sm ${awarded != null ? 'bg-emerald-50/30 border-emerald-100' : 'bg-white border-slate-200'}`}>
-                  <div className="flex items-start justify-between gap-4 mb-4">
+                <div key={q.id} className={`p-4 md:p-6 rounded-3xl border shadow-sm ${awarded != null ? 'bg-emerald-50/30 border-emerald-100' : 'bg-white border-slate-200'}`}>
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-4 mb-4">
                     <h3 className="text-lg font-bold text-slate-800"><span className="text-slate-300 mr-2">{idx + 1}.</span> {q.text}</h3>
-                    <div className={`shrink-0 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 ${awarded != null ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                    <div className={`shrink-0 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit ${awarded != null ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
                       {awarded != null ? <><CheckCircle2 size={14} /> {awarded}/{maxMark} marks</> : <><Hourglass size={14} /> {graded ? 'Not assessed' : 'Awaiting review'}</>}
                     </div>
                   </div>
@@ -109,10 +109,10 @@ const ResultDetail = ({ detail, summary }) => {
             const isSkipped = userAnswer === undefined || userAnswer === null;
             const showCorrect = graded && q.correctOptionIndex != null;
             return (
-              <div key={q.id} className={`p-6 rounded-3xl border shadow-sm ${isCorrect ? 'bg-emerald-50/30 border-emerald-100' : isSkipped ? 'bg-white border-slate-200' : 'bg-red-50/30 border-red-100'}`}>
-                <div className="flex items-start justify-between gap-4 mb-4">
+              <div key={q.id} className={`p-4 md:p-6 rounded-3xl border shadow-sm ${isCorrect ? 'bg-emerald-50/30 border-emerald-100' : isSkipped ? 'bg-white border-slate-200' : 'bg-red-50/30 border-red-100'}`}>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-4 mb-4">
                   <h3 className="text-lg font-bold text-slate-800"><span className="text-slate-300 mr-2">{idx + 1}.</span> {q.text}</h3>
-                  <div className="shrink-0">
+                  <div className="shrink-0 w-fit">
                     {graded ? (
                       isCorrect ? (
                         <div className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><CheckCircle2 size={14} /> Correct</div>
@@ -190,7 +190,7 @@ const QuizResultsPage = () => {
       <div className="bg-[#f9f9ff] min-h-screen flex w-full">
         <Sidebar />
         <main className="flex-1 overflow-y-auto selection:bg-indigo-100 selection:text-indigo-900">
-          <div className="p-6 md:p-12 lg:p-16 max-w-5xl mx-auto">
+          <div className="p-4 md:p-12 lg:p-16 max-w-5xl mx-auto">
           {selectedAttempt ? (
             <>
               <button onClick={() => { setSelectedAttempt(null); setSelectedDetail(null); }} className="flex items-center gap-2 text-slate-500 font-bold hover:text-slate-800 mb-6 transition-colors">
@@ -204,7 +204,7 @@ const QuizResultsPage = () => {
               ) : selectedDetail ? (
                 <ResultDetail detail={selectedDetail} summary={selectedAttempt} />
               ) : (
-                <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-10 text-center">
+                <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-8 md:p-10 text-center">
                   <p className="text-slate-500 font-medium">This attempt is still being reviewed. Check back after grading is complete.</p>
                 </div>
               )}
@@ -240,7 +240,7 @@ const QuizResultsPage = () => {
                       <button
                         key={a.id}
                         onClick={() => openDetail(a)}
-                        className="w-full text-left bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-indigo-200 transition-all p-6 flex items-center justify-between gap-4 group"
+                        className="w-full text-left bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-indigo-200 transition-all p-4 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
                       >
                         <div className="flex items-center gap-4 min-w-0">
                           <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl shrink-0"><Zap size={22} /></div>
@@ -249,10 +249,10 @@ const QuizResultsPage = () => {
                             <p className="text-xs text-slate-400 font-medium">{quiz.category || 'General'} • {new Date(a.endTime || a.startTime || Date.now()).toLocaleDateString()}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4 shrink-0">
+                        <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 w-full sm:w-auto mt-2 sm:mt-0 border-t sm:border-0 border-slate-100 pt-3 sm:pt-0">
                           {graded ? (
                             <>
-                              <div className="text-right">
+                              <div className="text-left sm:text-right">
                                 <p className="text-lg font-black text-indigo-600">{score}<span className="text-slate-300 text-sm">/{total}</span></p>
                                 <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">+{a.xpGained || 0} XP</p>
                               </div>
@@ -260,7 +260,7 @@ const QuizResultsPage = () => {
                             </>
                           ) : (
                             <>
-                              <div className="text-right">
+                              <div className="text-left sm:text-right">
                                 <p className="text-lg font-black text-amber-500">Pending</p>
                               </div>
                               <span className="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-widest rounded-full">Pending Review</span>

@@ -417,39 +417,39 @@ const PerformanceDashboard = () => {
         <Sidebar />
 
         {/* Scrollable Content Area */}
-        <main className="flex-1 p-6 lg:p-10">
+        <main className="flex-1 p-4 sm:p-6 lg:p-10">
           <div className="max-w-[1400px] mx-0">
             {" "}
             {/* Align left-ish for a clean sidebar flow */}
             {/* Header Section */}
-            <header className="mb-10">
+            <header className="mb-8 md:mb-10">
               <div className="flex items-center gap-2 mb-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-600 animate-pulse" />
                 <span className="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em]">
                   System Active
                 </span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+              <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
                 Performance Dashboard
               </h1>
             </header>
-            <div className="grid grid-cols-12 gap-8">
+            <div className="grid grid-cols-12 gap-6 md:gap-8">
               {/* Focus Chart Card */}
               <section
                 className="col-span-12 lg:col-span-8 neu overflow-hidden transition-all duration-500 hover:scale-[1.01]"
               >
-                <div className="p-10 flex justify-between items-start">
+                <div className="p-6 md:p-10 flex flex-col sm:flex-row justify-between items-start gap-4">
                   <header>
-                    <h2 className="text-[28px] font-bold tracking-tight text-[#4F39C3] leading-none">
+                    <h2 className="text-2xl md:text-[28px] font-bold tracking-tight text-[#4F39C3] leading-none">
                       Focus Intensity
                     </h2>
-                    <p className="mt-3 text-[16px] text-gray-500 font-medium tracking-wide">
+                    <p className="mt-2 md:mt-3 text-[14px] md:text-[16px] text-gray-500 font-medium tracking-wide">
                       Biometric tracking of cognitive load over 24h
                     </p>
                   </header>
                   {/* Bug 1.4.1: static status indicator — live tracking isn't wired up */}
                   <div
-                    className="px-6 py-2.5 rounded-full text-[11px] font-black tracking-[0.15em] uppercase bg-[#E8FFF3] text-emerald-600 shadow-sm flex items-center gap-2"
+                    className="px-4 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-[11px] font-black tracking-[0.15em] uppercase bg-[#E8FFF3] text-emerald-600 shadow-sm flex items-center gap-2"
                   >
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     Live Tracking
@@ -546,52 +546,53 @@ const PerformanceDashboard = () => {
               </section>
 
               {/* Heatmap Card */}
-              <section className="col-span-12 lg:col-span-4 neu p-10 h-fit">
-                <header className="flex justify-between items-center mb-10">
+              <section className="col-span-12 lg:col-span-4 neu p-6 md:p-10 h-fit">
+                <header className="flex justify-between items-center mb-6 md:mb-10">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
                       <Clock size={18} />
                     </div>
-                    <h2 className="text-[14px] font-black text-gray-800 uppercase tracking-[0.15em]">
+                    <h2 className="text-[12px] md:text-[14px] font-black text-gray-800 uppercase tracking-[0.1em] md:tracking-[0.15em]">
                       Peak Windows (Past 7 Days)
                     </h2>
                   </div>
                 </header>
                 <div className="flex flex-col gap-4">
                   {/* Heatmap rows with labels */}
-                  <div className="space-y-1.5">
-                    {heatmapData.map((row, rIdx) => (
-                      <div key={rIdx} className="flex items-center gap-4">
-                        <span className="w-8 text-[10px] font-black text-gray-400 uppercase tracking-tighter">
-                          {dayLabels[rIdx]}
-                        </span>
-                        <div className="flex-1 grid grid-cols-12 gap-1.5">
-                          {row.map((intensity, cIdx) => (
-                            <IntensityCell key={`${rIdx}-${cIdx}`} intensity={intensity} />
+                  <div className="space-y-1.5 overflow-x-auto">
+                    <div className="min-w-[280px]">
+                      {heatmapData.map((row, rIdx) => (
+                        <div key={rIdx} className="flex items-center gap-4 mb-1.5">
+                          <span className="w-8 text-[10px] font-black text-gray-400 uppercase tracking-tighter shrink-0">
+                            {dayLabels[rIdx]}
+                          </span>
+                          <div className="flex-1 grid grid-cols-12 gap-1.5">
+                            {row.map((intensity, cIdx) => (
+                              <IntensityCell key={`${rIdx}-${cIdx}`} intensity={intensity} />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      {/* X-Axis Labels (Hours) */}
+                      <div className="flex items-center gap-4 mt-4">
+                        <div className="w-8 shrink-0" /> {/* Offset for day labels */}
+                        <div className="flex-1 grid grid-cols-12 text-[7px] sm:text-[9px] font-black text-gray-400">
+                          {hourLabels.map((hour, idx) => (
+                            <span key={idx} className="text-center">{hour}</span>
                           ))}
                         </div>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* X-Axis Labels (Hours) */}
-                  <div className="flex items-center gap-4">
-                    <div className="w-8" /> {/* Offset for day labels */}
-                    <div className="flex-1 grid grid-cols-12 text-[9px] font-black text-gray-400">
-                      {hourLabels.map((hour, idx) => (
-                        <span key={idx} className="text-center">{hour}</span>
-                      ))}
                     </div>
                   </div>
                 </div>
-                <footer className="mt-10 pt-8 border-t border-gray-50 flex flex-row items-center justify-between gap-4">
+                <footer className="mt-8 md:mt-10 pt-6 md:pt-8 border-t border-gray-50 flex flex-row items-center justify-between gap-4">
                   {/* The left side container */}
                   <div className="flex items-center gap-4"> 
                     <div>
                       <span className="block text-[10px] text-gray-400 font-black uppercase tracking-widest mb-0.5">
                         Prime Slot
                       </span>
-                      <span className="text-lg font-bold text-gray-800 tracking-tight whitespace-nowrap">
+                      <span className="text-base md:text-lg font-bold text-gray-800 tracking-tight whitespace-nowrap">
                         {primeSlot}
                       </span>
                     </div>
@@ -599,7 +600,7 @@ const PerformanceDashboard = () => {
 
                   {/* Bug 1.4.2: hide the badge when there's no prime-slot data */}
                   {hasPrimeSlotData && (
-                    <span className="translate-y-2 flex-shrink-0 px-4 py-2 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-xl">
+                    <span className="translate-y-2 flex-shrink-0 px-3 md:px-4 py-1.5 md:py-2 bg-green-50 text-green-600 text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-xl">
                       Optimal Flow
                     </span>
                   )}
@@ -607,18 +608,18 @@ const PerformanceDashboard = () => {
               </section>
 
               {/* Mastery Deficits Card */}
-              <section className="col-span-12 lg:col-span-8 neu p-10">
-                <header className="flex justify-between items-center mb-10">
+              <section className="col-span-12 lg:col-span-8 neu p-6 md:p-10">
+                <header className="flex justify-between items-center mb-6 md:mb-10">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-red-50 rounded-lg text-red-600">
                       <Target size={18} />
                     </div>
-                    <h2 className="text-[14px] font-black text-gray-800 uppercase tracking-[0.15em]">
+                    <h2 className="text-[12px] md:text-[14px] font-black text-gray-800 uppercase tracking-[0.1em] md:tracking-[0.15em]">
                       Mastery Deficits
                     </h2>
                   </div>
                 </header>
-                <nav className="space-y-2 overflow-y-auto max-h-[450px] pr-4 custom-scrollbar">
+                <nav className="space-y-2 overflow-y-auto max-h-[450px] md:pr-4 custom-scrollbar">
                   {masteryDeficits.length > 0 ? (
                     masteryDeficits.map((item, idx) => (
                       <MasteryItem
@@ -638,8 +639,8 @@ const PerformanceDashboard = () => {
               </section>
 
               {/* Focus Allocation Card */}
-              <section className="col-span-12 lg:col-span-5 neu p-10 flex flex-col justify-between min-h-[520px]">
-                <h2 className="font-black text-2xl tracking-tight text-[#2D2D5F] uppercase border-b border-gray-50 pb-4">
+              <section className="col-span-12 lg:col-span-5 neu p-6 md:p-10 flex flex-col justify-between min-h-[400px] md:min-h-[520px]">
+                <h2 className="font-black text-xl md:text-2xl tracking-tight text-[#2D2D5F] uppercase border-b border-gray-50 pb-4">
                   Focus Allocation
                 </h2>
 
@@ -728,61 +729,61 @@ const PerformanceDashboard = () => {
               </section>
 
               {/* Analytical Charts Section */}
-              <div className="col-span-12 lg:col-span-7 flex flex-col gap-8">
-                <section className="neu p-10 flex flex-col h-[520px]">
-                  <div className="flex justify-between items-start mb-10">
+              <div className="col-span-12 lg:col-span-7 flex flex-col gap-6 md:gap-8">
+                <section className="neu p-6 md:p-10 flex flex-col h-auto lg:h-[520px]">
+                  <div className="flex justify-between items-start mb-6 md:mb-10 gap-4">
                     <div>
-                      <h2 className="font-black text-xl tracking-tight text-[#4F39C3] uppercase">
+                      <h2 className="font-black text-lg md:text-xl tracking-tight text-[#4F39C3] uppercase">
                         Cognitive Behavioral Audit
                       </h2>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
+                      <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
                         Analyzing your psychological study patterns
                       </p>
                     </div>
-                    <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600">
+                    <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600 shrink-0">
                       <Target size={20} />
                     </div>
                   </div>
 
                   {sessions.length === 0 ? (
-                    <div className="flex-1 flex items-center justify-center rounded-3xl border-2 border-dashed border-gray-100">
+                    <div className="flex-1 flex items-center justify-center rounded-3xl border-2 border-dashed border-gray-100 min-h-[200px]">
                       <div className="text-center">
-                        <p className="text-sm font-black text-gray-400 uppercase tracking-widest">
+                        <p className="text-xs md:text-sm font-black text-gray-400 uppercase tracking-widest">
                           No study data available yet.
                         </p>
-                        <p className="text-[10px] font-medium text-gray-300 mt-2">
+                        <p className="text-[9px] md:text-[10px] font-medium text-gray-300 mt-2">
                           Complete a focus session to unlock this audit.
                         </p>
                       </div>
                     </div>
                   ) : (
-                  <div className="flex-1 grid grid-cols-2 gap-6">
-                    <div className="bg-gray-50 rounded-3xl p-6 flex flex-col justify-between group hover:bg-indigo-600 transition-all duration-500">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-white/60 transition-colors">Circadian Rhythm</span>
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                    <div className="bg-gray-50 rounded-3xl p-5 md:p-6 flex flex-col justify-between group hover:bg-indigo-600 transition-all duration-500 min-h-[140px]">
+                      <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-white/60 transition-colors">Circadian Rhythm</span>
                       <div>
-                        <span className="text-2xl font-black text-gray-900 block group-hover:text-white transition-colors">{behavioralInsights.circadianRhythm}</span>
-                        <span className="text-[10px] font-medium text-gray-500 group-hover:text-white/60 transition-colors mt-1 block">Peak Cognitive Window</span>
+                        <span className="text-xl md:text-2xl font-black text-gray-900 block group-hover:text-white transition-colors">{behavioralInsights.circadianRhythm}</span>
+                        <span className="text-[9px] md:text-[10px] font-medium text-gray-500 group-hover:text-white/60 transition-colors mt-1 block">Peak Cognitive Window</span>
                       </div>
                     </div>
-                    <div className="bg-gray-50 rounded-3xl p-6 flex flex-col justify-between group hover:bg-indigo-600 transition-all duration-500">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-white/60 transition-colors">Focus Sustainability</span>
+                    <div className="bg-gray-50 rounded-3xl p-5 md:p-6 flex flex-col justify-between group hover:bg-indigo-600 transition-all duration-500 min-h-[140px]">
+                      <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-white/60 transition-colors">Focus Sustainability</span>
                       <div>
-                        <span className="text-2xl font-black text-gray-900 block group-hover:text-white transition-colors">{behavioralInsights.sustainability}</span>
-                        <span className="text-[10px] font-medium text-gray-500 group-hover:text-white/60 transition-colors mt-1 block">Avg. Session Duration</span>
+                        <span className="text-xl md:text-2xl font-black text-gray-900 block group-hover:text-white transition-colors">{behavioralInsights.sustainability}</span>
+                        <span className="text-[9px] md:text-[10px] font-medium text-gray-500 group-hover:text-white/60 transition-colors mt-1 block">Avg. Session Duration</span>
                       </div>
                     </div>
-                    <div className="bg-gray-50 rounded-3xl p-6 flex flex-col justify-between group hover:bg-indigo-600 transition-all duration-500">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-white/60 transition-colors">Deep Work Depth</span>
+                    <div className="bg-gray-50 rounded-3xl p-5 md:p-6 flex flex-col justify-between group hover:bg-indigo-600 transition-all duration-500 min-h-[140px]">
+                      <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-white/60 transition-colors">Deep Work Depth</span>
                       <div>
-                        <span className="text-2xl font-black text-gray-900 block group-hover:text-white transition-colors">{behavioralInsights.depth}</span>
-                        <span className="text-[10px] font-medium text-gray-500 group-hover:text-white/60 transition-colors mt-1 block">Concentration Quality</span>
+                        <span className="text-xl md:text-2xl font-black text-gray-900 block group-hover:text-white transition-colors">{behavioralInsights.depth}</span>
+                        <span className="text-[9px] md:text-[10px] font-medium text-gray-500 group-hover:text-white/60 transition-colors mt-1 block">Concentration Quality</span>
                       </div>
                     </div>
-                    <div className="bg-gray-50 rounded-3xl p-6 flex flex-col justify-between group hover:bg-indigo-600 transition-all duration-500">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-white/60 transition-colors">Study Velocity</span>
+                    <div className="bg-gray-50 rounded-3xl p-5 md:p-6 flex flex-col justify-between group hover:bg-indigo-600 transition-all duration-500 min-h-[140px]">
+                      <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-white/60 transition-colors">Study Velocity</span>
                       <div>
-                        <span className="text-2xl font-black text-gray-900 block group-hover:text-white transition-colors">{behavioralInsights.velocity}</span>
-                        <span className="text-[10px] font-medium text-gray-500 group-hover:text-white/60 transition-colors mt-1 block">Focus Hours per Day</span>
+                        <span className="text-xl md:text-2xl font-black text-gray-900 block group-hover:text-white transition-colors">{behavioralInsights.velocity}</span>
+                        <span className="text-[9px] md:text-[10px] font-medium text-gray-500 group-hover:text-white/60 transition-colors mt-1 block">Focus Hours per Day</span>
                       </div>
                     </div>
                   </div>

@@ -153,6 +153,29 @@ h1, h2, h3, h4 { text-wrap: balance; }
 @media(max-width: 768px) {
   .nav-center-links { display: none !important; }
   .mob-toggle       { display: flex !important; }
+  
+  /* Navbar mobile fixes */
+  .nav-left-actions { display: none !important; }
+  .hp-nav-btn-started.desktop-only { display: none !important; }
+  .nav-right-actions { min-width: auto !important; }
+  .hp-navbar-topbar { padding: 0 1rem; }
+  .hp-navbar-center-logo {
+    position: static !important;
+    transform: none !important;
+  }
+  .hp-navbar-topbar.scrolled .hp-navbar-center-logo {
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+  }
+  .hp-navbar-links-pill { display: none !important; }
+  .mob-nav-actions { display: flex !important; }
+  
+  /* Footer mobile fixes */
+  .hp-footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
 }
 
 /* ─── NAVBAR STYLES ────────────────────────────────────── */

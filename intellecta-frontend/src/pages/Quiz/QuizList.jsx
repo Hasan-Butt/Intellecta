@@ -58,10 +58,10 @@ const QuizPlatform = () => {
         <Sidebar />
 
         <main className="flex-1 overflow-y-auto selection:bg-indigo-100 selection:text-indigo-900">
-          <div className="p-6 md:p-12 lg:p-16 max-w-7xl mx-auto">
+          <div className="p-4 md:p-12 lg:p-16 max-w-7xl mx-auto">
             
             {/* --- HERO SECTION --- */}
-            <section className="relative w-full overflow-hidden rounded-[3.5rem] shadow-2xl shadow-indigo-900/20 mb-20 min-h-[400px] flex items-center">
+            <section className="relative w-full overflow-hidden rounded-3xl md:rounded-[3.5rem] shadow-2xl shadow-indigo-900/20 mb-12 md:mb-20 min-h-[400px] flex items-center">
               <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] hover:scale-110"
                 style={{
@@ -70,18 +70,18 @@ const QuizPlatform = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A] via-[#0F172A]/80 to-transparent" />
 
-              <div className="relative z-10 flex flex-col py-24 px-10 md:px-24">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#BEF264] text-[#0F172A] text-[11px] font-black uppercase tracking-[0.2em] mb-10 w-fit">
+              <div className="relative z-10 flex flex-col py-16 md:py-24 px-6 md:px-24">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#BEF264] text-[#0F172A] text-[11px] font-black uppercase tracking-[0.2em] mb-6 md:mb-10 w-fit">
                   <Zap size={14} fill="currentColor" />
                   <span>Flash Challenge</span>
                 </div>
 
-                <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-[1.05] mb-8 tracking-tighter max-w-4xl">
+                <h1 className="text-4xl md:text-7xl font-extrabold text-white leading-[1.05] mb-6 md:mb-8 tracking-tighter max-w-4xl">
                   Master Your <br />
                   <span className="text-indigo-400">Knowledge Base</span>
                 </h1>
 
-                <p className="text-slate-300 text-xl md:text-2xl leading-relaxed max-w-2xl mb-12 font-medium">
+                <p className="text-slate-300 text-lg md:text-2xl leading-relaxed max-w-2xl mb-8 md:mb-12 font-medium">
                   Challenge yourself with curated assessments across various disciplines. Track your progress and climb the leaderboard.
                 </p>
 
@@ -89,27 +89,27 @@ const QuizPlatform = () => {
                   <button 
                     disabled={quizzes.length === 0}
                     onClick={() => quizzes.length > 0 && handleStartQuiz(quizzes[0].id)}
-                    className={`group flex items-center gap-4 px-10 py-5 rounded-2xl font-bold text-lg transition-all active:scale-95 shadow-2xl ${
+                    className={`group flex items-center gap-4 px-8 md:px-10 py-4 md:py-5 rounded-2xl font-bold text-base md:text-lg transition-all active:scale-95 shadow-2xl ${
                       quizzes.length > 0 
                       ? 'btn-primary' 
                       : 'bg-slate-700 text-slate-400 cursor-not-allowed shadow-none'
                     }`}
                   >
                     {loading ? "Loading Quizzes..." : "Start Latest Quiz"}
-                    <ArrowRight size={22} className="transition-transform group-hover:translate-x-1" />
+                    <ArrowRight size={20} className="transition-transform group-hover:translate-x-1" />
                   </button>
                 </div>
               </div>
             </section>
 
             {/* --- SEARCH & FILTERS --- */}
-            <section className="mb-20 p-3 neu-inset flex flex-col md:flex-row gap-3">
+            <section className="mb-12 md:mb-20 p-2 md:p-3 neu-inset flex flex-col md:flex-row gap-3">
               <div className="relative flex-grow flex items-center">
-                <Search className="absolute left-7 w-6 h-6 text-slate-400" />
+                <Search className="absolute left-5 md:left-7 w-5 h-5 md:w-6 md:h-6 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search for subjects..."
-                  className="w-full h-20 pl-16 pr-8 bg-transparent text-lg text-slate-700 font-medium placeholder:text-slate-400 outline-none"
+                  className="w-full h-14 md:h-20 pl-14 md:pl-16 pr-8 bg-transparent text-base md:text-lg text-slate-700 font-medium placeholder:text-slate-400 outline-none"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -147,19 +147,19 @@ const QuizPlatform = () => {
                         alt={quiz.topic}
                       />
                     </div>
-                    <div className="p-10 flex flex-col flex-1">
+                    <div className="p-6 md:p-10 flex flex-col flex-1">
                       <div className="flex justify-between items-start mb-6">
-                        <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl">
-                          {quiz.category === 'Biology' ? <Microscope size={24} /> : <Sigma size={24} />}
+                        <div className="p-3 md:p-4 bg-indigo-50 text-indigo-600 rounded-2xl">
+                          {quiz.category === 'Biology' ? <Microscope size={24} className="w-5 h-5 md:w-6 md:h-6" /> : <Sigma size={24} className="w-5 h-5 md:w-6 md:h-6" />}
                         </div>
                         <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full">
                           {quiz.difficulty}
                         </span>
                       </div>
-                      <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                      <h3 className="text-xl md:text-2xl font-bold text-slate-900 mb-2 md:mb-3">
                         {quiz.topic}
                       </h3>
-                      <p className="text-slate-500 text-base mb-8">
+                      <p className="text-slate-500 text-sm md:text-base mb-6 md:mb-8 line-clamp-3 md:line-clamp-none">
                         {quiz.description}
                       </p>
                       <div className="mt-auto pt-6 border-t border-slate-50 flex flex-col items-center gap-5">

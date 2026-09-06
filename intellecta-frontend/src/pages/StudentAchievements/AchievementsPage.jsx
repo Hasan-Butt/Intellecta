@@ -53,15 +53,15 @@ const AchievementsPage = () => {
       <div className="flex min-h-screen bg-[#f8f9fc] font-inter">
         <StudentSidebar />
         
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
         {/* Header Stats */}
-        <div className="neu p-10 mb-12 flex items-center justify-between overflow-hidden relative">
+        <div className="neu p-6 md:p-10 mb-8 md:mb-12 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0 overflow-hidden relative text-center md:text-left">
           <div className="relative z-10">
             <h2 className="text-4xl font-black text-zinc-900 mb-4 uppercase tracking-tight">Hall of Fame</h2>
             <p className="text-gray-500 font-medium mb-8">You've unlocked <span className="text-[#451ebb] font-black">{earnedCount}</span> out of <span className="font-bold">{totalCount}</span> collectible milestones.</p>
             
-            <div className="flex items-center gap-6">
-              <div className="flex-1 w-80 h-3 bg-gray-100 rounded-full overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 md:gap-6 w-full max-w-sm mx-auto md:mx-0">
+              <div className="flex-1 w-full sm:w-80 h-3 bg-gray-100 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-gradient-to-r from-[#451ebb] to-[#6c5dd3] rounded-full transition-all duration-1000"
                   style={{ width: `${progressPct}%` }}
@@ -88,12 +88,12 @@ const AchievementsPage = () => {
           {/* Rare/Legendary Earned */}
           {badges.some(b => b.earned && b.rarity === 'LEGENDARY') && (
             <div>
-              <div className="flex items-center gap-3 mb-8">
+              <div className="flex items-center justify-center md:justify-start gap-3 mb-8">
                 <div className="w-1.5 h-6 bg-amber-400 rounded-full" />
                 <h3 className="text-xl font-black text-zinc-900 tracking-tight uppercase">Legendary Feats</h3>
               </div>
               
-              <div className="grid grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
                 {badges.filter(b => b.earned && b.rarity === 'LEGENDARY').map(badge => (
                   <AchievementCard key={badge.badgeKey} badge={badge} onClick={() => setSelectedBadge(badge)} />
                 ))}
@@ -103,12 +103,12 @@ const AchievementsPage = () => {
 
           {/* Collection Grid */}
           <div>
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center justify-center md:justify-start gap-3 mb-8">
               <div className="w-1.5 h-6 bg-[#451ebb] rounded-full" />
               <h3 className="text-xl font-black text-zinc-900 tracking-tight uppercase">Milestone Collection</h3>
             </div>
             
-            <div className="grid grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
               {badges.map(badge => (
                 <div 
                   key={badge.badgeKey}
@@ -227,9 +227,9 @@ const AchievementsPage = () => {
 const AchievementCard = ({ badge, onClick }) => (
   <div 
     onClick={onClick}
-    className="group neu p-8 hover:scale-[1.02] transition-all cursor-pointer flex items-center gap-8"
+    className="group neu p-6 md:p-8 hover:scale-[1.02] transition-all cursor-pointer flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 md:gap-8"
   >
-    <div className="w-28 h-28 rounded-full bg-[#f5f6ff] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform overflow-hidden border-4 border-white shadow-md">
+    <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-[#f5f6ff] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform overflow-hidden border-4 border-white shadow-md">
       {badge.imageUrl ? (
         <img src={badge.imageUrl} alt={badge.displayName} className="w-full h-full object-cover" />
       ) : (
@@ -237,8 +237,8 @@ const AchievementCard = ({ badge, onClick }) => (
       )}
     </div>
     
-    <div className="flex-1">
-      <div className="flex items-center gap-3 mb-2">
+    <div className="flex-1 flex flex-col items-center sm:items-start">
+      <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
         <span className={`px-2 py-0.5 rounded text-xs font-black uppercase tracking-wider ${
           badge.rarity === 'LEGENDARY' ? 'bg-amber-100 text-amber-700' : 'bg-purple-100 text-violet-700'
         }`}>

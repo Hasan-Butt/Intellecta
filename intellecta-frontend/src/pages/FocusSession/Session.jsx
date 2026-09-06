@@ -50,33 +50,33 @@ const StatCard = ({ label, value, subtext, color = "text-slate-900" }) => (
 );
 
 const SessionItem = ({ title, subtitle, time, xp, type }) => (
-  <div className="flex items-center justify-between p-1 group cursor-pointer">
-    <div className="flex items-center gap-4">
-      <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-        <MousePointer2 size={18} />
+  <div className="flex items-center justify-between p-1 group cursor-pointer gap-2">
+    <div className="flex items-center gap-3 md:gap-4 min-w-0">
+      <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+        <MousePointer2 size={16} className="md:w-[18px] md:h-[18px]" />
       </div>
-      <div>
-        <h4 className="text-sm font-bold text-slate-900">
+      <div className="min-w-0">
+        <h4 className="text-xs md:text-sm font-bold text-slate-900 truncate">
           {title}:{" "}
           <span className="font-medium text-slate-500">{subtitle}</span>
         </h4>
-        <p className="text-[10px] font-medium text-slate-400 uppercase tracking-tight">
+        <p className="text-[9px] md:text-[10px] font-medium text-slate-400 uppercase tracking-tight truncate">
           {time}
         </p>
       </div>
     </div>
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2 md:gap-4 shrink-0">
       <div className="text-right">
-        <span className="block text-sm font-bold text-indigo-600">
+        <span className="block text-xs md:text-sm font-bold text-indigo-600">
           +{xp} XP
         </span>
-        <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
+        <span className="text-[9px] md:text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
           {type}
         </span>
       </div>
       <ChevronRight
         size={16}
-        className="text-slate-300 group-hover:text-slate-600 transition-colors"
+        className="text-slate-300 group-hover:text-slate-600 transition-colors hidden sm:block"
       />
     </div>
   </div>
@@ -440,38 +440,38 @@ const StudySessionDashboard = () => {
           </span>
         </div>
 
-        <div className={`font-['Manrope'] text-[130px] leading-none font-black tracking-tighter transition-colors duration-1000 ${zen ? "text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.4)]" : "text-[#1E1B4B]"}`}>
+        <div className={`font-['Manrope'] text-[80px] md:text-[130px] leading-none font-black tracking-tighter transition-colors duration-1000 ${zen ? "text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.4)]" : "text-[#1E1B4B]"}`}>
           {formatTime(timeLeft)}
         </div>
 
         <div className="text-center space-y-1">
-          <p className={`font-bold tracking-[0.2em] uppercase text-sm ${zen ? "text-white/60" : "text-slate-500"}`}>
+          <p className={`font-bold tracking-[0.2em] uppercase text-xs md:text-sm ${zen ? "text-white/60" : "text-slate-500"}`}>
             {selectedSubject || "General Focus"}
           </p>
         </div>
 
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4 md:gap-8 mt-2 md:mt-0">
           <button
             onClick={handleReset}
-            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all shadow-sm ${zen ? "bg-white/10 text-white hover:bg-white/20" : "bg-white text-slate-900 hover:scale-105"}`}
+            className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all shadow-sm ${zen ? "bg-white/10 text-white hover:bg-white/20" : "bg-white text-slate-900 hover:scale-105"}`}
           >
-            <RotateCcw size={24} />
+            <RotateCcw size={20} className="md:w-6 md:h-6" />
           </button>
           <button
             onClick={isActive ? handlePause : handleStartResume}
-            className={`w-24 h-24 rounded-full flex items-center justify-center transition-all ${zen ? "bg-white text-indigo-900 shadow-[0_0_50px_rgba(255,255,255,0.25)]" : "bg-indigo-600 text-white shadow-[0_20px_40px_rgba(69,30,187,0.4)] hover:scale-105"} ${isActive ? "focus-ring" : ""}`}
+            className={`w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center transition-all ${zen ? "bg-white text-indigo-900 shadow-[0_0_50px_rgba(255,255,255,0.25)]" : "bg-indigo-600 text-white shadow-[0_20px_40px_rgba(69,30,187,0.4)] hover:scale-105"} ${isActive ? "focus-ring" : ""}`}
           >
             {isActive ? (
-              <Pause size={32} fill="currentColor" />
+              <Pause size={28} className="md:w-[32px] md:h-[32px]" fill="currentColor" />
             ) : (
-              <Play size={32} fill="currentColor" className="ml-1" />
+              <Play size={28} className="md:w-[32px] md:h-[32px] ml-1" fill="currentColor" />
             )}
           </button>
           <button
             onClick={handleStop}
-            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all shadow-sm ${zen ? "bg-white/10 text-white hover:bg-white/20" : "bg-white text-slate-900 hover:scale-105"}`}
+            className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all shadow-sm ${zen ? "bg-white/10 text-white hover:bg-white/20" : "bg-white text-slate-900 hover:scale-105"}`}
           >
-            <Square size={24} fill="currentColor" />
+            <Square size={20} className="md:w-6 md:h-6" fill="currentColor" />
           </button>
         </div>
 
@@ -509,7 +509,7 @@ const StudySessionDashboard = () => {
           <Sidebar />
         </div>
         
-        <main className={`flex-1 transition-all duration-1000 ${ambientMode ? "p-0" : "lg:p-10"} overflow-y-auto relative`}>
+        <main className={`flex-1 transition-all duration-1000 ${ambientMode ? "p-0" : "p-4 lg:p-10"} overflow-y-auto overflow-x-hidden relative w-full max-w-[100vw]`}>
           {/* ZEN OVERLAY */}
           {ambientMode && (
             <div 
@@ -538,12 +538,12 @@ const StudySessionDashboard = () => {
                </div>
 
                {/* Lofi Player — bottom-left */}
-               <div className="absolute bottom-8 left-8 z-20">
+               <div className="absolute bottom-8 left-4 md:left-8 z-20">
                  <LofiPlayer isSessionActive={isActive} />
                </div>
 
                {/* Theme Selector — bottom-right */}
-               <div className="absolute bottom-8 right-8 z-20">
+               <div className="absolute bottom-8 right-4 md:right-8 z-20">
                  <div className="group relative inline-block">
                    <div className="absolute bottom-full right-0 pb-4 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-2 group-hover:translate-y-0 z-50">
                      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-2 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] flex flex-col gap-1">
@@ -560,9 +560,9 @@ const StudySessionDashboard = () => {
                        ))}
                      </div>
                    </div>
-                   <button className="px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center backdrop-blur-xl transition-all duration-300 shadow-[0_8px_32px_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.2)] border border-white/20 hover:border-white/40 font-bold text-sm tracking-widest uppercase hover:-translate-y-1">
-                     <Sparkles size={18} className="mr-2 text-white animate-pulse opacity-80" />
-                     Change Theme
+                   <button className="px-3 md:px-4 py-2 md:py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center backdrop-blur-xl transition-all duration-300 shadow-[0_8px_32px_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.2)] border border-white/20 hover:border-white/40 font-bold text-xs md:text-sm tracking-widest uppercase hover:-translate-y-1">
+                     <Sparkles size={16} className="md:mr-2 md:w-[18px] md:h-[18px] text-white animate-pulse opacity-80" />
+                     <span className="hidden md:inline">Change Theme</span>
                    </button>
                  </div>
                </div>
@@ -570,8 +570,8 @@ const StudySessionDashboard = () => {
           )}
 
           {showDistractionDialog && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-              <div className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl relative">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+              <div className="bg-white rounded-[2rem] p-6 md:p-8 max-w-md w-full shadow-2xl relative">
                 <button
                   onClick={skipDistraction}
                   className="absolute top-6 right-6 text-slate-400 hover:text-slate-600"
@@ -603,18 +603,18 @@ const StudySessionDashboard = () => {
           )}
 
           <div className={`max-w-6xl mx-auto transition-opacity duration-1000 ${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-            <div className="flex justify-between items-end mb-10">
+            <div className="flex flex-col md:flex-row md:justify-between items-start md:items-end mb-8 md:mb-10 gap-6 md:gap-0">
               <div className="space-y-2">
                 <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
                   Focus Session.
                 </h1>
-                <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
+                <p className="text-gray-500 text-sm md:text-base mt-2 max-w-md leading-relaxed">
                   Design your cognitive environment. The Sanctuary aligns your
                   energy with your objectives.
                 </p>
               </div>
-              <div className="bg-[#E8EEFF] rounded-3xl p-4 flex items-center gap-4 px-6">
-                <div className="w-10 h-10 rounded-full bg-[#FFDFA0] flex items-center justify-center">
+              <div className="bg-[#E8EEFF] rounded-3xl p-4 flex items-center gap-4 px-6 w-full md:w-auto">
+                <div className="w-10 h-10 rounded-full bg-[#FFDFA0] flex items-center justify-center flex-shrink-0">
                   <Zap
                     size={20}
                     fill="currentColor"
@@ -846,16 +846,18 @@ const StudySessionDashboard = () => {
               </section>
             </div>
 
-            <footer className="mt-8 glass-card p-6 flex items-center gap-8">
-              <div className="flex items-center gap-4 min-w-[200px]">
-                <Avatar 
-                  src={userAvatar}
-                  name={userName} 
-                  size="w-12 h-12" 
-                  className="border-2 border-indigo-200"
-                />
-                <div className="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-slate-200 flex items-center justify-center text-sm font-black italic shrink-0">
-                  Lvl {level}
+            <footer className="mt-8 glass-card p-4 md:p-6 flex flex-col md:flex-row items-center gap-6 md:gap-8 text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center gap-4 min-w-0 md:min-w-[200px]">
+                <div className="flex items-center gap-4">
+                  <Avatar 
+                    src={userAvatar}
+                    name={userName} 
+                    size="w-12 h-12" 
+                    className="border-2 border-indigo-200"
+                  />
+                  <div className="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-slate-200 flex items-center justify-center text-sm font-black italic shrink-0">
+                    Lvl {level}
+                  </div>
                 </div>
                 <div>
                   <p className="text-sm font-bold">
@@ -871,7 +873,7 @@ const StudySessionDashboard = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex-1 xp-track">
+              <div className="flex-1 w-full md:w-auto xp-track mt-2 md:mt-0">
                 <div
                   className="xp-fill"
                   style={{

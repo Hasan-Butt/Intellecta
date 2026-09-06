@@ -382,15 +382,17 @@ const AnalyticsDashboard = () => {
               <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">Deep-dive into your cognitive leaks and focus sessions.</p>
             </div>
 
-            <div className="flex items-center mb-1.5 relative">
+            <div className="flex items-center w-full lg:w-auto mb-1.5 relative">
               <button 
                 onClick={() => setIsDatePickerOpen(!isDatePickerOpen)} 
-                className="flex items-center gap-3 neu-btn bg-transparent transition-all px-4 py-2.5 rounded-xl group"
+                className="flex items-center justify-between w-full lg:w-auto gap-3 neu-btn bg-transparent transition-all px-4 py-2.5 rounded-xl group"
               >
-                <Calendar size={18} className="text-[#4F27B8] group-hover:scale-110 transition-transform" />
-                <span className="text-sm font-semibold text-[#1A1D1F] tabular-nums">
-                  {dateRange.label || `${dateRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${dateRange.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
-                </span>
+                <div className="flex items-center gap-3">
+                  <Calendar size={18} className="text-[#4F27B8] group-hover:scale-110 transition-transform" />
+                  <span className="text-sm font-semibold text-[#1A1D1F] tabular-nums">
+                    {dateRange.label || `${dateRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${dateRange.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                  </span>
+                </div>
                 <ChevronDown size={14} className={`text-[#6F767E] transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -477,12 +479,12 @@ const AnalyticsDashboard = () => {
           </div>
 
           {/* Main Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-5 neu p-6 h-[375px] flex flex-col">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+            <div className="lg:col-span-5 neu p-5 md:p-6 h-auto md:h-[375px] flex flex-col min-h-[300px]">
               <div className="mb-4">
-                  <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight">Triggers</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-[#1A1D1F] tracking-tight">Triggers</h2>
               </div>
-              <div className="space-y-5 flex-1 overflow-y-auto custom-scrollbar pr-3">
+              <div className="space-y-4 md:space-y-5 flex-1 overflow-y-auto custom-scrollbar pr-3">
                 {triggerData.length > 0 ? (
                   triggerData.map((item, idx) => (<TriggerItem key={idx} {...item} />))
                 ) : (
@@ -497,20 +499,20 @@ const AnalyticsDashboard = () => {
               </div>
             </div>
             
-            <div className="lg:col-span-7 neu p-6 h-[375px] flex flex-col">
-              <div className="flex flex-row justify-between items-center mb-2 gap-4">
-                <div className="min-w-0">
-                  <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
-                    Focus Leaks Trend <span className="text-[#6F767E] text-sm font-medium ml-2">(Last 7 Days)</span>
+            <div className="lg:col-span-7 neu p-5 md:p-6 h-[300px] md:h-[375px] flex flex-col">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                <div className="min-w-0 w-full sm:w-auto">
+                  <h2 className="text-xl md:text-2xl font-bold text-[#1A1D1F] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+                    Focus Leaks Trend <span className="text-[#6F767E] text-xs md:text-sm font-medium ml-2 block sm:inline">(Last 7 Days)</span>
                   </h2>
-                  <p className="text-xs text-[#9CA3AF] font-bold uppercase tracking-widest mt-1 truncate">Click a bar to explore data</p>
+                  <p className="text-[10px] md:text-xs text-[#9CA3AF] font-bold uppercase tracking-widest mt-1 truncate">Click a bar to explore data</p>
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
-                  <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[#4F27B8]" /><span className="text-[9px] font-bold text-[#1A1D1F] uppercase tracking-widest whitespace-nowrap">Minutes Lost</span></div>
+                  <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[#4F27B8]" /><span className="text-[9px] md:text-[10px] font-bold text-[#1A1D1F] uppercase tracking-widest whitespace-nowrap">Minutes Lost</span></div>
                   {/* Bug 2.2.1: phantom "Baseline" legend removed — the chart has only one series */}
                 </div>
               </div>
-              <div className="flex-1 flex flex-col justify-center">
+              <div className="flex-1 flex flex-col justify-center min-h-0">
                 <WeeklyBarChart data={weeklyTrend} />
               </div>
             </div>
@@ -518,12 +520,12 @@ const AnalyticsDashboard = () => {
 
           {/* Log Table */}
           <section className="neu overflow-hidden">
-            <div className="px-10 py-8 flex items-center justify-between border-b border-gray-50">
-              <h2 className="text-2xl font-bold text-[#1A1D1F] tracking-tight">Distraction Log</h2>
-              <div className="flex items-center gap-4 relative">
+            <div className="px-5 py-6 md:px-10 md:py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-50">
+              <h2 className="text-xl md:text-2xl font-bold text-[#1A1D1F] tracking-tight">Distraction Log</h2>
+              <div className="flex items-center gap-4 relative w-full sm:w-auto">
                 <button 
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="flex items-center gap-2 px-5 py-3 hover:bg-gray-50 rounded-xl transition-colors text-[#6F767E] border border-gray-100 font-bold text-xs uppercase tracking-widest">
+                  className="flex items-center justify-center w-full sm:w-auto gap-2 px-5 py-3 hover:bg-gray-50 rounded-xl transition-colors text-[#6F767E] border border-gray-100 font-bold text-xs uppercase tracking-widest">
                   <Filter size={18} />
                   {selectedCategory === 'All' ? 'Filter Logs' : selectedCategory}
                 </button>

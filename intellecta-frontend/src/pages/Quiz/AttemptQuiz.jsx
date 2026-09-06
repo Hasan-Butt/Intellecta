@@ -229,12 +229,12 @@ const FullAssessmentInterface = () => {
            <Sidebar />
         </aside>
       
-        <main className="flex-1 overflow-y-auto py-6 px-8">
+        <main className="flex-1 overflow-y-auto py-6 px-4 md:px-8">
           <div className="mx-auto max-w-6xl flex flex-col gap-5">
             
             {/* 1. TOP HEADER */}
             <section className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-4 md:px-8 md:py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex flex-1 items-center gap-8 w-full">
+              <div className="flex flex-1 items-center gap-4 md:gap-8 w-full">
                 <div className="flex flex-col gap-0.5 whitespace-nowrap">
                   <span className="text-[9px] font-bold tracking-[0.2em] text-slate-400 uppercase">Current Progress</span>
                   <span className="text-lg font-bold text-[#2563EB] tabular-nums">
@@ -251,7 +251,7 @@ const FullAssessmentInterface = () => {
 
               <div className="hidden md:block w-px h-10 bg-slate-100 mx-2" />
 
-              <div className="flex items-center gap-4 bg-red-50/50 border border-red-100 rounded-xl px-4 py-2 min-w-[160px]">
+              <div className="flex items-center gap-4 bg-red-50/50 border border-red-100 rounded-xl px-4 py-2 min-w-full md:min-w-[160px] justify-center md:justify-start">
                 <Timer className="w-6 h-6 text-red-600" strokeWidth={1.5} />
                 <div className="flex flex-col">
                   <span className="text-[9px] font-bold text-red-500 uppercase tracking-[0.15em] mb-1">Remaining</span>
@@ -288,10 +288,10 @@ const FullAssessmentInterface = () => {
             </div>
 
             {/* 3. MAIN BODY */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-12 pb-20 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-6 lg:gap-12 pb-20 items-stretch">
               {/* Question Content */}
-              <section className="space-y-12">
-                <div className="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-slate-100 relative">
+              <section className="space-y-6 lg:space-y-12">
+                <div className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-100 relative">
                   <h2 className="text-xl md:text-2xl font-semibold text-slate-800 leading-[1.5] mb-8">
                     {currentQuestion.text}
                   </h2>
@@ -327,7 +327,7 @@ const FullAssessmentInterface = () => {
                               }`}>
                                 {String.fromCharCode(65 + index)}
                               </span>
-                              <p className={`flex-1 text-base font-medium leading-relaxed ${answers[currentQuestion.id] === index ? 'text-slate-900' : 'text-slate-600'}`}>
+                              <p className={`flex-1 text-sm md:text-base font-medium leading-relaxed ${answers[currentQuestion.id] === index ? 'text-slate-900' : 'text-slate-600'}`}>
                                 {option}
                               </p>
                               {answers[currentQuestion.id] === index && (
@@ -340,32 +340,32 @@ const FullAssessmentInterface = () => {
                     </div>
 
                     {/* Navigation Buttons */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                   <button 
                     disabled={currentQuestionIndex === 0}
                     onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
-                    className={`flex items-center gap-3 text-lg font-bold transition-colors ${currentQuestionIndex === 0 ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-slate-800'}`}
+                    className={`flex items-center justify-center gap-3 text-base md:text-lg font-bold transition-colors py-3 sm:py-0 ${currentQuestionIndex === 0 ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-slate-800'}`}
                   >
-                    <ArrowLeft className="w-6 h-6" /> Previous
+                    <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" /> Previous
                   </button>
-                  <div className="flex items-center gap-5">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-5">
                     <button 
                       onClick={() => setMarkedForReview({...markedForReview, [currentQuestionIndex]: !markedForReview[currentQuestionIndex]})}
-                      className={`flex items-center gap-3 text-lg font-bold transition-all ${markedForReview[currentQuestionIndex] ? 'text-orange-500' : 'text-emerald-600 hover:text-emerald-700'}`}
+                      className={`flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg font-bold transition-all py-3 sm:py-0 ${markedForReview[currentQuestionIndex] ? 'text-orange-500' : 'text-emerald-600 hover:text-emerald-700'}`}
                     >
-                      <Bookmark className={`w-6 h-6 ${markedForReview[currentQuestionIndex] ? 'fill-current' : ''}`} /> Review Later
+                      <Bookmark className={`w-5 h-5 md:w-6 md:h-6 ${markedForReview[currentQuestionIndex] ? 'fill-current' : ''}`} /> Review Later
                     </button>
                     {currentQuestionIndex === quiz.questions.length - 1 ? (
                       <button 
                         onClick={() => setShowReviewQueue(true)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-emerald-200 transition-all active:scale-95"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 md:px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-emerald-200 transition-all active:scale-95"
                       >
                         Finish Quiz
                       </button>
                     ) : (
                       <button 
                         onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-indigo-200 transition-all active:scale-95"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 transition-all active:scale-95"
                       >
                         Save & Next <ArrowRight className="w-4 h-4" />
                       </button>
