@@ -540,47 +540,49 @@ export default function DashboardPage() {
     <div className="flex-1 flex flex-col min-w-0">
       <Navbar />
 
-      <div className="bg-[#f9f9ff] min-h-screen flex w-full">
+      <div className="bg-[#f9f9ff] min-h-screen flex w-full flex-col md:flex-row">
         <Sidebar />
 
-        <main className="flex-1">
-          <div className="px-12 py-10">
+        <main className="flex-1 w-full max-w-[100vw] overflow-x-hidden">
+          <div className="px-4 md:px-12 py-6 md:py-10">
             {/* ── Header / Greeting ── */}
             <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-10">
               <div className="flex flex-col gap-4 max-w-xl">
                 <div>
-                  <h1 className="font-['Manrope',sans-serif] font-[900] text-5xl tracking-[-1.2px] text-[#161c27] leading-[48px]">
+                  <h1 className="font-['Manrope',sans-serif] font-[900] text-4xl md:text-5xl tracking-tight md:tracking-[-1.2px] text-[#161c27] leading-tight md:leading-[48px]">
                     Welcome back, {username}!
                   </h1>
-                  <h1 className="font-['Manrope',sans-serif] font-[900] text-5xl tracking-[-1.2px] text-[#451ebb] leading-[48px]">
+                  <h1 className="font-['Manrope',sans-serif] font-[900] text-4xl md:text-5xl tracking-tight md:tracking-[-1.2px] text-[#451ebb] leading-tight md:leading-[48px]">
                     Ready to focus?
                   </h1>
                 </div>
-                <p className="font-['Inter',sans-serif] text-[#484554] text-lg leading-relaxed">
+                <p className="font-['Inter',sans-serif] text-[#484554] text-base md:text-lg leading-relaxed">
                   You have completed {data?.totalSessions ?? 0} sessions and
                   earned {currentXp} XP so far. Keep it up!
                 </p>
               </div>
 
-              <div className="flex gap-6 items-center flex-shrink-0">
+              <div className="flex flex-row gap-3 sm:gap-6 items-stretch sm:items-center flex-wrap sm:flex-nowrap flex-shrink-0 w-full xl:w-auto">
                 {/* Daily Goal card */}
                 <div 
                   onClick={() => {
                     setNewDailyGoal(data?.dailyGoalHours || 6);
                     setShowGoalModal(true);
                   }}
-                  className="glass-card flex gap-3 items-center px-5 py-7 cursor-pointer hover:scale-105 transition-all group min-w-[160px]"
+                  className="glass-card flex gap-2 sm:gap-3 items-center px-4 sm:px-5 py-5 sm:py-7 cursor-pointer hover:scale-105 transition-all group min-w-[140px] sm:min-w-[160px] flex-1 sm:flex-none"
                 >
-                  <CircularProgress pct={dailyGoalPct} size={80} />
+                  <div className="scale-75 sm:scale-100 origin-left flex-shrink-0 -mr-4 sm:mr-0">
+                    <CircularProgress pct={dailyGoalPct} size={80} />
+                  </div>
                   <div className="flex flex-col gap-1">
-                    <span className="font-['Inter',sans-serif] text-[#484554] text-xs tracking-[1.2px] uppercase leading-4 flex items-center gap-1">
+                    <span className="font-['Inter',sans-serif] text-[#484554] text-[10px] sm:text-xs tracking-[1.2px] uppercase leading-4 flex items-center gap-1">
                       Daily Goal
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                       </svg>
                     </span>
-                    <span className="font-['Inter',sans-serif] font-bold text-[#161c27] text-base leading-6">
+                    <span className="font-['Inter',sans-serif] font-bold text-[#161c27] text-sm sm:text-base leading-5 sm:leading-6">
                       {todayHours} / {dailyGoal}
                       <br />
                       hrs
@@ -589,19 +591,19 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Streak card */}
-                <div className="glass-card flex gap-3 items-center px-5 py-7 min-w-[160px]">
-                  <div className="w-[80px] h-[80px] flex items-center justify-center flex-shrink-0">
-                    <div className="bg-[#ffdfa0] rounded-full w-10 h-14 flex items-center justify-center animate-fire">
+                <div className="glass-card flex gap-2 sm:gap-3 items-center px-4 sm:px-5 py-5 sm:py-7 min-w-[140px] sm:min-w-[160px] flex-1 sm:flex-none">
+                  <div className="w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] flex items-center justify-center flex-shrink-0">
+                    <div className="bg-[#ffdfa0] rounded-full w-8 h-12 sm:w-10 sm:h-14 flex items-center justify-center animate-fire scale-75 sm:scale-100">
                       <FireIcon />
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="font-['Inter',sans-serif] text-[#484554] text-xs tracking-[1.2px] uppercase leading-4">
+                  <div className="flex flex-col gap-1 -ml-2 sm:ml-0">
+                    <span className="font-['Inter',sans-serif] text-[#484554] text-[10px] sm:text-xs tracking-[1.2px] uppercase leading-4">
                       Focus
                       <br />
                       Streak
                     </span>
-                    <span className="font-['Inter',sans-serif] font-bold text-[#161c27] text-base leading-6">
+                    <span className="font-['Inter',sans-serif] font-bold text-[#161c27] text-sm sm:text-base leading-5 sm:leading-6">
                       {streakDays} Days
                     </span>
                   </div>
@@ -616,20 +618,20 @@ export default function DashboardPage() {
                 {/* CTA Banner */}
                 <div className="rounded-3xl overflow-hidden relative min-h-[217px] bg-gradient-to-br from-[#451ebb] to-[#5d3fd3] shadow-lg">
                   <div className="absolute w-64 h-64 rounded-full opacity-10 bg-white blur-[32px] -bottom-14 -right-14 pointer-events-none" />
-                  <div className="relative z-10 p-10 flex flex-col gap-6">
-                    <h2 className="font-['Manrope',sans-serif] font-bold text-white text-3xl leading-9">
+                  <div className="relative z-10 p-6 sm:p-10 flex flex-col gap-6">
+                    <h2 className="font-['Manrope',sans-serif] font-bold text-white text-2xl sm:text-3xl leading-8 sm:leading-9">
                       Enter the Sanctuary
                     </h2>
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                       <button 
                         onClick={() => navigate('/focus')}
-                        className="flex items-center gap-3 neu-btn px-8 py-[17px] font-bold text-[#451ebb]"
+                        className="flex items-center justify-center sm:justify-start gap-3 neu-btn px-6 sm:px-8 py-[15px] sm:py-[17px] font-bold text-[#451ebb] w-full sm:w-auto"
                       >
                         <PlayIcon /> Start Deep Work
                       </button>
                       <button 
                         onClick={() => navigate('/light-review')}
-                        className="flex items-center gap-3 btn-ghost-glass text-white border-white/40"
+                        className="flex items-center justify-center sm:justify-start gap-3 btn-ghost-glass text-white border-white/40 px-6 sm:px-8 py-[15px] sm:py-[17px] w-full sm:w-auto"
                       >
                         <TimerIcon /> Light Review
                       </button>
@@ -638,8 +640,8 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ── Focus Chart — driven by API focusWeek ── */}
-                <div className="neu p-8 flex flex-col gap-10">
-                  <div className="flex items-center justify-between">
+                <div className="neu p-5 sm:p-8 flex flex-col gap-8 sm:gap-10">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <span className="font-['Inter',sans-serif] text-[#484554] text-xs tracking-[1.2px] uppercase">
                       Focus Intensity Over Time
                     </span>

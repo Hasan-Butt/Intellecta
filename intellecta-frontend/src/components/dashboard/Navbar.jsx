@@ -117,32 +117,47 @@ const Navbar = () => {
     }
   };
 
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
   return (
     <header className="w-full bg-[#F9FAFB] border-b border-gray-200 font-inter sticky top-0 z-50">
-      <div className="max-w-[1920px] mx-auto px-4 h-14 flex items-center ">
+      <div className="max-w-[1920px] mx-auto px-4 py-2 md:py-0 min-h-[56px] flex flex-wrap md:flex-nowrap items-center justify-between gap-y-3">
         
-        {/* Left Section: Logo & Branding */}
-        <div className="flex items-center gap-2 group">
-          <div className="relative w-14 h-16 flex items-center justify-center">
-            <img 
-              src={intellectaLogo} 
-              alt="Intellecta Logo" 
-              className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-200"
-            />
-          </div>
+        {/* Mobile Menu Toggle & Logo Section */}
+        <div className="flex items-center gap-2 md:gap-4">
+          <button 
+            className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
           
-          <div className="flex flex-col leading-none">
-            <span className="text-2xl font-black text-[#111827] tracking-tighter">
-              Intellecta
-            </span>
-            <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-[0.2em] mt-1">
-              Focus. Learn. Achieve.
-            </span>
+          <div className="flex items-center gap-2 group cursor-pointer" onClick={() => navigate('/studentDashboard')}>
+            <div className="relative w-10 h-10 md:w-14 md:h-16 flex items-center justify-center">
+              <img 
+                src={intellectaLogo} 
+                alt="Intellecta Logo" 
+                className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-200"
+              />
+            </div>
+            
+            <div className="flex flex-col leading-none hidden sm:flex">
+              <span className="text-xl md:text-2xl font-black text-[#111827] tracking-tighter">
+                Intellecta
+              </span>
+              <span className="text-[8px] md:text-[9px] font-bold text-[#6B7280] uppercase tracking-[0.2em] mt-1">
+                Focus. Learn. Achieve.
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Center Section: Search Bar */}
-        <div className="flex-1 max-w-lg px-8 relative" ref={searchRef}>
+        {/* Center Section: Search Bar (Full width on mobile, inline on desktop) */}
+        <div className="w-full md:flex-1 md:max-w-lg md:px-8 order-3 md:order-none relative" ref={searchRef}>
           <div className={`relative transition-all duration-300 flex items-center h-11 px-5 rounded-full bg-[#EEF2FF] border border-transparent ${
             isSearchFocused ? 'ring-4 ring-indigo-50 bg-white border-indigo-200' : ''
           }`}>
@@ -163,13 +178,13 @@ const Navbar = () => {
                   setIsSearchFocused(false);
                 }
               }}
-              className="w-full bg-transparent text-base text-[#111827] placeholder-[#9CA3AF] outline-none font-medium"
+              className="w-full bg-transparent text-sm md:text-base text-[#111827] placeholder-[#9CA3AF] outline-none font-medium"
             />
           </div>
 
           {/* Search Results Dropdown */}
           {isSearchFocused && filteredPages.length > 0 && (
-            <div className="absolute top-full left-8 right-8 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute top-full left-0 md:left-8 right-0 md:right-8 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="p-2">
                 <p className="px-4 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Quick Navigation</p>
                 {filteredPages.map((page) => (
@@ -200,33 +215,33 @@ const Navbar = () => {
         </div>
 
         {/* Right Section: Actions & Profile */}
-        <div className="flex items-center gap-2 ml-auto">
-          <button aria-label="View Streak" className={`p-2.5 rounded-full bg-transparent transition-all relative group border border-transparent ${
+        <div className="flex items-center gap-1 md:gap-2 ml-auto order-2 md:order-none">
+          <button aria-label="View Streak" className={`p-2 rounded-full bg-transparent transition-all relative group border border-transparent ${
             userData.streakDays > 0 
               ? 'text-orange-500 hover:bg-orange-50/50 hover:border-orange-100' 
               : 'text-gray-400 hover:bg-gray-50/50 hover:border-gray-200'
           }`}>
             <Flame 
-              size={24} 
-              className={`transition-all ${
+              size={20} 
+              className={`md:w-6 md:h-6 transition-all ${
                 userData.streakDays > 0 
                   ? 'fill-orange-500 animate-fire' 
                   : 'grayscale opacity-50'
               }`} 
             />
             {userData.streakDays > 0 && (
-              <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
+              <span className="absolute top-1 right-1 flex h-2 w-2 md:h-2.5 md:w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-600"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 md:h-2.5 md:w-2.5 bg-orange-600"></span>
               </span>
             )}
           </button>
 
-          <button aria-label="View Notifications" className="p-2.5 rounded-full hover:bg-gray-100 transition-all text-[#6B7280] border border-transparent hover:border-gray-200">
-            <Bell size={24} />
+          <button aria-label="View Notifications" className="p-2 rounded-full hover:bg-gray-100 transition-all text-[#6B7280] border border-transparent hover:border-gray-200">
+            <Bell size={20} className="md:w-6 md:h-6" />
           </button>
 
-          <div className="h-12 w-[1px] bg-gray-200 mx-1" />
+          <div className="h-8 md:h-12 w-[1px] bg-gray-200 mx-1" />
           
           {/* Profile Section with Popover */}
           <div className="relative" ref={menuRef}>
@@ -293,6 +308,28 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {showMobileMenu && (
+        <div className="lg:hidden w-full bg-white border-t border-gray-100 max-h-[70vh] overflow-y-auto px-4 py-2 shadow-lg absolute left-0 right-0 z-40">
+          <p className="px-2 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Navigation</p>
+          <div className="flex flex-col gap-1">
+            {allPages.filter(p => p.category === (location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/users') || location.pathname.startsWith('/content') ? 'Admin' : 'Student') || p.category === 'General').map(page => (
+              <button
+                key={page.path}
+                onClick={() => {
+                  navigate(page.path);
+                  setShowMobileMenu(false);
+                }}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left ${location.pathname === page.path ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
+                <page.icon size={18} className={location.pathname === page.path ? 'text-indigo-600' : 'text-gray-400'} />
+                <span className="text-sm font-bold">{page.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 };
