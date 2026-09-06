@@ -64,6 +64,19 @@ function Navbar() {
   const links = ["Features", "How It Works", "About"];
   const hrefFor = l => `#${l.toLowerCase().replace(/\s+/g, "-")}`;
 
+  const handleScroll = (e, targetId) => {
+    e.preventDefault();
+    const element = document.getElementById(targetId);
+    if (element) {
+      const offsetTop = element.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: offsetTop - 80, // Navbar height offset
+        behavior: 'smooth'
+      });
+    }
+    setMobileOpen(false);
+  };
+
   return (
     <motion.div
       className="hp-navbar-wrapper"
@@ -81,7 +94,7 @@ function Navbar() {
 
           {/* CENTER — Logo */}
           <Link to="/" className="hp-navbar-center-logo">
-            <img src={intellectaLogo} alt="Intellecta Logo" style={{
+            <img className="hp-logo-img" src={intellectaLogo} alt="Intellecta Logo" style={{
               width: 52, height: 52, borderRadius: 13,
               objectFit: "cover", flexShrink: 0,
               boxShadow: "0 4px 14px rgba(83,210,224,0.38)"
@@ -110,8 +123,9 @@ function Navbar() {
                   zIndex: 10,
                 }}>
                 {links.map(l => (
-                  <a key={l} href={hrefFor(l)}
-                    className={`nav-link-top ${active === hrefFor(l).slice(1) ? "active" : ""}`}
+                  <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, "-")}`}
+                    onClick={(e) => handleScroll(e, l.toLowerCase().replace(/\s+/g, "-"))}
+                    className={`nav-link-top ${active === l.toLowerCase().replace(/\s+/g, "-") ? "active" : ""}`}
                     style={{ pointerEvents: "auto", fontWeight: 600 }}>{l}</a>
                 ))}
               </motion.div>
@@ -148,7 +162,9 @@ function Navbar() {
             transition={{ duration: 0.4, ease: "easeInOut" }}
           >
             {links.map(l => (
-              <a key={l} href={hrefFor(l)} className={`nav-link-top ${active === hrefFor(l).slice(1) ? "active" : ""}`}>{l}</a>
+              <a key={l} href={`#${l.toLowerCase().replace(/\s+/g, "-")}`} 
+                onClick={(e) => handleScroll(e, l.toLowerCase().replace(/\s+/g, "-"))}
+                className={`nav-link-top ${active === l.toLowerCase().replace(/\s+/g, "-") ? "active" : ""}`}>{l}</a>
             ))}
           </motion.div>
         )}
@@ -161,10 +177,10 @@ function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            style={{ width: "100%", background: "rgba(255,255,255,0.96)", backdropFilter: "blur(16px)", borderTop: "1px solid var(--hp-border-soft)", padding: "0.5rem 2rem 1rem" }}>
+            style={{ width: "100%", background: "rgba(255,255,255,0.96)", backdropFilter: "blur(16px)", borderTop: "1px solid var(--hp-border-soft)", padding: "0.5rem 2rem 1rem", pointerEvents: "auto" }}>
             {links.map(l => (
               <div key={l} style={{ padding: "0.75rem 0", borderBottom: "1px solid var(--hp-border-soft)" }}>
-                <a href={`#${l.toLowerCase().replace(/\s+/g, "-")}`} onClick={() => setMobileOpen(false)}
+                <a href={`#${l.toLowerCase().replace(/\s+/g, "-")}`} onClick={(e) => handleScroll(e, l.toLowerCase().replace(/\s+/g, "-"))}
                   style={{ color: "var(--hp-ink-mid)", textDecoration: "none", fontSize: 15, fontWeight: 500 }}>{l}</a>
               </div>
             ))}
@@ -202,7 +218,7 @@ function Hero() {
   );
 
   return (
-    <div className="dot-grid" style={{ minHeight: "100vh", display: "flex", alignItems: "center", paddingTop: 136, position: "relative", overflow: "hidden" }}>
+    <div className="dot-grid hp-hero-container" style={{ minHeight: "100vh", display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: "-8%", right: "-4%", width: 640, height: 640, borderRadius: "50%", background: "radial-gradient(circle,rgba(83,210,224,0.15) 0%,transparent 65%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", bottom: "0%", left: "-6%", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle,rgba(158,234,246,0.12) 0%,transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", top: "-5%", left: "30%", width: 500, height: 400, borderRadius: "50%", background: "radial-gradient(circle,rgba(245,230,200,0.25) 0%,transparent 60%)", pointerEvents: "none" }} />

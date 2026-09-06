@@ -553,7 +553,7 @@ const AnalyticsDashboard = () => {
             </div>
 
             <div className="w-full overflow-x-auto min-h-[200px] max-h-[350px] overflow-y-auto custom-scrollbar">
-            <table className="w-full text-left border-collapse table-fixed lg:table-auto">
+            <table className="w-full min-w-[600px] text-left border-collapse">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-[#F9FAFB] text-[10px] font-bold text-[#6F767E] uppercase tracking-[0.12em] shadow-sm">
                   <th className="px-4 lg:px-6 py-4 w-[120px]">Date</th>

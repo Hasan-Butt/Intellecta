@@ -28,7 +28,7 @@ const HeatmapSquare = ({ intensity }) => {
 const HeatmapSection = ({ name, label, data, isUser }) => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   return (
-    <div className="flex-1 min-w-[350px]">
+    <div className="flex-1 min-w-0 sm:min-w-[350px] w-full overflow-x-auto custom-scrollbar pb-2">
       <div className="flex justify-between items-end mb-6">
         <h3 className={`text-xs font-bold tracking-[0.2em] uppercase ${isUser ? 'text-[#8E79E3]' : 'text-[#4c35b5]'}`}>
           {name} {isUser && <span className="opacity-70">(YOU)</span>}
@@ -36,20 +36,22 @@ const HeatmapSection = ({ name, label, data, isUser }) => {
         <span className="text-xs text-gray-400 font-medium">{label}</span>
       </div>
       
-      <div className="grid grid-cols-7 gap-3 mb-2">
-        {days.map((day, i) => (
-          <div key={i} className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-            {day}
-          </div>
-        ))}
-      </div>
+      <div className="min-w-[300px]">
+        <div className="grid grid-cols-7 gap-3 mb-2">
+          {days.map((day, i) => (
+            <div key={i} className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+              {day}
+            </div>
+          ))}
+        </div>
 
-      <div className="grid grid-cols-7 gap-3">
-        {data.map((val, idx) => (
-          <div key={idx} title={`${idx < 7 ? 'Last Week' : 'This Week'}, ${days[idx % 7]}`}>
-            <HeatmapSquare intensity={val} />
-          </div>
-        ))}
+        <div className="grid grid-cols-7 gap-3">
+          {data.map((val, idx) => (
+            <div key={idx} title={`${idx < 7 ? 'Last Week' : 'This Week'}, ${days[idx % 7]}`}>
+              <HeatmapSquare intensity={val} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

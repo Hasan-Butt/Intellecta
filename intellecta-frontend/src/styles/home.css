@@ -178,6 +178,11 @@ h1, h2, h3, h4 { text-wrap: balance; }
   }
 }
 
+.hp-hero-container { padding-top: 136px; }
+@media (max-width: 768px) {
+  .hp-hero-container { padding-top: 100px; min-height: auto !important; }
+}
+
 /* ─── NAVBAR STYLES ────────────────────────────────────── */
 
 /* Outer fixed wrapper — full width, no background */
