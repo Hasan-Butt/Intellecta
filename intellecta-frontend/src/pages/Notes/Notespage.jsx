@@ -172,20 +172,20 @@ const NotesPage = () => {
         <Sidebar />
 
         <main className="flex-1 overflow-y-auto">
-          <div className="px-12 py-10">
+          <div className="px-4 md:px-12 py-6 md:py-10">
             {/* Header */}
-            <div className="flex justify-between items-start mb-8 gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6 md:gap-4">
               <div className="space-y-1">
                 <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
                   All Notes
                 </h1>
-                <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
+                <p className="text-gray-500 text-sm md:text-base mt-2 max-w-md leading-relaxed">
                   Organize your thoughts and fuel your intellect.
                 </p>
               </div>
               <Button
                 onClick={() => openModal(false)}
-                className="bg-[#7C3AED] text-white px-6 py-6 rounded-xl shadow-lg transition-all hover:scale-105"
+                className="bg-[#7C3AED] text-white px-6 py-6 rounded-xl shadow-lg transition-all hover:scale-105 w-full md:w-auto"
               >
                 <Plus className="mr-2 h-5 w-5" /> New Note
               </Button>
@@ -359,8 +359,8 @@ const NotesPage = () => {
 
       {/* Floating selection bar */}
       {selectedIds.length > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 glass-card border-indigo-200 text-indigo-900 py-4 px-8 flex items-center gap-6 z-50">
-          <span className="text-sm font-medium">
+        <div className="fixed bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 glass-card border-indigo-200 text-indigo-900 py-3 md:py-4 px-4 md:px-8 flex flex-wrap md:flex-nowrap items-center justify-center gap-4 md:gap-6 z-50 w-[90%] md:w-auto rounded-3xl">
+          <span className="text-xs md:text-sm font-medium whitespace-nowrap">
             {selectedIds.length} notes selected
           </span>
           <div className="h-4 w-[1px] bg-indigo-200" />

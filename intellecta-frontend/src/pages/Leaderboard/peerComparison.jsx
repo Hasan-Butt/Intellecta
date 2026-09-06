@@ -558,7 +558,7 @@ const PeerComparisonPage = () => {
           <div className="flex flex-1">
             <Sidebar />
 
-        <main className="p-8 md:p-16 max-w-[1600px] mx-auto w-full">
+        <main className="p-4 sm:p-8 md:p-16 max-w-[1600px] mx-auto w-full">
           {loading && (
              <div className="flex items-center justify-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5D2ECC]"></div>
@@ -578,7 +578,7 @@ const PeerComparisonPage = () => {
               <PeerComparisonTitle data={data} />
               
               {/* Charts Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
                 <div className="lg:col-span-5">
                   <SubjectProficiency data={data} dbCategories={dbCategories} />
                 </div>

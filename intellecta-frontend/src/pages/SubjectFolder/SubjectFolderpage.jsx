@@ -746,22 +746,22 @@ const SubjectFolderpage = () => {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="px-10 py-10 max-w-4xl">
+        <main className="flex-1 overflow-y-auto w-full">
+          <div className="px-4 md:px-10 py-6 md:py-10 w-full max-w-7xl mx-auto">
             <div className="mb-8">
               <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
                 My Sanctuary Files
               </h1>
-              <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
+              <p className="text-gray-500 text-sm md:text-base mt-2 max-w-md leading-relaxed">
                 Organize your academic journey through semantic tagging and
                 hierarchical clarity.
               </p>
             </div>
 
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex flex-wrap items-center gap-3 mb-6">
               <button
                 onClick={() => setShowFolderModal(true)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl border border-[#7c3aed] text-[#7c3aed] text-xs font-bold hover:bg-[#f5f3ff] transition-colors"
+                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl border border-[#7c3aed] text-[#7c3aed] text-xs font-bold hover:bg-[#f5f3ff] transition-colors flex-1 sm:flex-none"
               >
                 <FolderPlus size={14} /> New Folder
               </button>
@@ -769,7 +769,7 @@ const SubjectFolderpage = () => {
                 onClick={() =>
                   document.getElementById("file-input-hidden")?.click()
                 }
-                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#7c3aed] text-white text-xs font-bold hover:bg-[#6d28d9] transition-colors shadow-lg shadow-indigo-200"
+                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-[#7c3aed] text-white text-xs font-bold hover:bg-[#6d28d9] transition-colors shadow-lg shadow-indigo-200 flex-1 sm:flex-none"
               >
                 <Upload size={14} /> Upload
               </button>
@@ -813,7 +813,7 @@ const SubjectFolderpage = () => {
               </div>
             )}
 
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
               <div className="relative flex-1">
                 <Search
                   size={15}
@@ -827,13 +827,15 @@ const SubjectFolderpage = () => {
                   className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-sm text-gray-700 outline-none focus:border-[#c4b5fd] focus:ring-2 focus:ring-[#ede9fe] transition-all placeholder:text-gray-400"
                 />
               </div>
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <button
                   onClick={() => setSortOpen(!sortOpen)}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-600 hover:border-gray-300 transition-colors"
+                  className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-2xl text-xs font-bold text-gray-600 hover:border-gray-300 transition-colors"
                 >
-                  <Filter size={13} />
-                  {activeSort}
+                  <div className="flex items-center gap-2">
+                    <Filter size={13} />
+                    {activeSort}
+                  </div>
                   <ChevronDown
                     size={13}
                     className={cn(
@@ -843,7 +845,7 @@ const SubjectFolderpage = () => {
                   />
                 </button>
                 {sortOpen && (
-                  <div className="absolute right-0 mt-2 w-32 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 z-20">
+                  <div className="absolute right-0 sm:right-auto mt-2 w-full sm:w-32 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 z-20">
                     {["Date", "Name", "Size"].map((opt) => (
                       <button
                         key={opt}

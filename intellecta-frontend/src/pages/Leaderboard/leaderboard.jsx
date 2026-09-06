@@ -242,10 +242,16 @@ const GlobalLeaderboard = () => {
               
               <div className="space-y-12 min-w-0">
                 {/* PODIUM */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-2 items-end">
-                    <PodiumCard rank="2" name={getDisplayName(top2)} univ={`Lv.${top2.level} ${resolveLevelTitle(top2.level)} • ${top2.discipline || 'General'}`} pts={top2.xp} avatarUrl={top2.avatarUrl}/>
-                    <PodiumCard rank="1" name={getDisplayName(top1)} univ={`Lv.${top1.level} ${resolveLevelTitle(top1.level)} • ${top1.discipline || 'General'}`} pts={top1.xp} active avatarUrl={top1.avatarUrl}/>
-                    <PodiumCard rank="3" name={getDisplayName(top3)} univ={`Lv.${top3.level} ${resolveLevelTitle(top3.level)} • ${top3.discipline || 'General'}`} pts={top3.xp} avatarUrl={top3.avatarUrl}/>
+                <div className="flex flex-col md:grid md:grid-cols-3 gap-6 md:gap-4 px-2 items-center md:items-end">
+                    <div className="w-full md:w-auto order-2 md:order-1">
+                      <PodiumCard rank="2" name={getDisplayName(top2)} univ={`Lv.${top2.level} ${resolveLevelTitle(top2.level)} • ${top2.discipline || 'General'}`} pts={top2.xp} avatarUrl={top2.avatarUrl}/>
+                    </div>
+                    <div className="w-full md:w-auto order-1 md:order-2">
+                      <PodiumCard rank="1" name={getDisplayName(top1)} univ={`Lv.${top1.level} ${resolveLevelTitle(top1.level)} • ${top1.discipline || 'General'}`} pts={top1.xp} active avatarUrl={top1.avatarUrl}/>
+                    </div>
+                    <div className="w-full md:w-auto order-3 md:order-3">
+                      <PodiumCard rank="3" name={getDisplayName(top3)} univ={`Lv.${top3.level} ${resolveLevelTitle(top3.level)} • ${top3.discipline || 'General'}`} pts={top3.xp} avatarUrl={top3.avatarUrl}/>
+                    </div>
                 </div>
 
                 {/* TABLE SECTION */}
@@ -270,42 +276,49 @@ const GlobalLeaderboard = () => {
                   </div>
 
                   <div className="overflow-x-auto overflow-y-auto max-h-[480px] custom-scrollbar pr-1">
-                    <table className="w-full text-left border-separate border-spacing-y-3">
+                    <table className="w-full text-left border-separate border-spacing-y-2 sm:border-spacing-y-3">
                       <thead>
-                        <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">
-                          <th className="px-4 py-2">Rank</th>
-                          <th className="px-4 py-2">{viewMode === 'global' ? 'Scholar' : 'Student'}</th>
-                          {viewMode !== 'global' && <th className="px-4 py-2">Discipline</th>}
-                          <th className="px-4 py-2">Level</th>
+                        <tr className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.05em] sm:tracking-[0.15em]">
+                          <th className="px-2 sm:px-4 py-2 w-10 sm:w-auto">Rank</th>
+                          <th className="px-2 sm:px-4 py-2">{viewMode === 'global' ? 'Scholar' : 'Student'}</th>
+                          {viewMode !== 'global' && <th className="px-2 sm:px-4 py-2 hidden md:table-cell">Discipline</th>}
+                          <th className="px-2 sm:px-4 py-2 text-right sm:text-left">Level</th>
                         </tr>
                       </thead>
                       <tbody>
                         {visibleLeaderboard.map((row, i) => (
                           <tr key={i} className={`group transition-all ${row.currentUser ? 'bg-indigo-50/60 outline outline-2 outline-indigo-500 rounded-2xl relative z-10 shadow-sm' : 'hover:bg-slate-50'}`}>
-                            <td className={`px-4 py-4 first:rounded-l-2xl font-mono text-lg font-black ${row.currentUser ? 'text-indigo-600' : 'text-slate-300'}`}>{(row.rank || i + 1).toString().padStart(2, '0')}</td>
-                            <td className="px-4 py-4">
-                              <div className="flex items-center gap-3">
-                                <Avatar src={row.avatarUrl} name={getDisplayName(row)} />
-                                <div>
-                                  <p className={`font-black text-sm ${row.currentUser ? 'text-indigo-800' : 'text-slate-900'}`}>{getDisplayName(row)}</p>
-                                  <p className="text-[11px] text-slate-400 font-semibold">{row.xp} XP</p>
+                            <td className={`px-2 sm:px-4 py-3 sm:py-4 first:rounded-l-2xl font-mono text-sm sm:text-lg font-black ${row.currentUser ? 'text-indigo-600' : 'text-slate-300'}`}>
+                              {(row.rank || i + 1).toString().padStart(2, '0')}
+                            </td>
+                            <td className="px-2 sm:px-4 py-3 sm:py-4 min-w-0 max-w-[140px] sm:max-w-none">
+                              <div className="flex items-center gap-2 sm:gap-3">
+                                {/* Wrap Avatar in div for sizing if Avatar component doesn't take size properly, but let's assume it scales or we scale its container */}
+                                <div className="shrink-0 scale-75 sm:scale-100 origin-left">
+                                  <Avatar src={row.avatarUrl} name={getDisplayName(row)} />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className={`font-black text-xs sm:text-sm truncate ${row.currentUser ? 'text-indigo-800' : 'text-slate-900'}`}>{getDisplayName(row)}</p>
+                                  <p className="text-[9px] sm:text-[11px] text-slate-400 font-semibold truncate">{row.xp} XP</p>
                                 </div>
                               </div>
                             </td>
-                            {/* RE-ADDED DISCIPLINE COLUMN WITH WHITESPACE-NOWRAP */}
                             {viewMode !== 'global' && (
-                              <td className="px-4 py-4 whitespace-nowrap">
-                                <span className="text-[10px] font-black px-3 py-1 rounded-full border bg-white text-indigo-600 border-indigo-100 uppercase">
+                              <td className="px-2 sm:px-4 py-3 sm:py-4 whitespace-nowrap hidden md:table-cell">
+                                <span className="text-[9px] sm:text-[10px] font-black px-2 sm:px-3 py-1 rounded-full border bg-white text-indigo-600 border-indigo-100 uppercase">
                                   {row.discipline || 'General'}
                                 </span>
                               </td>
                             )}
-                            <td className="px-4 py-4 w-40 lg:w-48">
-                              <div className="flex items-center gap-3">
-                                <div className="flex-1 xp-track">
+                            <td className="px-2 sm:px-4 py-3 sm:py-4 w-16 sm:w-40 lg:w-48 last:rounded-r-2xl">
+                              <div className="flex items-center justify-end sm:justify-start gap-2 sm:gap-3">
+                                <div className="hidden sm:block flex-1 xp-track">
                                     <div className="xp-fill" style={{width: `${row.xpProgressPct || 0}%`}} />
                                 </div>
-                                <span className="text-[11px] font-black text-slate-400">Lv.{row.level || 1} {resolveLevelTitle(row.level)}</span>
+                                <div className="flex flex-col text-right sm:text-left leading-tight sm:leading-normal">
+                                  <span className="text-[10px] sm:text-[11px] font-black text-slate-700 sm:text-slate-400">Lv.{row.level || 1}</span>
+                                  <span className="text-[8px] sm:text-[11px] font-bold sm:font-black text-slate-400 hidden lg:block truncate">{resolveLevelTitle(row.level)}</span>
+                                </div>
                               </div>
                             </td>
                           </tr>
