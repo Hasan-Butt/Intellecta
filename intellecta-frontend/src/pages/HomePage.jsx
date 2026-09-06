@@ -62,7 +62,6 @@ function Navbar() {
   }, []);
 
   const links = ["Features", "How It Works", "About"];
-  const hrefFor = l => `#${l.toLowerCase().replace(/\s+/g, "-")}`;
 
   const handleScroll = (e, targetId) => {
     e.preventDefault();
