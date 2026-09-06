@@ -75,7 +75,7 @@ function Navbar() {
       <div className={`hp-navbar-topbar ${scrolled ? "scrolled" : ""}`}>
         <div className="hp-navbar-top-row">
           {/* LEFT — Sign In */}
-          <div style={{ minWidth: 160, display: "flex", alignItems: "center" }}>
+          <div className="nav-left-actions" style={{ minWidth: 160, display: "flex", alignItems: "center" }}>
             <button className="nav-login-btn" onClick={() => navigate("/login")}>Sign In</button>
           </div>
 
@@ -119,11 +119,11 @@ function Navbar() {
           </AnimatePresence>
 
           {/* RIGHT — CTA + mobile toggle */}
-          <div style={{ minWidth: 160, display: "flex", alignItems: "center", gap: 10, justifyContent: "flex-end" }}>
+          <div className="nav-right-actions" style={{ minWidth: 160, display: "flex", alignItems: "center", gap: 10, justifyContent: "flex-end" }}>
             <motion.button
               whileHover={{ scale: 1.04, boxShadow: "0 6px 26px rgba(83,210,224,0.42)" }}
               whileTap={{ scale: 0.96 }}
-              className="hp-nav-btn-started"
+              className="hp-nav-btn-started desktop-only"
               onClick={() => navigate("/login")}
             >
               Get Started Free
@@ -168,6 +168,10 @@ function Navbar() {
                   style={{ color: "var(--hp-ink-mid)", textDecoration: "none", fontSize: 15, fontWeight: 500 }}>{l}</a>
               </div>
             ))}
+            <div className="mob-nav-actions" style={{ display: "none", flexDirection: "column", gap: "10px", marginTop: "1rem" }}>
+              <button className="nav-login-btn" style={{ width: "100%" }} onClick={() => { navigate("/login"); setMobileOpen(false); }}>Sign In</button>
+              <button className="hp-nav-btn-started" style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "none" }} onClick={() => { navigate("/login"); setMobileOpen(false); }}>Get Started Free</button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -311,14 +315,15 @@ const FEATURES = [
 ];
 
 /* Each card is its own component so hooks are called at top level */
-function FeatureCard({ feat, i }) {
+function FeatureCard({ feat, i, isCarousel = false }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-50px" });
   const [hov, setHov] = useState(false);
   return (
     <motion.div ref={ref}
-      initial={{ opacity: 0, y: 44 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: (i % 4) * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+      initial={isCarousel ? { opacity: 1, y: 0 } : { opacity: 0, y: 44 }} 
+      animate={isCarousel || inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay: isCarousel ? 0 : (i % 4) * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
         background: hov ? "rgba(255,255,255,0.94)" : "rgba(255,255,255,0.78)",
@@ -340,6 +345,24 @@ function FeatureCard({ feat, i }) {
 }
 
 function Features() {
+  const [isMobile, setIsMobile] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % FEATURES.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [isMobile, currentIndex]);
+
   return (
     <InViewSection id="features" style={{ padding: "7rem 2rem" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -355,9 +378,41 @@ function Features() {
             Every feature in Intellecta is engineered around one idea: protecting and amplifying your cognitive performance.
           </p>
         </motion.div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(265px,1fr))", gap: "1.1rem" }}>
-          {FEATURES.map((feat, i) => <FeatureCard key={feat.label + i} feat={feat} i={i} />)}
-        </div>
+        
+        {isMobile ? (
+          <div className="mobile-features-carousel" style={{ position: "relative", padding: "0.5rem 0", overflow: "hidden", minHeight: "350px" }}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+              >
+                <FeatureCard feat={FEATURES[currentIndex]} i={0} isCarousel={true} />
+              </motion.div>
+            </AnimatePresence>
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: "1.8rem" }}>
+              {FEATURES.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  style={{
+                    width: 8, height: 8, borderRadius: "50%", padding: 0,
+                    border: "none", cursor: "pointer",
+                    background: currentIndex === idx ? "var(--hp-cyan)" : "rgba(30,41,59,0.15)",
+                    transition: "background 0.3s ease"
+                  }}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(265px,1fr))", gap: "1.1rem" }}>
+            {FEATURES.map((feat, i) => <FeatureCard key={feat.label + i} feat={feat} i={i} />)}
+          </div>
+        )}
       </div>
     </InViewSection>
   );
@@ -679,7 +734,7 @@ function Footer() {
   return (
     <footer style={{ background: "rgba(168,232,244,0.25)", backdropFilter: "blur(16px)", borderTop: "1px solid rgba(255,255,255,0.5)", padding: "4rem 2rem 2rem" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "3rem", marginBottom: "3rem" }}>
+        <div className="hp-footer-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "3rem", marginBottom: "3rem" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1rem" }}>
               <img src={intellectaLogo} alt="Intellecta Logo" style={{
