@@ -38,6 +38,8 @@ const Navbar = () => {
     { name: 'Dashboard', path: '/studentDashboard', icon: Home, category: 'Student' },
     { name: 'Study Schedule', path: '/schedule', icon: Calendar, category: 'Student' },
     { name: 'Focus Sessions', path: '/focus', icon: Zap, category: 'Student' },
+    { name: 'Focus Analytics', path: '/focusSession', icon: BarChart3, category: 'Student' },
+    { name: 'Distraction Logs', path: '/distractions', icon: Flame, category: 'Student' },
     { name: 'My Notes', path: '/notes', icon: FileText, category: 'Student' },
     { name: 'Subject Folders', path: '/folders', icon: Folder, category: 'Student' },
     { name: 'Attempt Quiz', path: '/quiz', icon: ClipboardCheck, category: 'Student' },

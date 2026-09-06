@@ -631,10 +631,10 @@ const SubjectFolderpage = () => {
 
         {/* Folder Tree Panel */}
         {showTree && (
-          <div className="w-52 bg-white border-r border-gray-100 flex-shrink-0 flex flex-col py-6 px-3 sticky top-0 h-screen overflow-y-auto relative">
+          <div className="absolute lg:static z-20 w-64 lg:w-52 bg-white border-r border-gray-100 flex-shrink-0 flex flex-col py-6 px-3 h-screen overflow-y-auto shadow-2xl lg:shadow-none left-0">
             <button
               onClick={() => setShowTree(false)}
-              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-gray-100 transition-colors z-10"
+              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-gray-100 transition-colors z-10 lg:hidden"
             >
               <X size={16} className="text-gray-400" />
             </button>
@@ -759,6 +759,12 @@ const SubjectFolderpage = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 mb-6">
+              <button
+                onClick={() => setShowTree(!showTree)}
+                className="lg:hidden flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl border border-gray-200 text-gray-700 text-xs font-bold hover:bg-gray-50 transition-colors flex-1 sm:flex-none"
+              >
+                <FolderOpen size={14} /> Folders
+              </button>
               <button
                 onClick={() => setShowFolderModal(true)}
                 className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl border border-[#7c3aed] text-[#7c3aed] text-xs font-bold hover:bg-[#f5f3ff] transition-colors flex-1 sm:flex-none"

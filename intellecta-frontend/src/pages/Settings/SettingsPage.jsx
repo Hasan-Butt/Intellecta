@@ -207,11 +207,11 @@ const SettingsPage = () => {
         <StudentSidebar />
         
         <main className="flex-1">
-          <div className="px-12 py-10 pb-20">
+          <div className="px-4 md:px-12 py-6 md:py-10 pb-20">
             {/* Header */}
-            <div className="mb-10 flex justify-between items-end">
+            <div className="mb-8 md:mb-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 md:gap-0">
               <div>
-                <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tight">Settings</h2>
+                <h2 className="text-3xl md:text-4xl font-black text-zinc-900 uppercase tracking-tight">Settings</h2>
                 <p className="text-gray-500 font-medium">Manage your account preferences and profile.</p>
               </div>
               {error && (
@@ -221,9 +221,9 @@ const SettingsPage = () => {
               )}
             </div>
 
-            <div className="flex gap-8">
+            <div className="flex flex-col lg:flex-row gap-8">
               {/* Sidebar Tabs */}
-              <div className="w-64 shrink-0 space-y-2">
+              <div className="w-full lg:w-64 shrink-0 space-y-2 flex flex-col sm:flex-row lg:flex-col overflow-x-auto sm:overflow-visible gap-2 sm:gap-4 lg:gap-0">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
@@ -241,13 +241,13 @@ const SettingsPage = () => {
               </div>
 
               {/* Main Content Area */}
-              <div className="flex-1 neu p-10 relative min-h-[600px] flex flex-col">
+              <div className="flex-1 neu p-6 lg:p-10 relative min-h-[600px] flex flex-col">
                 
                 {/* Profile Tab */}
                 {activeTab === 'profile' && (
                   <div className="space-y-8 animate-in fade-in duration-500 flex-1">
-                    <div className="flex items-center gap-8 pb-8 border-b border-gray-50">
-                      <div className="relative group">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-8 pb-8 border-b border-gray-50">
+                      <div className="relative group mx-auto sm:mx-0">
                         <Avatar 
                           src={profileData.avatarUrl} 
                           name={profileData.username} 
@@ -276,7 +276,7 @@ const SettingsPage = () => {
 
                     <div className="space-y-4">
                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Choose an Avatar</label>
-                      <div className="grid grid-cols-8 gap-3">
+                      <div className="flex flex-wrap justify-center sm:justify-start gap-3">
                         <button
                           onClick={() => handleAvatarSelect('')}
                           className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center font-bold text-[10px] uppercase ${
@@ -300,7 +300,7 @@ const SettingsPage = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Username</label>
                         <input 
@@ -415,7 +415,7 @@ const SettingsPage = () => {
                     </div>
 
                     <h3 className="text-sm font-black text-zinc-900 uppercase tracking-widest pt-4">App Theme</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <button className="flex items-center justify-between p-6 rounded-2xl border-2 border-[#451ebb] bg-[#F5F6FF]">
                         <span className="text-sm font-bold text-[#451ebb]">Light Mode</span>
                         <Check size={20} className="text-[#451ebb]" />
@@ -428,7 +428,7 @@ const SettingsPage = () => {
                 )}
 
                 {/* Footer Actions */}
-                <div className="mt-auto pt-8 border-t border-gray-50 flex items-center justify-between">
+                <div className="mt-auto pt-8 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 text-center md:text-left">
                   <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">
                     {saving ? 'Syncing with Intellecta Cloud...' : 'Intellecta Cloud Sync Active'}
                   </p>

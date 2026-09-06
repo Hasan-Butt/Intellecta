@@ -72,17 +72,17 @@ const WeeklyFocusHeatmap = ({ data }) => {
 
   return (
 
-    <section className="bg-white p-10 md:p-14 rounded-[40px] border border-gray-100 shadow-sm mt-10">
-      <header className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+    <section className="bg-white p-6 md:p-14 rounded-3xl md:rounded-[40px] border border-gray-100 shadow-sm mt-10">
+      <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-12 gap-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Weekly Focus Heatmaps</h2>
-          <p className="text-gray-500 text-base mt-2">Comparing temporal density of high-focus study hours</p>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Weekly Focus Heatmaps</h2>
+          <p className="text-gray-500 text-sm md:text-base mt-2">Comparing temporal density of high-focus study hours</p>
         </div>
 
-        <div className="flex items-center gap-3 bg-[#F8FAFC] p-1.5 rounded-full border border-gray-100">
+        <div className="flex items-center gap-2 md:gap-3 bg-[#F8FAFC] p-1.5 rounded-full border border-gray-100 overflow-x-auto w-full md:w-auto self-start">
           <button 
             onClick={() => setFilter('high-focus')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`flex shrink-0 items-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all ${
               filter === 'high-focus' ? 'bg-white shadow-md text-[#5D2ECC]' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
@@ -91,7 +91,7 @@ const WeeklyFocusHeatmap = ({ data }) => {
           </button>
           <button 
             onClick={() => setFilter('idle')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`flex shrink-0 items-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all ${
               filter === 'idle' ? 'bg-white shadow-md text-gray-500' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
@@ -101,7 +101,7 @@ const WeeklyFocusHeatmap = ({ data }) => {
         </div>
       </header>
 
-      <div className="flex flex-col xl:flex-row gap-16">
+      <div className="flex flex-col xl:flex-row gap-8 xl:gap-16">
         <HeatmapSection 
           name={data.peer.username} 
           label="Consistent" 
@@ -116,7 +116,7 @@ const WeeklyFocusHeatmap = ({ data }) => {
         />
       </div>
 
-      <div className="mt-12 flex items-center justify-end gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+      <div className="mt-8 md:mt-12 flex items-center justify-end gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
         <span>Less</span>
         <div className="flex gap-1.5 mx-1">
           {[0, 1, 2, 3, 4].map(val => (
@@ -152,36 +152,36 @@ const PeerComparisonTitle = ({ data }) => {
           </p>
         </div>
 
-        <div className="flex items-center gap-5 bg-[#f4f7f9] rounded-2xl p-5 border border-gray-100 shadow-sm self-start md:self-center">
+        <div className="flex flex-wrap items-center gap-3 md:gap-5 bg-[#f4f7f9] rounded-2xl p-4 md:p-5 border border-gray-100 shadow-sm self-start md:self-center">
           {/* Avatars */}
           <div className="flex -space-x-4 shrink-0">
             {participants.map((user) => (
               <div key={user.id} className="relative inline-block">
-                <Avatar src={user.avatarUrl} name={user.name} size="w-12 h-12" className="ring-4 ring-[#f4f7f9]" />
+                <Avatar src={user.avatarUrl} name={user.name} size="w-10 h-10 md:w-12 md:h-12" className="ring-4 ring-[#f4f7f9]" />
               </div>
             ))}
           </div>
 
-          <div className="h-10 w-[1px] bg-gray-200 shrink-0" aria-hidden="true" />
+          <div className="hidden sm:block h-10 w-[1px] bg-gray-200 shrink-0" aria-hidden="true" />
 
           {/* Stats */}
-          <div className="flex gap-3">
-            <div className="bg-white rounded-xl px-4 py-2.5 text-center border border-gray-100 shadow-sm min-w-[80px]">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] block mb-1">Rank Delta</span>
+          <div className="flex gap-2 md:gap-3">
+            <div className="bg-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-center border border-gray-100 shadow-sm min-w-[70px] md:min-w-[80px]">
+              <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] md:tracking-[0.15em] block mb-1">Rank Delta</span>
               <div className="flex items-baseline justify-center gap-1">
-                <span className="text-xl font-black text-[#4c35b5] leading-none">
+                <span className="text-lg md:text-xl font-black text-[#4c35b5] leading-none">
                   {Math.abs((data.me.globalRank || 0) - (data.peer.globalRank || 0))}
                 </span>
-                <span className="text-[10px] font-bold text-gray-400">pos</span>
+                <span className="text-[9px] md:text-[10px] font-bold text-gray-400">pos</span>
               </div>
             </div>
-            <div className="bg-white rounded-xl px-4 py-2.5 text-center border border-gray-100 shadow-sm min-w-[80px]">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] block mb-1">Level Gap</span>
+            <div className="bg-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-center border border-gray-100 shadow-sm min-w-[70px] md:min-w-[80px]">
+              <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] md:tracking-[0.15em] block mb-1">Level Gap</span>
               <div className="flex items-baseline justify-center gap-1">
-                <span className="text-xl font-black text-[#b8b0e8] leading-none">
+                <span className="text-lg md:text-xl font-black text-[#b8b0e8] leading-none">
                   {Math.abs((data.me.level || 0) - (data.peer.level || 0))}
                 </span>
-                <span className="text-[10px] font-bold text-gray-400">lvls</span>
+                <span className="text-[9px] md:text-[10px] font-bold text-gray-400">lvls</span>
               </div>
             </div>
           </div>
@@ -193,14 +193,14 @@ const PeerComparisonTitle = ({ data }) => {
 
 // --- Dashboard Card Wrapper ---
 const Card = ({ title, subtitle, badge, children }) => (
-  <section className="bg-white p-10 md:p-12 rounded-[40px] border border-gray-100 shadow-sm flex flex-col h-full min-h-[500px]">
+  <section className="bg-white p-6 md:p-12 rounded-3xl md:rounded-[40px] border border-gray-100 shadow-sm flex flex-col h-full min-h-[400px] md:min-h-[500px]">
     <div className="flex justify-between items-start mb-10">
       <div>
-        <h3 className="text-2xl font-bold text-gray-900 tracking-tight">{title}</h3>
-        <p className="text-base text-gray-500 mt-2">{subtitle}</p>
+        <h3 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">{title}</h3>
+        <p className="text-sm md:text-base text-gray-500 mt-2">{subtitle}</p>
       </div>
       {badge && (
-        <span className="px-4 py-1.5 text-xs font-bold text-[#4c35b5] uppercase tracking-widest bg-[#f4f3ff] rounded-full">
+        <span className="px-4 py-1.5 text-[10px] md:text-xs font-bold text-[#4c35b5] uppercase tracking-widest bg-[#f4f3ff] rounded-full hidden sm:block">
           {badge}
         </span>
       )}
@@ -242,7 +242,7 @@ const SubjectProficiency = ({ data, dbCategories }) => {
   return (
     <Card title="Subject Proficiency" subtitle="Skill distribution based on Sectional XP">
       <div className="relative flex flex-col items-center justify-center flex-1 py-6">
-        <svg viewBox="0 0 200 200" className="w-72 h-72 md:w-80 md:h-80 overflow-visible">
+        <svg viewBox="0 0 200 200" className="w-full max-w-[280px] md:max-w-[320px] h-auto overflow-visible">
           {/* Concentric rings */}
           {[0.25, 0.5, 0.75, 1].map((scale) => (
             <circle key={scale} cx="100" cy="100" r={80 * scale} fill="none" stroke="#E5E7EB" strokeDasharray="4 4" />
@@ -456,23 +456,23 @@ const BehavioralInsights = ({ data }) => {
   ];
 
   return (
-    <section className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <section className="mt-8 md:mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
       {insights.map((item) => (
         <div
           key={item.id}
-          className={`p-10 rounded-[40px] border transition-all duration-300 hover:scale-[1.02] ${
+          className={`p-6 md:p-10 rounded-3xl md:rounded-[40px] border transition-all duration-300 hover:scale-[1.02] ${
             item.variant === 'primary'
               ? "bg-[#4c35b5] text-white border-[#4c35b5] shadow-xl shadow-purple-100"
               : "bg-white text-gray-900 border-gray-100 shadow-sm"
           }`}
         >
-          <div className={`mb-8 ${item.variant === 'primary' ? "text-white" : "text-[#4c35b5]"}`}>
+          <div className={`mb-6 md:mb-8 ${item.variant === 'primary' ? "text-white" : "text-[#4c35b5]"}`}>
             {item.icon}
           </div>
-          <h3 className="text-2xl font-bold tracking-tight mb-4">
+          <h3 className="text-xl md:text-2xl font-bold tracking-tight mb-3 md:mb-4">
             {item.title}
           </h3>
-          <p className={`text-base leading-relaxed ${
+          <p className={`text-sm md:text-base leading-relaxed ${
             item.variant === 'primary' ? "text-purple-100" : "text-gray-500"
           }`}>
             {item.description}
@@ -486,7 +486,7 @@ const BehavioralInsights = ({ data }) => {
 const ComparisonCTA = () => {
   const navigate = useNavigate();
   return (
-    <section className="bg-white p-16 md:p-20 rounded-[40px] border border-gray-100 shadow-sm mt-10 flex flex-col items-center text-center">
+    <section className="bg-white p-8 md:p-20 rounded-3xl md:rounded-[40px] border border-gray-100 shadow-sm mt-8 md:mt-10 flex flex-col items-center text-center">
       <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight max-w-2xl">
         Ready to Close the Gap?
       </h2>
