@@ -49,65 +49,64 @@ const DIFF_COLORS = {
   EASY: { bg: "rgba(107,254,156,0.25)", text: C.greenDark },
 };
 
-// ─── Course Card ──────────────────────────────────────────────────────────────
 const CourseCard = ({ course, onDelete }) => {
   const diff = DIFF_COLORS[course.difficulty] || DIFF_COLORS.MEDIUM;
   const urgent = course.daysUntilExam >= 0 && course.daysUntilExam <= 7;
 
   return (
-    <div className="neu px-8 py-6 flex items-center justify-between hover:scale-[1.01] transition-transform">
-      <div className="flex items-center gap-7">
+    <div className="neu px-5 sm:px-8 py-5 sm:py-6 flex items-start sm:items-center justify-between hover:scale-[1.01] transition-transform gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-7 w-full">
         <div
-          className="w-[72px] h-[72px] rounded-2xl flex items-center justify-center shrink-0"
+          className="w-14 h-14 sm:w-[72px] sm:h-[72px] rounded-2xl flex items-center justify-center shrink-0"
           style={{ backgroundColor: diff.bg }}
         >
           <BarChart2 size={22} className="text-slate-600" />
         </div>
-        <div>
-          <div className="flex items-center gap-3 mb-2">
+        <div className="w-full">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
             <h4
-              className="font-extrabold text-[22px] tracking-tight leading-tight"
+              className="font-extrabold text-lg sm:text-[22px] tracking-tight leading-tight"
               style={{ color: C.text, fontFamily: "Manrope, sans-serif" }}
             >
               {course.courseName}
             </h4>
             <span
-              className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase"
+              className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase shrink-0"
               style={{ backgroundColor: diff.bg, color: diff.text }}
             >
               {course.difficulty}
             </span>
             {urgent && (
               <span
-                className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase"
+                className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase shrink-0"
                 style={{ backgroundColor: C.redBg, color: C.red }}
               >
                 URGENT
               </span>
             )}
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-5">
             <span
-              className="flex items-center gap-1.5 text-[13px] font-semibold italic"
+              className="flex items-center gap-1.5 text-[12px] sm:text-[13px] font-semibold italic"
               style={{ color: C.subtle }}
             >
-              <Clock size={11} />
+              <Clock size={11} className="shrink-0" />
               {course.daysUntilExam >= 0
                 ? `Exam in ${course.daysUntilExam} day${course.daysUntilExam !== 1 ? "s" : ""}`
                 : "No exam date"}
             </span>
             <span
-              className="flex items-center gap-1.5 text-[13px] font-semibold"
+              className="flex items-center gap-1.5 text-[12px] sm:text-[13px] font-semibold"
               style={{ color: C.subtle }}
             >
-              <Timer size={11} /> {course.plannedHoursPerDay}h/day planned
+              <Timer size={11} className="shrink-0" /> {course.plannedHoursPerDay}h/day planned
             </span>
           </div>
         </div>
       </div>
       <button
         onClick={() => onDelete(course.id)}
-        className="p-2 hover:bg-red-50 rounded-full transition-colors group"
+        className="p-2 hover:bg-red-50 rounded-full transition-colors group shrink-0"
       >
         <Trash2
           size={16}
@@ -160,7 +159,7 @@ const EnrollForm = ({ onEnrolled }) => {
   };
 
   return (
-    <div className="neu p-8 flex flex-col gap-6">
+    <div className="neu p-5 sm:p-8 flex flex-col gap-6 w-full">
       <div className="flex items-center justify-between">
         <h3
           className="font-bold text-[19px]"
@@ -215,12 +214,12 @@ const EnrollForm = ({ onEnrolled }) => {
         >
           Difficulty Level
         </label>
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3 w-full">
           {["EASY", "MEDIUM", "HARD"].map((d) => (
             <button
               key={d}
               onClick={() => setDifficulty(d)}
-              className="px-5 py-2 rounded-full text-[13px] font-medium transition-colors"
+              className="flex-1 px-2 sm:px-5 py-2 rounded-full text-[11px] sm:text-[13px] font-medium transition-colors"
               style={
                 difficulty === d
                   ? { backgroundColor: C.indigo, color: "white" }
@@ -366,19 +365,19 @@ const ScheduleGrid = ({ schedule, courses }) => {
 
   return (
     <section
-      className="rounded-3xl p-8 flex flex-col gap-8"
+      className="rounded-3xl p-5 sm:p-8 flex flex-col gap-8 w-full"
       style={{ backgroundColor: C.panel }}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2
-            className="font-extrabold text-[28px] tracking-tight"
+            className="font-extrabold text-2xl sm:text-[28px] tracking-tight"
             style={{ color: C.text, fontFamily: "Manrope, sans-serif" }}
           >
             Weekly Curriculum
           </h2>
           <p
-            className="text-[15px] font-medium mt-0.5"
+            className="text-[13px] sm:text-[15px] font-medium mt-0.5"
             style={{ color: C.muted }}
           >
             {schedule.feasible
@@ -387,7 +386,7 @@ const ScheduleGrid = ({ schedule, courses }) => {
           </p>
         </div>
         {/* Legend */}
-        <div className="flex flex-wrap gap-2 max-w-xs justify-end">
+        <div className="flex flex-wrap gap-2 max-w-full sm:max-w-xs justify-start sm:justify-end">
           {courseNames.map((name) => (
             <span
               key={name}
@@ -403,72 +402,76 @@ const ScheduleGrid = ({ schedule, courses }) => {
         </div>
       </div>
 
-      {/* Day headers */}
-      <div className="grid grid-cols-7 gap-4">
-        {DAYS_ORDER.map((label) => (
-          <div key={label} className="flex flex-col items-center gap-1">
-            <span
-              className="text-[9px] font-semibold uppercase tracking-widest"
-              style={{ color: C.muted }}
-            >
-              {label}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Block grid */}
-      <div className="grid grid-cols-7 gap-4 items-start">
-        {DAYS_ORDER.map((day) => (
-          <div key={day} className="flex flex-col gap-3">
-            {byDay[day].length === 0 ? (
-              <div
-                className="border-2 border-dashed rounded-2xl flex items-center justify-center"
-                style={{
-                  borderColor: C.border,
-                  backgroundColor: "#dde2f3",
-                  minHeight: 80,
-                }}
-              >
-                <Plus size={14} className="text-slate-400" />
+      <div className="overflow-x-auto pb-4 custom-scrollbar w-full">
+        <div className="min-w-[700px]">
+          {/* Day headers */}
+          <div className="grid grid-cols-7 gap-4 mb-4">
+            {DAYS_ORDER.map((label) => (
+              <div key={label} className="flex flex-col items-center gap-1">
+                <span
+                  className="text-[9px] font-semibold uppercase tracking-widest"
+                  style={{ color: C.muted }}
+                >
+                  {label}
+                </span>
               </div>
-            ) : (
-              byDay[day].map((block, i) => {
-                const col = colorMap[block.courseName];
-                return (
+            ))}
+          </div>
+
+          {/* Block grid */}
+          <div className="grid grid-cols-7 gap-4 items-start">
+            {DAYS_ORDER.map((day) => (
+              <div key={day} className="flex flex-col gap-3">
+                {byDay[day].length === 0 ? (
                   <div
-                    key={i}
-                    className="border-l-4 rounded-2xl px-3 py-3 flex flex-col justify-between"
+                    className="border-2 border-dashed rounded-2xl flex items-center justify-center"
                     style={{
-                      backgroundColor: col.bg,
-                      borderColor: col.border,
-                      minHeight: 72,
+                      borderColor: C.border,
+                      backgroundColor: "#dde2f3",
+                      minHeight: 80,
                     }}
                   >
-                    <p
-                      className="text-[9px] font-bold uppercase"
-                      style={{ color: col.text }}
-                    >
-                      {block.priority}
-                    </p>
-                    <p
-                      className="text-[11px] font-semibold leading-tight mt-1"
-                      style={{ color: C.text }}
-                    >
-                      {block.courseName}
-                    </p>
-                    <p
-                      className="text-[10px] font-medium mt-1"
-                      style={{ color: C.subtle }}
-                    >
-                      {block.hoursAllocated}h · {block.daysUntilExam}d left
-                    </p>
+                    <Plus size={14} className="text-slate-400" />
                   </div>
-                );
-              })
-            )}
+                ) : (
+                  byDay[day].map((block, i) => {
+                    const col = colorMap[block.courseName];
+                    return (
+                      <div
+                        key={i}
+                        className="border-l-4 rounded-2xl px-3 py-3 flex flex-col justify-between"
+                        style={{
+                          backgroundColor: col.bg,
+                          borderColor: col.border,
+                          minHeight: 72,
+                        }}
+                      >
+                        <p
+                          className="text-[9px] font-bold uppercase"
+                          style={{ color: col.text }}
+                        >
+                          {block.priority}
+                        </p>
+                        <p
+                          className="text-[11px] font-semibold leading-tight mt-1"
+                          style={{ color: C.text }}
+                        >
+                          {block.courseName}
+                        </p>
+                        <p
+                          className="text-[10px] font-medium mt-1"
+                          style={{ color: C.subtle }}
+                        >
+                          {block.hoursAllocated}h · {block.daysUntilExam}d left
+                        </p>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </section>
   );
@@ -480,7 +483,7 @@ const GeneratePanel = ({ onGenerate, loading, hasCourses }) => {
 
   return (
     <div
-      className="glass-card border-indigo-400/30 px-10 py-8 text-white overflow-hidden relative flex flex-col gap-6"
+      className="glass-card border-indigo-400/30 px-6 sm:px-10 py-6 sm:py-8 text-white overflow-hidden relative flex flex-col gap-6 w-full"
       style={{
         backgroundColor: "#5d3fd3",
       }}
@@ -665,16 +668,16 @@ export default function StudySchedulePage() {
   return (
     <div className="flex-1 flex flex-col min-w-0">
       <Navbar />
-      <div className="bg-[#f9f9ff] min-h-screen flex w-full">
+      <div className="bg-[#f9f9ff] min-h-screen flex w-full flex-col md:flex-row">
         <Sidebar />
-        <main className="flex-1">
-          <div className="px-12 py-10">
+        <main className="flex-1 w-full max-w-[100vw] overflow-x-hidden">
+          <div className="px-4 md:px-12 py-6 md:py-10">
             {/* Page heading */}
-            <div className="mb-10">
-              <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+            <div className="mb-6 md:mb-10">
+              <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
                 Study Schedule
               </h1>
-              <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
+              <p className="text-gray-500 text-sm md:text-base mt-2 max-w-md leading-relaxed">
                 Manage your academic trajectory with editorial precision.
               </p>
             </div>
@@ -690,8 +693,8 @@ export default function StudySchedulePage() {
             )}
 
             {/* Row 1: Enroll + Courses */}
-            <div className="flex gap-8 mb-8">
-              <div className="w-[340px] flex-shrink-0">
+            <div className="flex flex-col lg:flex-row gap-6 md:gap-8 mb-8">
+              <div className="w-full lg:w-[340px] flex-shrink-0">
                 <EnrollForm onEnrolled={handleEnrolled} />
               </div>
 
@@ -725,7 +728,7 @@ export default function StudySchedulePage() {
                       style={{ borderColor: C.border }}
                     >
                       <CalendarCheck size={32} className="text-slate-300" />
-                      <p className="text-[14px] text-slate-400 font-medium">
+                      <p className="text-[14px] text-slate-400 font-medium text-center px-4">
                         No subjects enrolled yet. Add one on the left.
                       </p>
                     </div>
@@ -750,12 +753,12 @@ export default function StudySchedulePage() {
             )}
 
             {/* Schedule grid */}
-            <div className="mb-8">
+            <div className="mb-8 w-full">
               <ScheduleGrid schedule={schedule} courses={courses} />
             </div>
 
             {/* Bottom row: Generate panel + Stats */}
-            <div className="flex gap-8 items-stretch">
+            <div className="flex flex-col lg:flex-row gap-6 md:gap-8 items-stretch">
               <div className="flex flex-col gap-6 flex-1 min-w-0">
                 <GeneratePanel
                   onGenerate={handleGenerate}
@@ -763,7 +766,7 @@ export default function StudySchedulePage() {
                   hasCourses={courses.length > 0}
                 />
               </div>
-              <div className="flex flex-col gap-6 w-[260px] flex-shrink-0">
+              <div className="flex flex-col gap-6 w-full lg:w-[260px] flex-shrink-0">
                 <StatsCards courses={courses} />
                 {schedule && (
                   <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-3">

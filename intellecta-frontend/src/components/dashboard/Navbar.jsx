@@ -156,9 +156,9 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Center Section: Search Bar (Full width on mobile, inline on desktop) */}
-        <div className="w-full md:flex-1 md:max-w-lg md:px-8 order-3 md:order-none relative" ref={searchRef}>
-          <div className={`relative transition-all duration-300 flex items-center h-11 px-5 rounded-full bg-[#EEF2FF] border border-transparent ${
+        {/* Center Section: Search Bar (Hidden on mobile, visible on desktop) */}
+        <div className="hidden md:flex md:flex-1 md:max-w-lg md:px-8 relative" ref={searchRef}>
+          <div className={`w-full relative transition-all duration-300 flex items-center h-11 px-5 rounded-full bg-[#EEF2FF] border border-transparent ${
             isSearchFocused ? 'ring-4 ring-indigo-50 bg-white border-indigo-200' : ''
           }`}>
             <Search 
