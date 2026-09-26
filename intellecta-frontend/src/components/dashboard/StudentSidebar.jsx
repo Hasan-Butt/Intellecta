@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import api from '../../services/api';
 import Avatar from '../common/Avatar';
 import { 
   Home, 
@@ -21,15 +20,25 @@ import {
   Video
 } from 'lucide-react';
 
-import { logout, getUserId } from '../../utils/auth';
+import { logout } from '../../utils/auth';
+import { 
+  getInitialProfile, 
+  getUserProfile, 
+  getInitialDashboard, 
+  getUserDashboard 
+} from '../../utils/userCache';
 
 const Sidebar = () => {
   const location = useLocation();
   const helpBoxRef = useRef(null);
-  const [userLevel, setUserLevel] = useState(1);
-  const [levelTitle, setLevelTitle] = useState('Beginner');
-  const [userName, setUserName] = useState('');
-  const [xpProgressPct, setXpProgressPct] = useState(0);
+
+  const initialProfile = getInitialProfile();
+  const initialDashboard = getInitialDashboard();
+
+  const [userLevel, setUserLevel] = useState(initialDashboard?.level ?? 1);
+  const [levelTitle, setLevelTitle] = useState(initialDashboard?.levelTitle ?? 'Beginner');
+  const [userName, setUserName] = useState(initialProfile?.username ?? 'Scholar');
+  const [xpProgressPct, setXpProgressPct] = useState(initialDashboard?.xpProgressPct ?? 0);
   
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(
     location.pathname === '/distractions' || location.pathname === '/focusSession'
@@ -37,31 +46,29 @@ const Sidebar = () => {
   const [isQuizOpen, setIsQuizOpen] = useState(
     location.pathname === '/quiz' || location.pathname === '/results'
   );
-  const [avatarUrl, setAvatarUrl] = useState('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
+  const [avatarUrl, setAvatarUrl] = useState(initialProfile?.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix');
   const [showHelpBox, setShowHelpBox] = useState(false);
 
   useEffect(() => {
-    const userId = getUserId();
-    if (!userId) return;
-    api.get(`/users/${userId}/profile`)
-      .then(res => {
-        setUserName(res.data.username ?? 'Scholar');
-        setAvatarUrl(res.data.avatarUrl || '');
-      })
-      .catch(() => {});
-    
-    const fetchDashboard = () => {
-      api.get(`/dashboard/user/${userId}`)
-        .then(res => {
-          setUserLevel(res.data.level ?? 1);
-          setLevelTitle(res.data.levelTitle ?? 'Beginner');
-          setXpProgressPct(res.data.xpProgressPct ?? 0);
-        })
-        .catch(() => {});
+    const syncData = async (force = false) => {
+      const profile = await getUserProfile(force);
+      if (profile) {
+        setUserName(profile.username ?? 'Scholar');
+        setAvatarUrl(profile.avatarUrl || '');
+      }
+
+      const dash = await getUserDashboard(force);
+      if (dash) {
+        setUserLevel(dash.level ?? 1);
+        setLevelTitle(dash.levelTitle ?? 'Beginner');
+        setXpProgressPct(dash.xpProgressPct ?? 0);
+      }
     };
 
-    fetchDashboard();
-    window.addEventListener("userDataUpdated", fetchDashboard);
+    syncData(false);
+
+    const onDataUpdated = () => syncData(true);
+    window.addEventListener("userDataUpdated", onDataUpdated);
 
     // Close help box when clicking outside
     const handleClickOutside = (event) => {
@@ -72,7 +79,7 @@ const Sidebar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      window.removeEventListener("userDataUpdated", fetchDashboard);
+      window.removeEventListener("userDataUpdated", onDataUpdated);
     };
   }, [location.pathname]); // Re-fetch level/XP on every page navigation
 
@@ -112,7 +119,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-white border-r border-gray-100 font-inter sticky top-0 self-start overflow-hidden">
+    <aside className="hidden lg:flex flex-col w-64 h-[calc(100vh-56px)] bg-white border-r border-gray-100 font-inter sticky top-[56px] self-start overflow-hidden">
       {/* Branding Header */}
       <div className="px-8 py-10">
         <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
@@ -133,7 +140,8 @@ const Sidebar = () => {
       {/* Main Navigation */}
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
         {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = location.pathname === item.path || 
+            (item.path === '/leaderboard' && location.pathname === '/peers');
           
           // Special handling for parent menus (Analytics, Quiz dropdowns)
           if (item.isParent) {

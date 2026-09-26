@@ -279,9 +279,12 @@ const StudySessionDashboard = () => {
       try {
         const userId = getUserId();
         if (!userId) return;
+        const now = new Date();
+        const localStartTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 19);
         const res = await api.post(`/sessions/user/${userId}/start`, {
           subject: selectedSubject || "General",
           deepWork: isBlocked,
+          startTime: localStartTime,
         });
         setSessionId(res.data.id);
         setIsActive(true);
@@ -344,7 +347,12 @@ const StudySessionDashboard = () => {
 
     if (sessionId) {
       try {
-        const response = await api.patch(`/sessions/${sessionId}/end`, { pomodorosCompleted });
+        const now = new Date();
+        const localEndTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 19);
+        const response = await api.patch(`/sessions/${sessionId}/end`, { 
+          pomodorosCompleted,
+          endTime: localEndTime
+        });
         const userId = getUserId();
         if (!userId) return;
         const [dashRes, sessionsRes] = await Promise.all([
@@ -375,12 +383,15 @@ const StudySessionDashboard = () => {
           duration: Math.round(((workDuration * 60 - timeLeft) / 60) + (pomodorosCompleted * workDuration)),
           newBadges: response.data.newBadges || []
         });
+        setAmbientMode(false);
         setShowSummary(true);
       } catch (err) {
         console.error("Error ending session:", err);
         setIsActive(false);
+        setAmbientMode(false);
       }
     }
+    setAmbientMode(false);
     setIsActive(false);
     setSessionId(null);
     setPomodorosCompleted(0);
@@ -414,8 +425,20 @@ const StudySessionDashboard = () => {
         <button 
           onClick={() => setAmbientMode(false)}
           className="absolute top-8 right-8 w-10 h-10 rounded-full bg-white/10 text-white/40 flex items-center justify-center hover:bg-white/20 transition-all z-20"
+          title="Exit Zen Mode"
         >
           <X size={20} />
+        </button>
+      )}
+
+      {!zen && (
+        <button
+          onClick={() => setAmbientMode(true)}
+          className="absolute top-6 right-6 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 hover:bg-white text-indigo-700 hover:text-indigo-900 border border-indigo-100 shadow-sm transition-all hover:scale-105 active:scale-95 text-xs font-bold z-20 group"
+          title="Enter Fullscreen Zen Focus Mode"
+        >
+          <Focus size={15} className="text-indigo-600 group-hover:rotate-90 transition-transform duration-300" />
+          <span>Zen Mode</span>
         </button>
       )}
       
@@ -475,25 +498,23 @@ const StudySessionDashboard = () => {
           </button>
         </div>
 
-        {!zen && (
-          <div className="flex items-center gap-3 mt-4">
-            <div className="flex gap-2">
-              {pomodorosCompleted === 0 ? (
-                <div className="w-3 h-3 rounded-full bg-slate-300" />
-              ) : (
-                [...Array(pomodorosCompleted)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-3 h-3 rounded-full bg-indigo-600"
-                  />
-                ))
-              )}
-            </div>
-            <span className="text-[12px] font-bold text-slate-400 tracking-widest uppercase ml-2">
-              {pomodorosCompleted} Pomodoros
-            </span>
+        <div className="flex items-center gap-3 mt-4">
+          <div className="flex gap-2">
+            {pomodorosCompleted === 0 ? (
+              <div className={`w-3 h-3 rounded-full ${zen ? "bg-white/30" : "bg-slate-300"}`} />
+            ) : (
+              [...Array(pomodorosCompleted)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-3 h-3 rounded-full ${zen ? "bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]" : "bg-indigo-600"}`}
+                />
+              ))
+            )}
           </div>
-        )}
+          <span className={`text-[12px] font-bold tracking-widest uppercase ml-2 ${zen ? "text-white/70" : "text-slate-400"}`}>
+            {pomodorosCompleted} {pomodorosCompleted === 1 ? "Pomodoro" : "Pomodoros"}
+          </span>
+        </div>
       </div>
     </section>
   );
@@ -533,6 +554,17 @@ const StudySessionDashboard = () => {
                  </button>
                )}
 
+               {/* Tasks Drawer Toggle in Zen Mode */}
+               <div className="absolute top-8 left-4 md:left-8 z-20">
+                 <button
+                   onClick={() => setShowTasks(true)}
+                   className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all border border-white/10 font-bold text-xs uppercase tracking-widest shadow-lg"
+                 >
+                   <CheckCircle2 size={16} className="text-emerald-400" />
+                   <span>Tasks ({tasks.filter(t => t.completed).length}/{tasks.length})</span>
+                 </button>
+               </div>
+
                <div className="relative z-10 w-full flex justify-center">
                  <TimerCard zen={true} />
                </div>
@@ -570,34 +602,61 @@ const StudySessionDashboard = () => {
           )}
 
           {showDistractionDialog && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-              <div className="bg-white rounded-[2rem] p-6 md:p-8 max-w-md w-full shadow-2xl relative">
+            <div className="fixed inset-0 z-[160] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+              <div className="bg-white rounded-[2rem] p-6 md:p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-200">
                 <button
                   onClick={skipDistraction}
-                  className="absolute top-6 right-6 text-slate-400 hover:text-slate-600"
+                  className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
                 >
                   <X size={20} />
                 </button>
-                <h3 className="text-2xl font-bold font-['Manrope'] mb-2">
+                <h3 className="text-2xl font-bold font-['Manrope'] mb-2 text-slate-900">
                   Session Paused
                 </h3>
-                <p className="text-slate-500 mb-6 text-sm">
+                <p className="text-slate-500 mb-4 text-sm">
                   What distracted you? Logging this helps you improve focus.
                 </p>
+
+                {/* Quick trigger chips */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {["Social Media", "Phone / Message", "Physical Break", "Other"].map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => setDistractionReason(tag)}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition-all ${
+                        distractionReason === tag
+                          ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                          : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+
                 <input
                   type="text"
                   value={distractionReason}
                   onChange={(e) => setDistractionReason(e.target.value)}
-                  placeholder="e.g., Phone call, Social media..."
-                  className="w-full bg-[#F1F3FF] border-none rounded-2xl p-4 mb-6 focus:ring-2 focus:ring-indigo-600 outline-none"
+                  placeholder="Or type reason (e.g. Phone call)..."
+                  className="w-full bg-[#F1F3FF] border border-transparent rounded-2xl p-4 mb-5 focus:ring-2 focus:ring-indigo-600 focus:bg-white transition-all outline-none text-sm font-medium"
                   autoFocus
                 />
-                <button
-                  onClick={submitDistraction}
-                  className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 transition-colors"
-                >
-                  Log & Resume Session
-                </button>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={submitDistraction}
+                    className="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-2xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
+                  >
+                    Log Distraction & Resume
+                  </button>
+                  <button
+                    onClick={skipDistraction}
+                    className="w-full bg-slate-100 text-slate-600 font-bold py-3 rounded-2xl hover:bg-slate-200 transition-colors text-sm"
+                  >
+                    Resume Without Logging
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -883,16 +942,8 @@ const StudySessionDashboard = () => {
               </div>
               <div className="flex items-center gap-4">
                 <div 
-                  onClick={() => setAmbientMode(!ambientMode)}
-                  className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg cursor-pointer transition-all duration-300 relative group ${ambientMode ? "bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.5)]" : "bg-white text-indigo-600 hover:bg-indigo-50 hover:scale-110 hover:-translate-y-1 hover:shadow-xl"}`}
-                  title="Zen Focus Mode"
-                >
-                  <div className={`absolute inset-0 rounded-full bg-indigo-400 opacity-0 transition-opacity duration-300 group-hover:opacity-20 ${!ambientMode ? 'group-hover:animate-ping' : ''}`} />
-                  <Focus size={24} className={ambientMode ? "animate-[spin_4s_linear_infinite]" : "animate-pulse"} />
-                </div>
-                <div 
                   onClick={() => setShowTasks(true)}
-                  className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-sm cursor-pointer hover:scale-110 transition-transform"
+                  className="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-md cursor-pointer hover:scale-110 active:scale-95 transition-all"
                   title="Session Tasks"
                 >
                   <CheckCircle2 size={18} />

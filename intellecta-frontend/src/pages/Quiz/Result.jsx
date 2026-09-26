@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  RotateCcw,
   CheckCircle2,
   XCircle,
   ClipboardCheck,
   Zap,
   Hourglass,
   PenLine,
-  GraduationCap
+  GraduationCap,
+  ArrowLeft
 } from 'lucide-react';
 
 import Sidebar from '../../components/dashboard/StudentSidebar';
@@ -155,6 +156,7 @@ const ResultDetail = ({ detail, summary }) => {
 
 /* --- MAIN PAGE --- */
 const QuizResultsPage = () => {
+  const navigate = useNavigate();
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -193,8 +195,11 @@ const QuizResultsPage = () => {
           <div className="p-4 md:p-12 lg:p-16 max-w-5xl mx-auto">
           {selectedAttempt ? (
             <>
-              <button onClick={() => { setSelectedAttempt(null); setSelectedDetail(null); }} className="flex items-center gap-2 text-slate-500 font-bold hover:text-slate-800 mb-6 transition-colors">
-                <RotateCcw size={18} /> Back to Results
+              <button 
+                onClick={() => { setSelectedAttempt(null); setSelectedDetail(null); }} 
+                className="flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-800 mb-6 transition-colors group cursor-pointer text-sm"
+              >
+                <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Results
               </button>
               {loadingDetail ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -211,6 +216,13 @@ const QuizResultsPage = () => {
             </>
           ) : (
             <>
+              <button 
+                onClick={() => navigate('/quiz')} 
+                className="flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-800 mb-6 transition-colors group cursor-pointer text-sm"
+              >
+                <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Quizzes
+              </button>
+
               <div className="mb-8">
                 <h1 className="text-3xl font-black text-slate-900 tracking-tight">Quiz Results</h1>
                 <p className="text-slate-500 font-medium mt-1">Track your performance across all assessments.</p>

@@ -465,14 +465,19 @@ const AnalyticsDashboard = () => {
                   return `mostly ${dominant.toLowerCase()} impact`;
                 })(), icon: History, color: 'text-emerald-500', bg: 'bg-emerald-50' },
             ].map((stat, i) => (
-              <div key={i} className="neu p-7 transition-all group min-h-[160px] flex flex-col justify-between hover:scale-[1.02]">
-                <div className="flex justify-between items-start gap-4 mb-4">
-                  <div className={`p-4 rounded-2xl shrink-0 ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}><stat.icon size={28} /></div>
-                  <span className={`text-[11px] font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider ml-auto whitespace-nowrap ${stat.color} ${stat.bg} border border-current border-opacity-10`}>{stat.sub}</span>
+              <div key={i} className="neu p-6 sm:p-7 transition-all group min-h-[160px] flex flex-col justify-between hover:scale-[1.02] overflow-hidden">
+                <div className="flex justify-between items-start gap-2 mb-4">
+                  <div className={`p-3.5 sm:p-4 rounded-2xl shrink-0 ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}><stat.icon size={26} className="sm:w-7 sm:h-7" /></div>
+                  <span 
+                    title={stat.sub} 
+                    className={`text-[10px] sm:text-[11px] font-bold px-2.5 py-1.5 rounded-xl uppercase tracking-wider text-right max-w-[170px] truncate ${stat.color} ${stat.bg} border border-current border-opacity-10`}
+                  >
+                    {stat.sub}
+                  </span>
                 </div>
                 <div>
-                  <h3 className="text-[11px] font-bold text-[#6F767E] uppercase tracking-[0.12em] mb-2">{stat.label}</h3>
-                  <p className="text-4xl font-[800] text-[#1A1D1F] tracking-tight tabular-nums">{stat.value}</p>
+                  <h3 className="text-[11px] font-bold text-[#6F767E] uppercase tracking-[0.12em] mb-2 truncate">{stat.label}</h3>
+                  <p className="text-3xl sm:text-4xl font-[800] text-[#1A1D1F] tracking-tight tabular-nums truncate">{stat.value}</p>
                 </div>
               </div>
             ))}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Timer, BrainCircuit, Play, FileText, AlertCircle } from 'lucide-react';
+import { Timer, BrainCircuit, Play, FileText, AlertCircle, ArrowLeft } from 'lucide-react';
 
 import Sidebar from '../../components/dashboard/StudentSidebar';
 import Navbar from '../../components/dashboard/Navbar';
@@ -515,6 +515,7 @@ const ComparisonCTA = () => {
 // --- Full Page Layout ---
 const PeerComparisonPage = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [dbCategories, setDbCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -554,51 +555,61 @@ const PeerComparisonPage = () => {
   }, [searchParams]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#fcfdfe] font-sans">
-          <Navbar />
-          
-          <div className="flex flex-1">
-            <Sidebar />
+    <div className="min-h-screen bg-[var(--color-base)] text-slate-900 flex flex-col font-inter">
+      <Navbar />
+      
+      <div className="flex flex-1 relative items-start">
+        <Sidebar />
 
-        <main className="p-4 sm:p-8 md:p-16 max-w-[1600px] mx-auto w-full">
-          {loading && (
-             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5D2ECC]"></div>
-             </div>
-          )}
+        <main className="flex-1 min-w-0 p-4 lg:p-8">
+          <div className="max-w-[1400px] mx-auto">
+            <button
+              onClick={() => navigate('/leaderboard')}
+              className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold mb-6 transition-colors group cursor-pointer text-sm"
+            >
+              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+              Back to Leaderboard
+            </button>
 
-          {error && !loading && (
-             <div className="bg-red-50 text-red-600 p-6 rounded-2xl flex items-center gap-4">
-                <AlertCircle />
-                <p className="font-medium">{error}</p>
-             </div>
-          )}
+            {loading && (
+               <div className="flex items-center justify-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5D2ECC]"></div>
+               </div>
+            )}
 
-          {!loading && !error && data && (
-            <>
-              {/* Header Section */}
-              <PeerComparisonTitle data={data} />
-              
-              {/* Charts Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
-                <div className="lg:col-span-5">
-                  <SubjectProficiency data={data} dbCategories={dbCategories} />
+            {error && !loading && (
+               <div className="bg-red-50 text-red-600 p-6 rounded-2xl flex items-center gap-4">
+                  <AlertCircle />
+                  <p className="font-medium">{error}</p>
+               </div>
+            )}
+
+            {!loading && !error && data && (
+              <>
+                {/* Header Section */}
+                <PeerComparisonTitle data={data} />
+                
+                {/* Charts Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
+                  <div className="lg:col-span-5">
+                    <SubjectProficiency data={data} dbCategories={dbCategories} />
+                  </div>
+                  <div className="lg:col-span-7">
+                    <DailyFocusIntensity data={data} />
+                  </div>
                 </div>
-                <div className="lg:col-span-7">
-                  <DailyFocusIntensity data={data} />
-                </div>
-              </div>
 
-              {/* Behavioral Insights Cards */}
-              <BehavioralInsights data={data} />
+                {/* Behavioral Insights Cards */}
+                <BehavioralInsights data={data} />
 
-              {/* Weekly Focus Heatmap Section */}
-              <WeeklyFocusHeatmap data={data} />
+                {/* Weekly Focus Heatmap Section */}
+                <WeeklyFocusHeatmap data={data} />
 
-              {/* CTA Section */}
-              <ComparisonCTA />
-            </>
-          )}
+                {/* CTA Section */}
+                <ComparisonCTA />
+              </>
+            )}
+          </div>
         </main>
       </div>
     </div>

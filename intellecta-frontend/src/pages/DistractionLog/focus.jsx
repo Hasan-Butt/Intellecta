@@ -203,19 +203,24 @@ const PerformanceDashboard = () => {
   }, [attempts]);
 
   const intensityPathData = useMemo(() => {
-    // We want to map 06:00 AM to 12:00 AM (18 hours)
-    // Let's create 19 points (one for each hour)
+    // Map 06:00 AM to 12:00 AM (midnight) with 19 points matching the 7 time labels
     const points = Array.from({ length: 19 }, (_, i) => {
-      const hour = 6 + i;
+      const targetHour = (6 + i) % 24;
       const intensity = sessions.reduce((acc, s) => {
+        if (!s.startTime) return acc;
         const start = new Date(s.startTime);
-        const end = new Date(s.endTime || (start.getTime() + (s.durationMinutes || 30) * 60000));
+        const durationMins = s.durationMinutes || 30;
+        const end = new Date(s.endTime || (start.getTime() + durationMins * 60000));
         
-        // Check if session falls within this hour slot
-        const slotStart = new Date(start); slotStart.setHours(hour, 0, 0, 0);
-        const slotEnd = new Date(start); slotEnd.setHours(hour + 1, 0, 0, 0);
-        
-        if (start < slotEnd && end > slotStart) {
+        const startHour = start.getHours();
+        const endHour = end.getHours();
+
+        // Check if session covers this target hour
+        const inSlot = startHour === targetHour || 
+          (startHour < targetHour && endHour >= targetHour) ||
+          (startHour > endHour && (targetHour >= startHour || targetHour <= endHour));
+
+        if (inSlot) {
           return acc + (s.deepWork ? 80 : 50);
         }
         return acc;
@@ -225,10 +230,9 @@ const PerformanceDashboard = () => {
 
     // Convert points to SVG path
     // Width is 1000, height is 200. Y=0 is top, Y=200 is bottom.
-    // Higher intensity means LOWER Y value.
     const coords = points.map((val, i) => ({
       x: (i / 18) * 1000,
-      y: 165 - (val / 100) * 145 // Higher baseline, more room for peaks
+      y: 165 - (val / 100) * 145
     }));
 
     if (coords.length === 0) return { line: "", area: "" };
@@ -299,7 +303,11 @@ const PerformanceDashboard = () => {
       d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()
     );
 
-    const formatHour = (h) => `${h.toString().padStart(2, '0')}:00`;
+    const formatHour = (h) => {
+      const h12 = h % 12 === 0 ? 12 : h % 12;
+      const ampm = h < 12 ? 'AM' : 'PM';
+      return `${h12.toString().padStart(2, '0')}:00 ${ampm}`;
+    };
 
     // Circadian Rhythm — prime slot over ALL sessions (Bug 1.1.3)
     let maxAllIntensity = -1;
@@ -585,7 +593,7 @@ const PerformanceDashboard = () => {
                     </div>
                   </div>
                 </div>
-                <footer className="mt-8 md:mt-10 pt-6 md:pt-8 border-t border-gray-50 flex flex-row items-center justify-between gap-4">
+                <footer className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-50 flex flex-wrap items-center justify-between gap-3">
                   {/* The left side container */}
                   <div className="flex items-center gap-4"> 
                     <div>
@@ -598,9 +606,9 @@ const PerformanceDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Bug 1.4.2: hide the badge when there's no prime-slot data */}
+                  {/* Hide badge when there's no prime-slot data */}
                   {hasPrimeSlotData && (
-                    <span className="translate-y-2 flex-shrink-0 px-3 md:px-4 py-1.5 md:py-2 bg-green-50 text-green-600 text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-xl">
+                    <span className="flex-shrink-0 px-3 md:px-4 py-1.5 md:py-2 bg-green-50 text-green-600 text-[9px] md:text-[10px] font-black uppercase tracking-widest rounded-xl">
                       Optimal Flow
                     </span>
                   )}
@@ -730,8 +738,8 @@ const PerformanceDashboard = () => {
 
               {/* Analytical Charts Section */}
               <div className="col-span-12 lg:col-span-7 flex flex-col gap-6 md:gap-8">
-                <section className="neu p-6 md:p-10 flex flex-col h-auto lg:h-[520px]">
-                  <div className="flex justify-between items-start mb-6 md:mb-10 gap-4">
+                <section className="neu p-6 md:p-8 flex flex-col min-h-[520px] overflow-hidden">
+                  <div className="flex justify-between items-start mb-6 md:mb-8 gap-4">
                     <div>
                       <h2 className="font-black text-lg md:text-xl tracking-tight text-[#4F39C3] uppercase">
                         Cognitive Behavioral Audit
@@ -789,9 +797,9 @@ const PerformanceDashboard = () => {
                   </div>
                   )}
 
-                  <div className="mt-10 pt-8 border-t border-gray-50">
+                  <div className="mt-6 pt-5 border-t border-gray-100">
                     <div className="flex items-start gap-4">
-                      <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+                      <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600 shrink-0">
                         <Zap size={16} />
                       </div>
                       <p className="text-[11px] text-gray-400 font-medium leading-relaxed italic">

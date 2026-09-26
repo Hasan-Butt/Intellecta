@@ -49,7 +49,7 @@ public class StudySessionServiceImpl implements StudySessionService {
         StudySession session = sessionRepository.findById(sessionId)
             .orElseThrow(() -> new RuntimeException("Session not found"));
         SecurityUtils.validateUser(session.getUser().getId());
-        session.setEndTime(LocalDateTime.now());
+        session.setEndTime(request != null && request.getEndTime() != null ? request.getEndTime() : LocalDateTime.now());
         
         if (request != null) {
             session.setPomodorosCompleted(request.getPomodorosCompleted());

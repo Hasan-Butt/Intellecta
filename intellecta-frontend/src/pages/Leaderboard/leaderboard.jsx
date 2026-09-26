@@ -407,16 +407,21 @@ const GlobalLeaderboard = () => {
                         </div>
                       </div>
 
-                      <div className="bg-[#512de3] text-white p-4 rounded-xl">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Award size={12} className="text-indigo-200" />
-                          <p className="text-[9px] font-black uppercase opacity-80">Insight</p>
-                        </div>
-                        {currentUser.xp >= selectedPeer.xp
-                          ? <p className="text-[12px] font-semibold leading-snug">You're ahead of {selectedPeer.username} by <strong>{(currentUser.xp - selectedPeer.xp).toLocaleString()} XP</strong>!</p>
-                          : <p className="text-[12px] font-semibold leading-snug">{selectedPeer.username} leads by <strong>{xpGap.toLocaleString()} XP</strong>. Close the gap!</p>
-                        }
-                      </div>
+                      <button
+                        onClick={() => {
+                          const userId = getUserId();
+                          if (!userId) return;
+                          if (selectedPeer && selectedPeer.userId) {
+                            navigate(`/peers?userId=${userId}&peerId=${selectedPeer.userId}`);
+                          } else {
+                            navigate('/peers');
+                          }
+                        }}
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs transition-all shadow-md shadow-indigo-200 hover:scale-[1.02] active:scale-[0.98] group"
+                      >
+                        <BarChart3 size={16} className="group-hover:scale-110 transition-transform" />
+                        <span>Generate Full Report</span>
+                      </button>
                     </>
                   ) : (
                     <p className="text-[12px] text-slate-400 text-center py-4">No data available</p>
@@ -436,29 +441,33 @@ const GlobalLeaderboard = () => {
                     </p>
                   </section>
                 ) : standingUser && (
-                  <section className="neu p-6 text-slate-900">
-                    <div className="flex items-center gap-3 mb-5">
-                      <Target size={18} className="text-emerald-600"/>
-                      <h3 className="font-black text-[15px]">Your Standing</h3>
-                    </div>
-                    <div className="space-y-4">
-                      {/* Rank + Level */}
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-[9px] font-black text-slate-400 uppercase mb-1">
-                            {viewMode === 'global' ? 'Global Rank' : `Rank in ${selectedCategory}`}
-                          </p>
-                          <p className="text-2xl font-black text-indigo-600">#{standingUser.rank}</p>
-                          <p className="text-[10px] text-slate-500 font-bold">{standingUser.xp.toLocaleString()} XP</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Level</p>
-                          <p className="text-base font-black text-emerald-600">{resolveLevelTitle(myLevel)}</p>
-                          <p className="text-[10px] text-slate-500 font-bold">Lv. {myLevel}</p>
+                  <section className="neu p-6 text-slate-900 min-h-[210px] flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-3 mb-5">
+                        <Target size={18} className="text-emerald-600"/>
+                        <h3 className="font-black text-[15px]">Your Standing</h3>
+                      </div>
+                      <div className="space-y-4">
+                        {/* Rank + Level */}
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-[9px] font-black text-slate-400 uppercase mb-1">
+                              {viewMode === 'global' ? 'Global Rank' : `Rank in ${selectedCategory}`}
+                            </p>
+                            <p className="text-2xl font-black text-indigo-600">#{standingUser.rank}</p>
+                            <p className="text-[10px] text-slate-500 font-bold">{standingUser.xp.toLocaleString()} XP</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Level</p>
+                            <p className="text-base font-black text-emerald-600">{resolveLevelTitle(myLevel)}</p>
+                            <p className="text-[10px] text-slate-500 font-bold">Lv. {myLevel}</p>
+                          </div>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Progress toward overtaking competitor above */}
+                    {/* Progress toward overtaking competitor above */}
+                    <div className="pt-2">
                       {competitorAbove ? (
                         <div>
                           <div className="flex justify-between items-center mb-2">
@@ -471,12 +480,6 @@ const GlobalLeaderboard = () => {
                               style={{width: `${overtakePct}%`}}
                             />
                           </div>
-                          <p className="text-[10px] text-slate-500 font-semibold mt-2">
-                            {xpToOvertake > 0
-                              ? <><span className="text-slate-900 font-black">{xpToOvertake.toLocaleString()} XP</span> needed to beat {competitorAbove.username}</>
-                              : <span className="text-emerald-600 font-black">You've overtaken {competitorAbove.username}!</span>
-                            }
-                          </p>
                         </div>
                       ) : (
                         <div>
@@ -490,24 +493,20 @@ const GlobalLeaderboard = () => {
                   </section>
                 )}
 
-                <div
-                  onClick={() => {
-                    const userId = getUserId();
-                    if (!userId) return;
-                    if (selectedPeer && selectedPeer.userId) {
-                      navigate(`/peers?userId=${userId}&peerId=${selectedPeer.userId}`);
-                    } else {
-                      navigate('/peers');
-                    }
-                  }}
-                  className="neu p-6 text-center cursor-pointer hover:scale-105 transition-all group"
-                >
-                    <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                      <BarChart3 size={20} />
+                {currentUser && selectedPeer && (
+                  <div className="bg-gradient-to-br from-[#512de3] to-[#3b1cb8] text-white p-5 rounded-2xl shadow-lg shadow-indigo-500/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-1.5 bg-white/10 rounded-lg">
+                        <Award size={14} className="text-amber-300" />
+                      </div>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-indigo-100">Performance Insight</p>
                     </div>
-                    <p className="font-black text-slate-900 text-sm">Generate Full Report</p>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">Export Metrics</p>
-                </div>
+                    {currentUser.xp >= selectedPeer.xp
+                      ? <p className="text-[12px] font-semibold leading-relaxed">You're ahead of <span className="font-bold text-amber-300">{selectedPeer.username}</span> by <strong>{(currentUser.xp - selectedPeer.xp).toLocaleString()} XP</strong>! Keep the streak going!</p>
+                      : <p className="text-[12px] font-semibold leading-relaxed"><span className="font-bold text-amber-300">{selectedPeer.username}</span> leads by <strong>{xpGap.toLocaleString()} XP</strong>. Attempt a quiz to close the gap!</p>
+                    }
+                  </div>
+                )}
 
                 <section 
                   onClick={() => navigate('/achievements')}
