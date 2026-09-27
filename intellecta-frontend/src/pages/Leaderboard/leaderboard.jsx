@@ -163,7 +163,6 @@ const GlobalLeaderboard = () => {
         .filter(r => r.rank < currentUser.rank)
         .sort((a, b) => b.rank - a.rank)[0] || null
     : null;
-  const xpToOvertake = competitorAbove ? Math.max(0, competitorAbove.xp - currentUser.xp + 1) : 0;
   // Floor of the user's own bracket = the person directly BELOW them, so the
   // progress bar measures the gap they actually need to close (previously it
   // used the person below the competitor, which made the bar sit at 0%)
