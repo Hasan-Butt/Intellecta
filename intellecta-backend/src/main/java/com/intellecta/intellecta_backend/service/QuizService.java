@@ -28,6 +28,7 @@ public class QuizService {
     private final QuizAttemptRepository quizAttemptRepository;
     private final UserRepository userRepository;
     private final SectionalXPRepository sectionalXPRepository;
+    private final NotificationService notificationService;
 
     public List<Quiz> getAllQuizzes(Long userId) {
         List<Quiz> quizzes = new java.util.ArrayList<>(quizRepository.findAllWithQuestions());
@@ -55,8 +56,21 @@ public class QuizService {
                 q.setQuiz(savedQuiz);
             }
             savedQuiz.setQuestions(quiz.getQuestions());
-            return quizRepository.save(savedQuiz);
+            savedQuiz = quizRepository.save(savedQuiz);
         }
+
+        try {
+            notificationService.sendNotification(
+                "New Quiz Published",
+                "A new quiz on '" + savedQuiz.getTopic() + "' is now available. Test your knowledge!",
+                "QUIZ",
+                "/quiz",
+                null
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send quiz notification: " + e.getMessage());
+        }
+
         return savedQuiz;
     }
 

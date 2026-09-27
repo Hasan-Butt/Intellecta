@@ -99,8 +99,13 @@ public class GamificationServiceImpl implements GamificationService {
                             s.getStartTime() != null && s.getStartTime().getHour() < 8).count() >= threshold;
 
             case "NIGHT_OWL" ->
-                    sessions.stream().filter(s ->
-                            s.getStartTime() != null && s.getStartTime().getHour() >= 22).count() >= threshold;
+                    sessions.stream().filter(s -> {
+                        boolean startNight = s.getStartTime() != null && 
+                            (s.getStartTime().getHour() >= 22 || s.getStartTime().getHour() < 5);
+                        boolean endNight = s.getEndTime() != null && 
+                            (s.getEndTime().getHour() >= 22 || s.getEndTime().getHour() < 5);
+                        return startNight || endNight;
+                    }).count() >= threshold;
 
             case "TOTAL_NOTES" ->
                     totalNotes >= threshold;

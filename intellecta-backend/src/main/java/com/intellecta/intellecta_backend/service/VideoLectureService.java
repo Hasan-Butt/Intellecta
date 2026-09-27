@@ -21,6 +21,7 @@ public class VideoLectureService {
 
     private final VideoLectureRepository videoLectureRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     // ---------------------------------------------------------------
     // YouTube video ID extraction
@@ -57,7 +58,21 @@ public class VideoLectureService {
                 .resourceLinks(request.getResourceLinks() != null ? request.getResourceLinks() : new ArrayList<>())
                 .build();
 
-        return toResponse(videoLectureRepository.save(lecture));
+        VideoLecture saved = videoLectureRepository.save(lecture);
+
+        try {
+            notificationService.sendNotification(
+                "New Video Lecture Uploaded",
+                "A new lecture on '" + saved.getTitle() + "' is now available.",
+                "LECTURE",
+                "/lectures",
+                null
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send lecture notification: " + e.getMessage());
+        }
+
+        return toResponse(saved);
     }
 
     // ---------------------------------------------------------------
