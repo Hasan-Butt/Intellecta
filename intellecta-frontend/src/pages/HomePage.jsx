@@ -62,18 +62,29 @@ function Navbar() {
   }, []);
 
   const links = ["Features", "How It Works", "About"];
+  const lastScrollTime = useRef(0);
 
   const handleScroll = (e, targetId) => {
-    e.preventDefault();
-    const element = document.getElementById(targetId);
-    if (element) {
-      const offsetTop = element.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({
-        top: offsetTop - 80, // Navbar height offset
-        behavior: 'smooth'
-      });
+    if (e) {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
     }
+    const now = Date.now();
+    if (now - lastScrollTime.current < 350) return;
+    lastScrollTime.current = now;
+
     setMobileOpen(false);
+
+    setTimeout(() => {
+      const element = document.getElementById(targetId);
+      if (element) {
+        const offsetTop = element.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+          top: offsetTop - 80, // Navbar height offset
+          behavior: 'smooth'
+        });
+      }
+    }, 40);
   };
 
   return (
@@ -177,12 +188,41 @@ function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             style={{ width: "100%", background: "rgba(255,255,255,0.96)", backdropFilter: "blur(16px)", borderTop: "1px solid var(--hp-border-soft)", padding: "0.5rem 2rem 1rem", pointerEvents: "auto" }}>
-            {links.map(l => (
-              <div key={l} style={{ padding: "0.75rem 0", borderBottom: "1px solid var(--hp-border-soft)" }}>
-                <a href={`#${l.toLowerCase().replace(/\s+/g, "-")}`} onClick={(e) => handleScroll(e, l.toLowerCase().replace(/\s+/g, "-"))}
-                  style={{ color: "var(--hp-ink-mid)", textDecoration: "none", fontSize: 15, fontWeight: 500 }}>{l}</a>
-              </div>
-            ))}
+            {links.map(l => {
+              const targetId = l.toLowerCase().replace(/\s+/g, "-");
+              const isActive = active === targetId;
+              return (
+                <div key={l} style={{ borderBottom: "1px solid var(--hp-border-soft)" }}>
+                  <button
+                    type="button"
+                    onClick={(e) => handleScroll(e, targetId)}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleScroll(e, targetId);
+                    }}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      background: "none",
+                      border: "none",
+                      padding: "1rem 0",
+                      color: isActive ? "var(--hp-cyan-dark)" : "var(--hp-ink-mid)",
+                      fontSize: 16,
+                      fontWeight: isActive ? 700 : 500,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      WebkitTapHighlightColor: "transparent",
+                      touchAction: "manipulation"
+                    }}
+                  >
+                    <span>{l}</span>
+                    <span style={{ fontSize: 13, opacity: isActive ? 1 : 0.4 }}>→</span>
+                  </button>
+                </div>
+              );
+            })}
             <div className="mob-nav-actions" style={{ display: "none", flexDirection: "column", gap: "10px", marginTop: "1rem" }}>
               <button className="nav-login-btn" style={{ width: "100%" }} onClick={() => { navigate("/login"); setMobileOpen(false); }}>Sign In</button>
               <button className="hp-nav-btn-started" style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "none" }} onClick={() => { navigate("/login"); setMobileOpen(false); }}>Get Started Free</button>
