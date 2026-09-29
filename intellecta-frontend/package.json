@@ -19,6 +19,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.2",
+    "react-router-sitemap-generator": "^0.0.8",
     "react-scripts": "5.0.1",
     "recharts": "^3.8.1",
     "sweetalert2": "^11.26.25",
@@ -31,7 +32,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "sitemap": "node scripts/generate-sitemap.js"
   },
   "eslintConfig": {
     "extends": [
