@@ -2,12 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link
-      rel="icon"
-      type="image/png"
-      href="%PUBLIC_URL%/favicon.png"
-      sizes="256x256"
-    />
+
+    <!-- Favicon — multi-size for crisp rendering at all sizes -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16"  href="%PUBLIC_URL%/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32"  href="%PUBLIC_URL%/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48"  href="%PUBLIC_URL%/favicon-48x48.png" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta
@@ -41,7 +42,7 @@
 
     <!-- Canonical URL -->
     <link rel="canonical" href="https://intellecta.hasanbutt.me" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/favicon.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="%PUBLIC_URL%/favicon-192x192.png" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
@@ -57,6 +58,8 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>Intellecta – Smart Study Planner & Productivity App</title>
+
+    <!-- JSON-LD: WebApplication -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -65,7 +68,24 @@
         "url": "https://intellecta.hasanbutt.me",
         "description": "Smart study planner and productivity app for students",
         "applicationCategory": "EducationApplication",
-        "operatingSystem": "Web"
+        "operatingSystem": "Web",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://intellecta.hasanbutt.me/favicon.png",
+          "width": 256,
+          "height": 256
+        }
+      }
+    </script>
+
+    <!-- JSON-LD: Organization (used by Google for sitelinks icon) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Intellecta",
+        "url": "https://intellecta.hasanbutt.me",
+        "logo": "https://intellecta.hasanbutt.me/favicon.png"
       }
     </script>
   </head>
