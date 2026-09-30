@@ -411,3 +411,41 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ==========================================================================
+   PRINT & PDF EXPORT OPTIMIZATIONS
+   ========================================================================== */
+@media print {
+  @page {
+    margin: 12mm 15mm;
+    size: auto;
+  }
+
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  /* Automatically hide site headers, sidebars, interactive menus and toolbars in print */
+  header,
+  aside,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset layout constraints for printing */
+  .min-h-screen {
+    min-height: auto !important;
+  }
+
+  /* Prevent awkward page break splits on cards, charts, and sections */
+  .break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

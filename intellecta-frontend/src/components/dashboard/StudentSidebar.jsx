@@ -119,7 +119,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 h-[calc(100vh-56px)] bg-white border-r border-gray-100 font-inter sticky top-[56px] self-start overflow-hidden">
+    <aside className="hidden lg:flex flex-col w-64 h-[calc(100vh-56px)] bg-white border-r border-gray-100 font-inter sticky top-[56px] self-start overflow-hidden print:hidden">
       {/* Branding Header */}
       <div className="px-8 py-10">
         <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
