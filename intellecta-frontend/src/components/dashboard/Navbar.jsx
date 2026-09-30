@@ -493,24 +493,47 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu Dropdown (Full height to bottom) */}
       {showMobileMenu && (
-        <div className="lg:hidden w-full bg-white border-t border-gray-100 max-h-[70vh] overflow-y-auto px-4 py-2 shadow-lg absolute left-0 right-0 z-40">
-          <p className="px-2 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Navigation</p>
-          <div className="flex flex-col gap-1">
-            {allPages.filter(p => p.category === (location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/users') || location.pathname.startsWith('/content') ? 'Admin' : 'Student') || p.category === 'General').map(page => (
-              <button
-                key={page.path}
-                onClick={() => {
-                  navigate(page.path);
-                  setShowMobileMenu(false);
-                }}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left ${location.pathname === page.path ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50'}`}
-              >
-                <page.icon size={18} className={location.pathname === page.path ? 'text-indigo-600' : 'text-gray-400'} />
-                <span className="text-sm font-bold">{page.name}</span>
-              </button>
-            ))}
+        <div className="lg:hidden fixed top-[56px] left-0 right-0 bottom-0 h-[calc(100vh-56px)] h-[calc(100dvh-56px)] bg-white border-t border-gray-100 z-50 flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-top-2 duration-200">
+          <div className="flex-1 overflow-y-auto px-4 py-3 custom-scrollbar">
+            <p className="px-2 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">Navigation</p>
+            <div className="flex flex-col gap-1">
+              {allPages.filter(p => p.category === (location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/users') || location.pathname.startsWith('/content') ? 'Admin' : 'Student') || p.category === 'General').map(page => (
+                <button
+                  key={page.path}
+                  onClick={() => {
+                    navigate(page.path);
+                    setShowMobileMenu(false);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left ${location.pathname === page.path ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-50'}`}
+                >
+                  <page.icon size={18} className={location.pathname === page.path ? 'text-indigo-600' : 'text-gray-400'} />
+                  <span className="text-sm font-bold">{page.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile Footer / Profile & Logout Section (Full sidebar to bottom) */}
+          <div className="mt-auto border-t border-gray-100 px-6 py-4 bg-gray-50/70 flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0">
+              <Avatar src={userData.avatarUrl} name={userData.username} size="w-10 h-10" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-bold text-zinc-900 truncate">{userData.username || 'Scholar'}</span>
+                <span className="text-[11px] text-gray-400 truncate">{userData.email}</span>
+              </div>
+            </div>
+            <button 
+              onClick={() => {
+                setShowMobileMenu(false);
+                handleLogout();
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition-colors uppercase tracking-wider shrink-0"
+            >
+              <LogOut size={14} strokeWidth={2.5} />
+              Logout
+            </button>
           </div>
         </div>
       )}
