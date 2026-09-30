@@ -12,7 +12,7 @@ import Avatar from '../common/Avatar';
 import { logout, getUserId } from '../../utils/auth';
 import { getInitialProfile, setUserProfile } from '../../utils/userCache';
 
-const Navbar = () => {
+const Navbar = ({ className = "" }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -197,7 +197,7 @@ const Navbar = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   return (
-    <header className="w-full bg-[#F9FAFB] border-b border-gray-200 font-inter sticky top-0 z-50 print:hidden">
+    <header className={`w-full bg-[#F9FAFB] border-b border-gray-200 font-inter sticky top-0 z-50 print:hidden ${className}`}>
       <div className="max-w-[1920px] mx-auto px-4 py-2 md:py-0 min-h-[56px] flex flex-wrap md:flex-nowrap items-center justify-between gap-y-3">
         
         {/* Mobile Menu Toggle & Logo Section */}

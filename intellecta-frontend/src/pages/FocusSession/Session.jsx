@@ -520,17 +520,13 @@ const StudySessionDashboard = () => {
   );
 
   return (
-    <div className={`min-h-screen transition-colors duration-1000 ${ambientMode ? "bg-[#0A0A1B]" : "bg-[#F9F9FF]"}`}>
-      <div className={`${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"} transition-opacity duration-1000`}>
-        <Navbar />
-      </div>
+    <div className={`min-h-screen flex flex-col transition-colors duration-1000 ${ambientMode ? "bg-[#0A0A1B]" : "bg-[#F9F9FF]"}`}>
+      <Navbar className={`${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"} transition-opacity duration-1000`} />
       
-      <div className="flex flex-1">
-        <div className={`${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"} transition-opacity duration-1000`}>
-          <Sidebar />
-        </div>
+      <div className="flex flex-1 items-start">
+        <Sidebar className={`${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"} transition-opacity duration-1000`} />
         
-        <main className={`flex-1 transition-all duration-1000 ${ambientMode ? "p-0" : "p-4 lg:p-10"} overflow-y-auto overflow-x-hidden relative w-full max-w-[100vw]`}>
+        <main className={`flex-1 transition-all duration-1000 ${ambientMode ? "p-0" : "p-4 lg:p-10"} overflow-x-hidden relative w-full max-w-[100vw]`}>
           {/* ZEN OVERLAY */}
           {ambientMode && (
             <div 

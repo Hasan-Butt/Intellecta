@@ -28,7 +28,7 @@ import {
   getUserDashboard 
 } from '../../utils/userCache';
 
-const Sidebar = () => {
+const Sidebar = ({ className = "" }) => {
   const location = useLocation();
   const helpBoxRef = useRef(null);
 
@@ -119,7 +119,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-white border-r border-gray-100 font-inter sticky top-0 self-start overflow-hidden print:hidden">
+    <aside className={`hidden lg:flex flex-col w-64 min-h-screen bg-white border-r border-gray-100 font-inter sticky top-0 self-start overflow-hidden print:hidden ${className}`}>
       {/* Branding Header */}
       <div className="px-8 py-10">
         <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
