@@ -335,7 +335,7 @@ const Navbar = ({ className = "" }) => {
 
             {/* Notification Popover Dropdown */}
             {showNotifications && (
-              <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-3xl shadow-2xl border border-gray-100 z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div className="fixed inset-x-3 top-[60px] sm:absolute sm:inset-x-auto sm:left-auto sm:right-0 sm:top-auto sm:mt-3 w-auto sm:w-96 sm:max-w-none sm:mx-0 bg-white rounded-3xl shadow-2xl border border-gray-100 z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="px-5 py-4 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">
