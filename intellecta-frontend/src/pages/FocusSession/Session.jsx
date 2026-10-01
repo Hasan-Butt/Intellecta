@@ -434,7 +434,7 @@ const StudySessionDashboard = () => {
       {!zen && (
         <button
           onClick={() => setAmbientMode(true)}
-          className="absolute top-6 right-6 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 hover:bg-white text-indigo-700 hover:text-indigo-900 border border-indigo-100 shadow-sm transition-all hover:scale-105 active:scale-95 text-xs font-bold z-20 group"
+          className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-2 px-3 py-1.5 sm:px-3.5 rounded-full bg-white/90 hover:bg-white text-indigo-700 hover:text-indigo-900 border border-indigo-100 shadow-sm transition-all hover:scale-105 active:scale-95 text-xs font-bold z-20 group"
           title="Enter Fullscreen Zen Focus Mode"
         >
           <Focus size={15} className="text-indigo-600 group-hover:rotate-90 transition-transform duration-300" />
@@ -449,7 +449,7 @@ const StudySessionDashboard = () => {
         </>
       )}
 
-      <div className="z-10 flex flex-col items-center gap-5 w-full">
+      <div className={`z-10 flex flex-col items-center gap-5 w-full ${!zen ? "pt-8 sm:pt-0" : ""}`}>
         <div
           className={`${mode === "Work" ? "bg-indigo-600/10 text-indigo-600" : "bg-emerald-600/10 text-emerald-600"} px-4 py-1 rounded-full flex items-center gap-2 ${zen ? "border border-white/20 text-white/80 bg-transparent" : ""}`}
         >
@@ -520,17 +520,13 @@ const StudySessionDashboard = () => {
   );
 
   return (
-    <div className={`min-h-screen transition-colors duration-1000 ${ambientMode ? "bg-[#0A0A1B]" : "bg-[#F9F9FF]"}`}>
-      <div className={`${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"} transition-opacity duration-1000`}>
-        <Navbar />
-      </div>
+    <div className={`min-h-screen flex flex-col transition-colors duration-1000 ${ambientMode ? "bg-[#0A0A1B]" : "bg-[#F9F9FF]"}`}>
+      <Navbar className={`${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"} transition-opacity duration-1000`} />
       
-      <div className="flex flex-1">
-        <div className={`${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"} transition-opacity duration-1000`}>
-          <Sidebar />
-        </div>
+      <div className="flex flex-1 items-start">
+        <Sidebar className={`${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"} transition-opacity duration-1000`} />
         
-        <main className={`flex-1 transition-all duration-1000 ${ambientMode ? "p-0" : "p-4 lg:p-10"} overflow-y-auto overflow-x-hidden relative w-full max-w-[100vw]`}>
+        <main className={`flex-1 transition-all duration-1000 ${ambientMode ? "p-0" : "p-4 lg:p-10"} overflow-x-hidden relative w-full max-w-[100vw]`}>
           {/* ZEN OVERLAY */}
           {ambientMode && (
             <div 
@@ -661,7 +657,7 @@ const StudySessionDashboard = () => {
             </div>
           )}
 
-          <div className={`max-w-6xl mx-auto transition-opacity duration-1000 ${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+          <div className={`w-full max-w-[1920px] mx-auto transition-opacity duration-1000 ${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
             <div className="flex flex-col md:flex-row md:justify-between items-start md:items-end mb-8 md:mb-10 gap-6 md:gap-0">
               <div className="space-y-2">
                 <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">

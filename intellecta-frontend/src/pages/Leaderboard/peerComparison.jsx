@@ -20,7 +20,7 @@ const HeatmapSquare = ({ intensity }) => {
 
   return (
     <div 
-      className={`w-full aspect-square rounded-sm transition-all duration-200 hover:ring-2 hover:ring-offset-1 hover:ring-purple-200 cursor-pointer ${bgColors[intensity]}`}
+      className={`w-full aspect-square rounded-sm transition-all duration-200 hover:ring-2 hover:ring-offset-1 hover:ring-purple-200 cursor-pointer ${bgColors[intensity]} border border-gray-100/60 print:border-gray-200 print:[print-color-adjust:exact] print:[-webkit-print-color-adjust:exact]`}
     />
   );
 };
@@ -74,14 +74,14 @@ const WeeklyFocusHeatmap = ({ data }) => {
 
   return (
 
-    <section className="bg-white p-6 md:p-14 rounded-3xl md:rounded-[40px] border border-gray-100 shadow-sm mt-10">
-      <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-12 gap-6">
+    <section className="bg-white p-6 md:p-14 rounded-3xl md:rounded-[40px] border border-gray-100 shadow-sm mt-10 print:mt-6 print:p-8 print:shadow-none print:border-gray-200 break-inside-avoid print:break-inside-avoid">
+      <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-12 gap-6 print:mb-6">
         <div>
           <h2 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Weekly Focus Heatmaps</h2>
-          <p className="text-gray-500 text-sm md:text-base mt-2">Comparing temporal density of high-focus study hours</p>
+          <p className="text-gray-500 text-sm md:text-base mt-2 print:text-sm">Comparing temporal density of high-focus study hours</p>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-3 bg-[#F8FAFC] p-1.5 rounded-full border border-gray-100 overflow-x-auto w-full md:w-auto self-start">
+        <div className="flex items-center gap-2 md:gap-3 bg-[#F8FAFC] p-1.5 rounded-full border border-gray-100 overflow-x-auto w-full md:w-auto self-start print:hidden">
           <button 
             onClick={() => setFilter('high-focus')}
             className={`flex shrink-0 items-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all ${
@@ -103,7 +103,7 @@ const WeeklyFocusHeatmap = ({ data }) => {
         </div>
       </header>
 
-      <div className="flex flex-col xl:flex-row gap-8 xl:gap-16">
+      <div className="flex flex-col xl:flex-row gap-8 xl:gap-16 print:flex-row print:gap-8">
         <HeatmapSection 
           name={data.peer.username} 
           label="Consistent" 
@@ -143,18 +143,27 @@ const PeerComparisonTitle = ({ data }) => {
   ];
 
   return (
-    <section className="w-full mb-12">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+    <section className="w-full mb-12 print:mb-6 break-inside-avoid print:break-inside-avoid">
+      {/* Branded Print Header (only visible on printed PDF) */}
+      <div className="hidden print:flex items-center justify-between border-b border-gray-200 pb-3 mb-6">
+        <div className="flex items-center gap-2">
+          <span className="text-base font-black text-[#111827] tracking-tight">Intellecta</span>
+          <span className="text-xs text-gray-500 font-semibold tracking-wide">| Peer Performance Analytics Report</span>
+        </div>
+        <span className="text-xs text-gray-400 font-medium">Generated on {new Date().toLocaleDateString()}</span>
+      </div>
+
+      <div className="flex flex-col md:flex-row print:flex-row md:items-center print:items-center justify-between gap-8 print:gap-4">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#4c35b5]">
+          <h1 className="text-4xl md:text-5xl print:text-3xl font-bold tracking-tight text-[#4c35b5]">
             Deep Peer Comparison
           </h1>
-          <p className="text-gray-500 text-lg md:text-xl font-normal">
+          <p className="text-gray-500 text-lg md:text-xl print:text-sm font-normal">
             Detailed performance breakdown between you and {data.peer.username}.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 md:gap-5 bg-[#f4f7f9] rounded-2xl p-4 md:p-5 border border-gray-100 shadow-sm self-start md:self-center">
+        <div className="flex flex-wrap items-center gap-3 md:gap-5 print:gap-3 bg-[#f4f7f9] rounded-2xl p-4 md:p-5 print:p-3 border border-gray-100 shadow-sm self-start md:self-center print:self-auto print:shadow-none">
           {/* Avatars */}
           <div className="flex -space-x-4 shrink-0">
             {participants.map((user) => (
@@ -168,7 +177,7 @@ const PeerComparisonTitle = ({ data }) => {
 
           {/* Stats */}
           <div className="flex gap-2 md:gap-3">
-            <div className="bg-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-center border border-gray-100 shadow-sm min-w-[70px] md:min-w-[80px]">
+            <div className="bg-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-center border border-gray-100 shadow-sm min-w-[70px] md:min-w-[80px] print:shadow-none print:[print-color-adjust:exact]">
               <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] md:tracking-[0.15em] block mb-1">Rank Delta</span>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-lg md:text-xl font-black text-[#4c35b5] leading-none">
@@ -177,7 +186,7 @@ const PeerComparisonTitle = ({ data }) => {
                 <span className="text-[9px] md:text-[10px] font-bold text-gray-400">pos</span>
               </div>
             </div>
-            <div className="bg-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-center border border-gray-100 shadow-sm min-w-[70px] md:min-w-[80px]">
+            <div className="bg-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-center border border-gray-100 shadow-sm min-w-[70px] md:min-w-[80px] print:shadow-none print:[print-color-adjust:exact]">
               <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] md:tracking-[0.15em] block mb-1">Level Gap</span>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-lg md:text-xl font-black text-[#b8b0e8] leading-none">
@@ -195,14 +204,14 @@ const PeerComparisonTitle = ({ data }) => {
 
 // --- Dashboard Card Wrapper ---
 const Card = ({ title, subtitle, badge, children }) => (
-  <section className="bg-white p-6 md:p-12 rounded-3xl md:rounded-[40px] border border-gray-100 shadow-sm flex flex-col h-full min-h-[400px] md:min-h-[500px]">
-    <div className="flex justify-between items-start mb-10">
+  <section className="bg-white p-6 md:p-12 rounded-3xl md:rounded-[40px] border border-gray-100 shadow-sm flex flex-col h-full min-h-[400px] md:min-h-[500px] print:min-h-0 print:h-auto print:p-6 print:rounded-2xl print:border-gray-200 print:shadow-none break-inside-avoid print:break-inside-avoid">
+    <div className="flex justify-between items-start mb-10 print:mb-6">
       <div>
-        <h3 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">{title}</h3>
-        <p className="text-sm md:text-base text-gray-500 mt-2">{subtitle}</p>
+        <h3 className="text-xl md:text-2xl print:text-lg font-bold text-gray-900 tracking-tight">{title}</h3>
+        <p className="text-sm md:text-base print:text-xs text-gray-500 mt-2 print:mt-1">{subtitle}</p>
       </div>
       {badge && (
-        <span className="px-4 py-1.5 text-[10px] md:text-xs font-bold text-[#4c35b5] uppercase tracking-widest bg-[#f4f3ff] rounded-full hidden sm:block">
+        <span className="px-4 py-1.5 text-[10px] md:text-xs font-bold text-[#4c35b5] uppercase tracking-widest bg-[#f4f3ff] rounded-full hidden sm:block print:block print:[print-color-adjust:exact]">
           {badge}
         </span>
       )}
@@ -458,23 +467,23 @@ const BehavioralInsights = ({ data }) => {
   ];
 
   return (
-    <section className="mt-8 md:mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+    <section className="mt-8 md:mt-10 print:mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 print:grid-cols-3 gap-6 md:gap-8 print:gap-4">
       {insights.map((item) => (
         <div
           key={item.id}
-          className={`p-6 md:p-10 rounded-3xl md:rounded-[40px] border transition-all duration-300 hover:scale-[1.02] ${
+          className={`p-6 md:p-10 print:p-6 rounded-3xl md:rounded-[40px] print:rounded-2xl border transition-all duration-300 hover:scale-[1.02] break-inside-avoid print:break-inside-avoid print:shadow-none ${
             item.variant === 'primary'
-              ? "bg-[#4c35b5] text-white border-[#4c35b5] shadow-xl shadow-purple-100"
-              : "bg-white text-gray-900 border-gray-100 shadow-sm"
+              ? "bg-[#4c35b5] text-white border-[#4c35b5] shadow-xl shadow-purple-100 print:[print-color-adjust:exact]"
+              : "bg-white text-gray-900 border-gray-100 shadow-sm print:border-gray-200"
           }`}
         >
-          <div className={`mb-6 md:mb-8 ${item.variant === 'primary' ? "text-white" : "text-[#4c35b5]"}`}>
+          <div className={`mb-6 md:mb-8 print:mb-4 ${item.variant === 'primary' ? "text-white" : "text-[#4c35b5]"}`}>
             {item.icon}
           </div>
-          <h3 className="text-xl md:text-2xl font-bold tracking-tight mb-3 md:mb-4">
+          <h3 className="text-xl md:text-2xl print:text-lg font-bold tracking-tight mb-3 md:mb-4 print:mb-2">
             {item.title}
           </h3>
-          <p className={`text-sm md:text-base leading-relaxed ${
+          <p className={`text-sm md:text-base print:text-xs leading-relaxed ${
             item.variant === 'primary' ? "text-purple-100" : "text-gray-500"
           }`}>
             {item.description}
@@ -488,7 +497,7 @@ const BehavioralInsights = ({ data }) => {
 const ComparisonCTA = () => {
   const navigate = useNavigate();
   return (
-    <section className="bg-white p-8 md:p-20 rounded-3xl md:rounded-[40px] border border-gray-100 shadow-sm mt-8 md:mt-10 flex flex-col items-center text-center">
+    <section className="bg-white p-8 md:p-20 rounded-3xl md:rounded-[40px] border border-gray-100 shadow-sm mt-8 md:mt-10 flex flex-col items-center text-center print:hidden">
       <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight max-w-2xl">
         Ready to Close the Gap?
       </h2>
@@ -555,24 +564,24 @@ const PeerComparisonPage = () => {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-[var(--color-base)] text-slate-900 flex flex-col font-inter">
+    <div className="min-h-screen bg-[var(--color-base)] text-slate-900 flex flex-col font-inter print:min-h-0 print:bg-white print:block">
       <Navbar />
       
-      <div className="flex flex-1 relative items-start">
+      <div className="flex flex-1 relative items-start print:block">
         <Sidebar />
 
-        <main className="flex-1 min-w-0 p-4 lg:p-8">
-          <div className="max-w-[1400px] mx-auto">
+        <main className="flex-1 min-w-0 p-4 lg:p-8 print:p-0 print:m-0 print:w-full print:max-w-none">
+          <div className="max-w-[1400px] mx-auto print:max-w-none print:w-full">
             <button
               onClick={() => navigate('/leaderboard')}
-              className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold mb-6 transition-colors group cursor-pointer text-sm"
+              className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold mb-6 transition-colors group cursor-pointer text-sm print:hidden"
             >
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
               Back to Leaderboard
             </button>
 
             {loading && (
-               <div className="flex items-center justify-center h-64">
+               <div className="flex items-center justify-center h-64 print:hidden">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#5D2ECC]"></div>
                </div>
             )}
@@ -590,11 +599,11 @@ const PeerComparisonPage = () => {
                 <PeerComparisonTitle data={data} />
                 
                 {/* Charts Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
-                  <div className="lg:col-span-5">
+                <div className="grid grid-cols-1 lg:grid-cols-12 print:grid-cols-12 gap-6 md:gap-10 print:gap-6">
+                  <div className="lg:col-span-5 print:col-span-5">
                     <SubjectProficiency data={data} dbCategories={dbCategories} />
                   </div>
-                  <div className="lg:col-span-7">
+                  <div className="lg:col-span-7 print:col-span-7">
                     <DailyFocusIntensity data={data} />
                   </div>
                 </div>
