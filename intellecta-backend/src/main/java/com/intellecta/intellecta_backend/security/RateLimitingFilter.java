@@ -29,7 +29,8 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final Map<String, Deque<Long>> attempts = new ConcurrentHashMap<>();
 
-    @Value("${app.security.rate-limit:30}")
+    // Per-IP: max login attempts per WINDOW_MS (60 s). Override via app.security.rate-limit.
+    @Value("${app.security.rate-limit:20}")
     private int maxAttempts;
 
     @Override

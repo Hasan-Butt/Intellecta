@@ -59,6 +59,9 @@ public class SecurityConfig {
             // JwtAuthFilter is custom and has none, so we cannot use it as an anchor.
             .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(e -> e.authenticationEntryPoint(
+                (request, response, authException) -> response.sendError(401, "Unauthorized")
+            ))
             .formLogin(form -> form.disable())
             .httpBasic(h -> h.disable());
 
