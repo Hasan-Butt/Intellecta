@@ -29,7 +29,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final Map<String, Deque<Long>> attempts = new ConcurrentHashMap<>();
 
-    @Value("${app.security.rate-limit:5}")
+    @Value("${app.security.rate-limit:30}")
     private int maxAttempts;
 
     @Override
