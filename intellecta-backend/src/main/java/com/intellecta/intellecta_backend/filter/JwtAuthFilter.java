@@ -18,8 +18,13 @@ import com.intellecta.intellecta_backend.security.UserPrincipal;
 import java.io.IOException;
 import java.util.Collections;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -56,15 +61,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String role = null;
         Long userId = null;
 
-        if (token != null) {
-            try {
-                username = jwtUtil.extractUsername(token);
-                role = jwtUtil.extractRole(token);
-                userId = jwtUtil.extractUserId(token);
-            } catch (Exception e) {
-                // Token is invalid or expired
-                System.out.println("Invalid JWT Token: " + e.getMessage());
-            }
+        if (token == null || token.isBlank()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        try {
+            username = jwtUtil.extractUsername(token);
+            role = jwtUtil.extractRole(token);
+            userId = jwtUtil.extractUserId(token);
+        } catch (Exception e) {
+            // Token is invalid or expired
+            logger.debug("Invalid JWT Token: {}", e.getMessage());
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
