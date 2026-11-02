@@ -26,6 +26,13 @@ function extractVideoId(url) {
   return match ? match[1] : null;
 }
 
+/** Unique key for watchProgress mapping between admin & student-owned lectures */
+function getLectureKey(lecture) {
+  if (!lecture) return "";
+  return lecture.studentOwned ? `my-${lecture.id}` : `admin-${lecture.id}`;
+}
+
+
 /** Renders a description string preserving newlines as paragraphs/line-breaks. */
 function DescriptionText({ text }) {
   if (!text) return <p className="text-gray-400 text-sm italic">No description available for this lecture.</p>;
@@ -454,12 +461,23 @@ export default function StudentLecturesPage() {
       api.get("/lectures/progress"),
     ])
       .then(([lecturesRes, myRes, progressRes]) => {
-        setLectures(lecturesRes.data);
-        setMyLectures(myRes.data);
-        const combined = [...lecturesRes.data, ...myRes.data];
+        const adminList = lecturesRes.data || [];
+        const myList = myRes.data || [];
+        setLectures(adminList);
+        setMyLectures(myList);
+        const combined = [...adminList, ...myList];
         if (combined.length > 0) setActiveLecture(combined[0]);
+
         const progMap = {};
-        Object.entries(progressRes.data || {}).forEach(([k, v]) => { progMap[Number(k)] = v; });
+        // Admin lectures progress from /lectures/progress
+        Object.entries(progressRes.data || {}).forEach(([k, v]) => {
+          progMap[`admin-${k}`] = v;
+        });
+        // Student's personal videos progress from /lectures/my
+        myList.forEach((l) => {
+          progMap[`my-${l.id}`] = l.progressPct ?? 0;
+        });
+
         setWatchProgress(progMap);
         lastSavedPct.current = { ...progMap };
       })
@@ -470,27 +488,44 @@ export default function StudentLecturesPage() {
   // Helper: reload just the student's own lectures
   function reloadMyLectures() {
     api.get("/lectures/my").then((res) => {
-      setMyLectures(res.data);
+      const data = res.data || [];
+      setMyLectures(data);
+      setWatchProgress((prev) => {
+        const next = { ...prev };
+        data.forEach((l) => {
+          const key = `my-${l.id}`;
+          next[key] = Math.max(next[key] ?? 0, l.progressPct ?? 0);
+        });
+        return next;
+      });
+      // If nothing was selected before, select first available
+      setActiveLecture((curr) => {
+        if (curr) return curr;
+        return data.length > 0 ? data[0] : null;
+      });
     }).catch(() => {});
   }
 
   // Reset tab to overview when active lecture changes
-  useEffect(() => { setActiveTab("overview"); }, [activeLecture?.id]);
+  useEffect(() => { setActiveTab("overview"); }, [activeLecture?.id, activeLecture?.studentOwned]);
 
   // Called by YouTubePlayer every 5s — throttled save: only when pct rises ≥5 or hits 100
   const handleProgress = useCallback((pct) => {
     if (!activeLecture) return;
-    const id = activeLecture.id;
+    const key = getLectureKey(activeLecture);
     setWatchProgress((prev) => {
-      const existing = prev[id] ?? 0;
+      const existing = prev[key] ?? 0;
       if (pct <= existing) return prev;
-      const next = { ...prev, [id]: pct };
-      // Persist if progress jumped ≥5 points or hit 100 (only for admin lectures — they have server-side progress)
-      if (!activeLecture.studentOwned) {
-        const lastSaved = lastSavedPct.current[id] ?? 0;
-        if (pct >= 100 || pct - lastSaved >= 5) {
-          lastSavedPct.current[id] = pct;
-          api.post(`/lectures/${id}/progress`, { progressPct: pct }).catch(() => {});
+      const next = { ...prev, [key]: pct };
+
+      // Persist if progress jumped ≥5 points or hit 100
+      const lastSaved = lastSavedPct.current[key] ?? 0;
+      if (pct >= 100 || pct - lastSaved >= 5) {
+        lastSavedPct.current[key] = pct;
+        if (activeLecture.studentOwned) {
+          api.post(`/lectures/my/${activeLecture.id}/progress`, { progressPct: pct }).catch(() => {});
+        } else {
+          api.post(`/lectures/${activeLecture.id}/progress`, { progressPct: pct }).catch(() => {});
         }
       }
       return next;
@@ -538,7 +573,15 @@ export default function StudentLecturesPage() {
     if (!result.isConfirmed) return;
     try {
       await api.delete(`/lectures/my/${lecture.id}`);
-      // If it was the active lecture, switch to first admin lecture or null
+      const key = `my-${lecture.id}`;
+      setWatchProgress((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+      delete lastSavedPct.current[key];
+
+      // If it was the active lecture, switch to first available lecture or null
       if (activeLecture?.id === lecture.id && activeLecture?.studentOwned) {
         const remaining = myLectures.filter((l) => l.id !== lecture.id);
         const combined = [...lectures, ...remaining];
@@ -553,8 +596,8 @@ export default function StudentLecturesPage() {
   const activeIdx = allLectures.findIndex(
     (l) => l.id === activeLecture?.id && l.studentOwned === activeLecture?.studentOwned
   );
-  const watchedCount = Object.values(watchProgress).filter((p) => p >= 90).length;
-  const progressPct = lectures.length > 0 ? Math.round((watchedCount / lectures.length) * 100) : 0;
+  const watchedCount = allLectures.filter((l) => (watchProgress[getLectureKey(l)] ?? 0) >= 90).length;
+  const progressPct = allLectures.length > 0 ? Math.round((watchedCount / allLectures.length) * 100) : 0;
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -617,7 +660,7 @@ export default function StudentLecturesPage() {
                           <User size={11} /> My Personal Video
                         </span>
                       )}
-                      {watchProgress[activeLecture.id] >= 90 && (
+                      {(watchProgress[getLectureKey(activeLecture)] ?? 0) >= 90 && (
                         <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
                           <CheckCircle2 size={11} /> Completed
                         </span>
@@ -768,7 +811,7 @@ export default function StudentLecturesPage() {
                           <h3 className="text-sm font-bold text-gray-800">Lecture Playlist</h3>
                         </div>
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">
-                          {watchedCount}/{lectures.length} Completed
+                          {watchedCount}/{allLectures.length} Completed
                         </span>
                       </div>
                       <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -788,7 +831,7 @@ export default function StudentLecturesPage() {
                               lecture={lecture}
                               index={idx}
                               active={activeLecture?.id === lecture.id && !activeLecture?.studentOwned}
-                              progress={watchProgress[lecture.id] ?? 0}
+                              progress={watchProgress[getLectureKey(lecture)] ?? 0}
                               onClick={setActiveLecture}
                               isOwned={false}
                             />
@@ -808,7 +851,7 @@ export default function StudentLecturesPage() {
                               lecture={lecture}
                               index={lectures.length + idx}
                               active={activeLecture?.id === lecture.id && activeLecture?.studentOwned}
-                              progress={watchProgress[`my-${lecture.id}`] ?? 0}
+                              progress={watchProgress[getLectureKey(lecture)] ?? 0}
                               onClick={setActiveLecture}
                               onDelete={handleDeleteMyLecture}
                               isOwned={true}

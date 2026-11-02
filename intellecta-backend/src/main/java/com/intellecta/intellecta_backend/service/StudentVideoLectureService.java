@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -93,6 +94,35 @@ public class StudentVideoLectureService {
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    /**
+     * Upsert watch progress for student's personal lecture.
+     * Only updates if the new pct is strictly greater than the stored one.
+     */
+    public void updateProgress(Long id, int pct, String studentEmail) {
+        User student = getStudent(studentEmail);
+        StudentVideoLecture lecture = studentLectureRepository.findByIdAndStudent(id, student)
+                .orElseThrow(() -> new RuntimeException("Lecture not found or not owned by you: " + id));
+
+        if (pct > lecture.getProgressPct()) {
+            lecture.setProgressPct(pct);
+            lecture.setCompleted(pct >= 90);
+            studentLectureRepository.save(lecture);
+        }
+    }
+
+    /**
+     * Returns map of lectureId → progressPct for student's personal lectures.
+     */
+    public Map<Long, Integer> getProgressMap(String studentEmail) {
+        User student = getStudent(studentEmail);
+        return studentLectureRepository.findAllByStudentOrderByOrderIndexAsc(student)
+                .stream()
+                .collect(Collectors.toMap(
+                        StudentVideoLecture::getId,
+                        StudentVideoLecture::getProgressPct
+                ));
+    }
+
     // ---------------------------------------------------------------
     // Internal helpers
     // ---------------------------------------------------------------
@@ -115,6 +145,8 @@ public class StudentVideoLectureService {
                 .resourceLinks(lecture.getResourceLinks() != null ? lecture.getResourceLinks() : new ArrayList<>())
                 .createdAt(lecture.getCreatedAt())
                 .studentOwned(true)
+                .progressPct(lecture.getProgressPct())
+                .completed(lecture.isCompleted())
                 .build();
     }
 }

@@ -28,4 +28,11 @@ public class StudentVideoLectureResponse {
     /** Always true – used by the frontend to tag student-added lectures */
     @Builder.Default
     private boolean studentOwned = true;
+
+    @Builder.Default
+    private int progressPct = 0;
+
+    @Builder.Default
+    private boolean completed = false;
 }
+

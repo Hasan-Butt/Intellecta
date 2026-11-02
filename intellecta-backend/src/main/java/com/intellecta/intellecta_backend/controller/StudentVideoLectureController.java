@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * REST controller for student-owned YouTube lectures.
@@ -58,4 +59,21 @@ public class StudentVideoLectureController {
         studentLectureService.deleteLecture(id, principal.getName());
         return ResponseEntity.noContent().build();
     }
-}
+
+    /** POST /api/lectures/my/{id}/progress — update watch progress on own lecture */
+    @PostMapping("/{id}/progress")
+    public ResponseEntity<Void> saveProgress(
+            @PathVariable Long id,
+            @RequestBody Map<String, Integer> body,
+            Principal principal) {
+        int pct = body.getOrDefault("progressPct", 0);
+        studentLectureService.updateProgress(id, pct, principal.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    /** GET /api/lectures/my/progress — get progress map for own lectures */
+    @GetMapping("/progress")
+    public ResponseEntity<Map<Long, Integer>> getProgressMap(Principal principal) {
+        return ResponseEntity.ok(studentLectureService.getProgressMap(principal.getName()));
+    }
+} 

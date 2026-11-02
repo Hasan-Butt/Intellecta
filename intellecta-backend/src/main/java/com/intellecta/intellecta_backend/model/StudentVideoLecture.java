@@ -47,6 +47,16 @@ public class StudentVideoLecture {
     @Builder.Default
     private Integer orderIndex = 0;
 
+    /** Watch percentage 0-100 */
+    @Column(name = "progress_pct", nullable = false)
+    @Builder.Default
+    private int progressPct = 0;
+
+    /** True when progressPct >= 90 */
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean completed = false;
+
     /** Resource links stored as JSON array of {label, url} */
     @Convert(converter = ResourceLinkConverter.class)
     @Column(name = "resource_links", columnDefinition = "TEXT")
@@ -57,3 +67,4 @@ public class StudentVideoLecture {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 }
+
