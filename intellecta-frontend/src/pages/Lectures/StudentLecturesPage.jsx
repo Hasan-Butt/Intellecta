@@ -315,7 +315,6 @@ function AddVideoModal({ open, onClose, onSaved, editingLecture }) {
               <h2 className="text-base font-black text-gray-900">
                 {isEdit ? "Edit My Video" : "Add My Video"}
               </h2>
-              <p className="text-[11px] text-gray-400 font-medium">Only visible to you</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
