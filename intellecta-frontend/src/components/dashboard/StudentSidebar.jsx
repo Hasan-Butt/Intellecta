@@ -10,10 +10,7 @@ import {
   ClipboardCheck, 
   ChevronRight,
   ChevronDown,
-  BarChart3, 
-  Activity,
-  Settings, 
-  HelpCircle, 
+    HelpCircle, 
   LogOut,
   Trophy,
   Target,
@@ -100,33 +97,31 @@ const Sidebar = ({ className = "" }) => {
       isParent: true,
       subItems: [
         { name: 'Attempt Quiz', path: '/quiz' },
-        { name: 'Results', path: '/results' }
+        { name: 'Quiz Results', path: '/results' }
       ]
     },
     { name: 'Coverage Tracker', icon: Target, path: '/coverage' },
     { 
       name: 'Analytics', 
-      icon: Activity, 
+      icon: Trophy, 
       isParent: true,
       subItems: [
-        { name: 'Distraction Logs', path: '/distractions' },
-        { name: 'Focus Analytics', path: '/focusSession' }
+        { name: 'Focus Analytics', path: '/focusSession' },
+        { name: 'Distraction Logs', path: '/distractions' }
       ]
     },
-    { name: 'Leaderboard', icon: BarChart3, path: '/leaderboard' },
-    { name: 'Achievements', icon: Trophy, path: '/achievements' },
-    { name: 'Settings', icon: Settings, path: '/settings' },
+    { name: 'Leaderboard', icon: Trophy, path: '/leaderboard' },
   ];
 
   return (
-    <aside className={`hidden lg:flex flex-col w-64 min-h-screen bg-white border-r border-gray-100 font-inter sticky top-0 self-start overflow-hidden print:hidden ${className}`}>
+    <aside className={`hidden lg:flex flex-col w-64 min-h-screen bg-[var(--bg-sidebar)] border-r border-[var(--border-subtle)] font-inter sticky top-0 self-start overflow-hidden print:hidden transition-colors duration-300 ${className}`}>
       {/* Branding Header */}
       <div className="px-8 py-10">
-        <h1 className="text-xl font-bold text-zinc-900 tracking-tight">
+        <h1 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">
           Cognitive Sanctuary
         </h1>
         <div className="flex flex-col gap-2 mt-1">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
             Level {userLevel} {levelTitle}
           </p>
           <div className="flex items-center gap-2 w-3/4 mt-1">
@@ -154,14 +149,16 @@ const Sidebar = ({ className = "" }) => {
                 <button
                   onClick={toggle}
                   className={`
-                    w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group
-                    ${hasActiveChild ? 'bg-[#F5F6FF] text-[#451ebb]' : 'text-gray-500 hover:bg-gray-50'}
+                    w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer
+                    ${hasActiveChild 
+                      ? 'bg-[var(--bg-pill-active)] text-[var(--primary-accent-text)]' 
+                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--primary-accent-text)]'}
                   `}
                 >
                   <div className="flex items-center gap-4">
                     <item.icon 
                       size={20} 
-                      className={hasActiveChild ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'} 
+                      className={hasActiveChild ? 'text-[var(--primary-accent-text)]' : 'text-[var(--text-muted)] group-hover:text-[var(--primary-accent-text)]'} 
                     />
                     <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap">
                       {item.name}
@@ -180,7 +177,7 @@ const Sidebar = ({ className = "" }) => {
                           to={sub.path}
                           className={`
                             block py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] transition-colors
-                            ${isSubActive ? 'text-[#451ebb]' : 'text-gray-500/60 hover:text-[#451ebb]'}
+                            ${isSubActive ? 'text-[var(--primary-accent-text)]' : 'text-[var(--text-muted)] hover:text-[var(--primary-accent-text)]'}
                           `}
                         >
                           {sub.name}
@@ -203,15 +200,15 @@ const Sidebar = ({ className = "" }) => {
                   className={`
                     w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200
                     ${isActive 
-                      ? 'bg-[#F5F6FF] text-[#451ebb]' 
-                      : 'text-gray-500 hover:bg-gray-50 group-hover:text-[#451ebb]'}
+                      ? 'bg-[var(--bg-pill-active)] text-[var(--primary-accent-text)]' 
+                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] group-hover:text-[var(--primary-accent-text)]'}
                   `}
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <item.icon 
                       size={20} 
                       strokeWidth={isActive ? 2.5 : 2}
-                      className={isActive ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'} 
+                      className={isActive ? 'text-[var(--primary-accent-text)]' : 'text-[var(--text-muted)] group-hover:text-[var(--primary-accent-text)]'} 
                     />
                     <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap overflow-hidden text-ellipsis">
                       {item.name}
@@ -222,10 +219,10 @@ const Sidebar = ({ className = "" }) => {
                 <Link
                   to={item.path}
                   state={{ showTree: true }}
-                  className="absolute right-3 p-1.5 rounded-lg hover:bg-gray-200/60 transition-colors flex items-center justify-center"
+                  className="absolute right-3 p-1.5 rounded-lg hover:bg-[var(--bg-hover)] transition-colors flex items-center justify-center"
                   title="Show folder tree"
                 >
-                  <ChevronRight size={16} className={isActive ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'} />
+                  <ChevronRight size={16} className={isActive ? 'text-[var(--primary-accent-text)]' : 'text-[var(--text-muted)] group-hover:text-[var(--primary-accent-text)]'} />
                 </Link>
               </div>
             );
@@ -239,14 +236,14 @@ const Sidebar = ({ className = "" }) => {
               className={`
                 w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group
                 ${isActive 
-                  ? 'bg-[#F5F6FF] text-[#451ebb]' 
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-[#451ebb]'}
+                  ? 'bg-[var(--bg-pill-active)] text-[var(--primary-accent-text)]' 
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--primary-accent-text)]'}
               `}
             >
               <item.icon 
                 size={20} 
                 strokeWidth={isActive ? 2.5 : 2}
-                className={isActive ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'} 
+                className={isActive ? 'text-[var(--primary-accent-text)]' : 'text-[var(--text-muted)] group-hover:text-[var(--primary-accent-text)]'} 
               />
               <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap">
                 {item.name}
@@ -257,33 +254,33 @@ const Sidebar = ({ className = "" }) => {
       </nav>
 
       {/* Footer / Profile Section */}
-      <div className="mt-auto border-t border-gray-50">
+      <div className="mt-auto border-t border-[var(--border-subtle)]">
         <div className="px-4 py-6 flex flex-col gap-6">
           
           {/* Help Box Tooltip */}
           <div className="relative px-4" ref={helpBoxRef}>
             <button 
               onClick={() => setShowHelpBox(!showHelpBox)}
-              className={`flex items-center gap-4 text-gray-500 hover:text-[#451ebb] transition-colors group w-full ${showHelpBox ? 'text-[#451ebb]' : ''}`}
+              className={`flex items-center gap-4 text-[var(--text-secondary)] hover:text-[var(--primary-accent-text)] transition-colors group w-full cursor-pointer ${showHelpBox ? 'text-[var(--primary-accent-text)]' : ''}`}
             >
-              <HelpCircle size={20} className={`${showHelpBox ? 'text-[#451ebb]' : 'text-gray-400 group-hover:text-[#451ebb]'}`} />
+              <HelpCircle size={20} className={`${showHelpBox ? 'text-[var(--primary-accent-text)]' : 'text-[var(--text-muted)] group-hover:text-[var(--primary-accent-text)]'}`} />
               <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap">Help</span>
             </button>
             
             {showHelpBox && (
               <div className="absolute bottom-full left-0 mb-3 w-64 p-5 glass-card z-[100] animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 text-[#451ebb]">
+                  <div className="flex items-center gap-2 text-[var(--primary-accent-text)]">
                     <HelpCircle size={16} strokeWidth={3} />
                     <span className="text-[11px] font-black uppercase tracking-widest">Support Portal</span>
                   </div>
-                  <p className="text-[12px] text-gray-600 font-medium leading-relaxed">
+                  <p className="text-[12px] text-[var(--text-secondary)] font-medium leading-relaxed">
                     Experiencing issues or have a suggestion? Reach out to our support team:
                   </p>
-                  <div className="mt-1 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
-                    <span className="block text-[11px] font-bold text-[#451ebb] select-all">contact@hasanbutt.me</span>
+                  <div className="mt-1 p-3 bg-[var(--bg-pill)] rounded-xl border border-[var(--border-subtle)]">
+                    <span className="block text-[11px] font-bold text-[var(--primary-accent-text)] select-all">contact@hasanbutt.me</span>
                   </div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase mt-1">Average response time: &lt; 24h</p>
+                  <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase mt-1">Average response time: &lt; 24h</p>
                 </div>
               </div>
             )}
@@ -294,10 +291,10 @@ const Sidebar = ({ className = "" }) => {
             <Avatar src={avatarUrl} name={userName} />
             
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-bold text-zinc-900 truncate">{userName || 'Scholar'}</span>
+              <span className="text-sm font-bold text-[var(--text-primary)] truncate">{userName || 'Scholar'}</span>
               <button 
                 onClick={handleLogout}
-                className="flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider whitespace-nowrap"
+                className="flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-400 transition-colors uppercase tracking-wider whitespace-nowrap cursor-pointer"
               >
                 <LogOut size={12} strokeWidth={3} />
                 Logout
