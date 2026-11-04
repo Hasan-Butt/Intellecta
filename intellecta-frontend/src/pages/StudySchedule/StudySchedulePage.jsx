@@ -21,22 +21,22 @@ import {
   Info,
 } from "lucide-react";
 
-// ─── Color constants ──────────────────────────────────────────────────────────
+// ─── Color constants (CSS vars for dark mode support) ─────────────────────────
 const C = {
-  indigo: "#451ebb",
-  indigoLight: "rgba(69,30,187,0.05)",
-  indigoBorder: "rgba(69,30,187,0.1)",
-  indigoSoft: "#e6deff",
-  text: "#161c27",
-  muted: "#484554",
-  subtle: "#797586",
-  border: "#c9c4d7",
-  bg: "#f9f9ff",
-  panel: "#f1f3ff",
+  indigo: "var(--primary-accent)",
+  indigoLight: "var(--primary-accent-subtle)",
+  indigoBorder: "var(--primary-accent-glow)",
+  indigoSoft: "var(--primary-accent-soft)",
+  text: "var(--text-primary)",
+  muted: "var(--text-secondary)",
+  subtle: "var(--text-muted)",
+  border: "var(--border-default)",
+  bg: "var(--bg-page)",
+  panel: "var(--bg-surface)",
   green: "#6bfe9c",
   greenDark: "#006d37",
   amber: "#ffdfa0",
-  amberDark: "#594100",
+  amberDark: "#d97706",
   red: "#ba1a1a",
   redBg: "rgba(255,218,214,0.5)",
 };

@@ -357,7 +357,7 @@ const AnalyticsDashboard = () => {
   }, [filteredByDateLogs]);
 
   return (
-    <div className="bg-[#F8F9FB] min-h-screen font-sans selection:bg-purple-100 antialiased text-[#1A1D1F]">
+    <div className="bg-[var(--bg-page)] text-[var(--text-primary)] min-h-screen font-sans selection:bg-purple-100 antialiased">
       <style>{`
         @import url('https://rsms.me/inter/inter.css');
         html { font-family: 'Inter', sans-serif; }

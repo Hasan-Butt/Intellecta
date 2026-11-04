@@ -10,11 +10,13 @@ import {
   ClipboardCheck, 
   ChevronRight,
   ChevronDown,
-    HelpCircle, 
+  HelpCircle, 
   LogOut,
   Trophy,
   Target,
-  Video
+  Video,
+  BarChart3,
+  Settings
 } from 'lucide-react';
 
 import { logout } from '../../utils/auth';
@@ -103,14 +105,16 @@ const Sidebar = ({ className = "" }) => {
     { name: 'Coverage Tracker', icon: Target, path: '/coverage' },
     { 
       name: 'Analytics', 
-      icon: Trophy, 
+      icon: BarChart3, 
       isParent: true,
       subItems: [
         { name: 'Focus Analytics', path: '/focusSession' },
         { name: 'Distraction Logs', path: '/distractions' }
       ]
     },
-    { name: 'Leaderboard', icon: Trophy, path: '/leaderboard' },
+    { name: 'Leaderboard', icon: BarChart3, path: '/leaderboard' },
+    { name: 'Achievements', icon: Trophy, path: '/achievements' },
+    { name: 'Settings', icon: Settings, path: '/settings' },
   ];
 
   return (
@@ -258,17 +262,17 @@ const Sidebar = ({ className = "" }) => {
         <div className="px-4 py-6 flex flex-col gap-6">
           
           {/* Help Box Tooltip */}
-          <div className="relative px-4" ref={helpBoxRef}>
+          <div className="relative" ref={helpBoxRef}>
             <button 
               onClick={() => setShowHelpBox(!showHelpBox)}
-              className={`flex items-center gap-4 text-[var(--text-secondary)] hover:text-[var(--primary-accent-text)] transition-colors group w-full cursor-pointer ${showHelpBox ? 'text-[var(--primary-accent-text)]' : ''}`}
+              className={`flex items-center gap-4 px-4 text-[var(--text-secondary)] hover:text-[var(--primary-accent-text)] transition-colors group w-full cursor-pointer ${showHelpBox ? 'text-[var(--primary-accent-text)]' : ''}`}
             >
               <HelpCircle size={20} className={`${showHelpBox ? 'text-[var(--primary-accent-text)]' : 'text-[var(--text-muted)] group-hover:text-[var(--primary-accent-text)]'}`} />
               <span className="text-sm font-bold uppercase tracking-wide whitespace-nowrap">Help</span>
             </button>
             
             {showHelpBox && (
-              <div className="absolute bottom-full left-0 mb-3 w-64 p-5 glass-card z-[100] animate-in fade-in zoom-in-95 duration-200">
+              <div className="absolute bottom-full left-0 right-0 mb-3 w-full p-4 glass-card z-[100] animate-in fade-in zoom-in-95 duration-200 shadow-xl">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2 text-[var(--primary-accent-text)]">
                     <HelpCircle size={16} strokeWidth={3} />
@@ -277,8 +281,8 @@ const Sidebar = ({ className = "" }) => {
                   <p className="text-[12px] text-[var(--text-secondary)] font-medium leading-relaxed">
                     Experiencing issues or have a suggestion? Reach out to our support team:
                   </p>
-                  <div className="mt-1 p-3 bg-[var(--bg-pill)] rounded-xl border border-[var(--border-subtle)]">
-                    <span className="block text-[11px] font-bold text-[var(--primary-accent-text)] select-all">contact@hasanbutt.me</span>
+                  <div className="mt-1 p-2.5 bg-[var(--bg-pill)] rounded-xl border border-[var(--border-subtle)] overflow-hidden">
+                    <span className="block text-[11px] font-bold text-[var(--primary-accent-text)] select-all truncate">contact@hasanbutt.me</span>
                   </div>
                   <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase mt-1">Average response time: &lt; 24h</p>
                 </div>

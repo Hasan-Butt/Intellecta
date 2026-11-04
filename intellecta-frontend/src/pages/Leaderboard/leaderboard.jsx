@@ -176,7 +176,7 @@ const GlobalLeaderboard = () => {
     : 100;
 
   return (
-    <div className="min-h-screen bg-[var(--color-base)] text-slate-900 flex flex-col">
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex flex-col">
       <Navbar />
 
       <div className="flex flex-1 relative items-start">
@@ -188,10 +188,10 @@ const GlobalLeaderboard = () => {
             {/* HEADER AREA */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
               <div className="space-y-1">
-                <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] tracking-tight">
                   {viewMode === 'global' ? 'Global Standings' : 'Sectional Ranking'}
                 </h1>
-                <p className="text-gray-500 text-base mt-2 max-w-md leading-relaxed">
+                <p className="text-[var(--text-secondary)] text-base mt-2 max-w-md leading-relaxed">
                   {viewMode === 'global' 
                     ? 'Academic performance rankings across the Intellecta network.' 
                     : (() => {
@@ -429,7 +429,7 @@ const GlobalLeaderboard = () => {
 
                 {/* Your Standing */}
                 {viewMode === 'sectional' && !currentUser ? (
-                  <section className="neu p-6 text-slate-900">
+                  <section className="neu p-6 text-[var(--text-primary)]">
                     <div className="flex items-center gap-3 mb-5">
                       <Target size={18} className="text-emerald-600"/>
                       <h3 className="font-black text-[15px]">Your Standing</h3>
@@ -440,7 +440,7 @@ const GlobalLeaderboard = () => {
                     </p>
                   </section>
                 ) : standingUser && (
-                  <section className="neu p-6 text-slate-900 min-h-[210px] flex flex-col justify-between">
+                  <section className="neu p-6 text-[var(--text-primary)] min-h-[210px] flex flex-col justify-between">
                     <div>
                       <div className="flex items-center gap-3 mb-5">
                         <Target size={18} className="text-emerald-600"/>
@@ -509,7 +509,7 @@ const GlobalLeaderboard = () => {
 
                 <section 
                   onClick={() => navigate('/achievements')}
-                  className="neu p-6 relative overflow-hidden cursor-pointer hover:scale-105 transition-all group"
+                  className="neu p-6 relative overflow-hidden cursor-pointer hover:scale-105 transition-all group text-[var(--text-primary)]"
                 >
                   <div className="mb-4 bg-white/40 w-8 h-8 rounded-lg flex items-center justify-center group-hover:bg-white/60 transition-colors">
                     <Trophy size={16} className="text-[#d97706]" />
@@ -538,7 +538,7 @@ const PodiumCard = ({ rank, name, univ, pts, active, avatarUrl }) => (
   <div className={`p-5 text-center flex flex-col items-center transition-all duration-500 ${
     active 
       ? 'glass-card text-[#512de3] pt-10 pb-8 relative z-10 scale-105 border-2 border-indigo-200' 
-      : 'neu text-slate-900'
+      : 'neu text-[var(--text-primary)]'
   }`}>    
     <div className="relative mb-4">
       <Avatar src={avatarUrl} name={name} size="w-20 h-20" className={active ? 'ring-4 ring-indigo-400/30' : 'ring-2 ring-slate-100'} />

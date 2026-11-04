@@ -520,7 +520,7 @@ const StudySessionDashboard = () => {
   );
 
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-1000 ${ambientMode ? "bg-[#0A0A1B]" : "bg-[#F9F9FF]"}`}>
+    <div className={`min-h-screen flex flex-col transition-colors duration-1000 ${ambientMode ? "bg-[#0A0A1B]" : "bg-[var(--bg-page)] text-[var(--text-primary)]"}`}>
       <Navbar className={`${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"} transition-opacity duration-1000`} />
       
       <div className="flex flex-1 items-start">
@@ -660,15 +660,15 @@ const StudySessionDashboard = () => {
           <div className={`w-full max-w-[1920px] mx-auto transition-opacity duration-1000 ${ambientMode ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
             <div className="flex flex-col md:flex-row md:justify-between items-start md:items-end mb-8 md:mb-10 gap-6 md:gap-0">
               <div className="space-y-2">
-                <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] tracking-tight">
                   Focus Session.
                 </h1>
-                <p className="text-gray-500 text-sm md:text-base mt-2 max-w-md leading-relaxed">
+                <p className="text-[var(--text-secondary)] text-sm md:text-base mt-2 max-w-md leading-relaxed">
                   Design your cognitive environment. The Sanctuary aligns your
                   energy with your objectives.
                 </p>
               </div>
-              <div className="bg-[#E8EEFF] rounded-3xl p-4 flex items-center gap-4 px-6 w-full md:w-auto">
+              <div className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-3xl p-4 flex items-center gap-4 px-6 w-full md:w-auto">
                 <div className="w-10 h-10 rounded-full bg-[#FFDFA0] flex items-center justify-center flex-shrink-0">
                   <Zap
                     size={20}

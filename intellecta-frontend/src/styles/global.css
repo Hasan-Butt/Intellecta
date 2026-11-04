@@ -158,9 +158,9 @@
     --primary-badge-text:    #C084FC;
 
     /* ---- Raw token palette updated for dark mode ---- */
-    --color-base:        #1C1B26;
-    --color-base-shadow-d: #0B0A10;
-    --color-base-shadow-l: #2A283A;
+    --color-base:          #1C1B26;
+    --color-base-shadow-d: rgba(255, 255, 255, 0.50); /* Luminous white bleed on bottom-right */
+    --color-base-shadow-l: rgba(0, 0, 0, 0.90);        /* Deep contrast shadow on top-left */
     --color-ink:          #F3F4F6;
     --color-primary:      #A855F7;
     --color-primary-soft: #2B2144;
@@ -168,17 +168,29 @@
     --color-flame:        #FF8A3D;
     --color-flame-hot:    #FB923C;
     --color-glass-tint:   28, 27, 38;
-    --color-glass-border: 60, 56, 80;
+    --color-glass-border: 255, 255, 255;
 
-    /* ---- Neumorphism shadow recipes with dark elevation & subtle rim lighting ---- */
-    --neu-raised: 0 10px 30px -5px rgba(0, 0, 0, 0.75), 0 0 1px 1px rgba(255, 255, 255, 0.08), -2px -2px 12px rgba(255, 255, 255, 0.02);
-    --neu-raised-sm: 0 4px 14px -2px rgba(0, 0, 0, 0.65), 0 0 1px 1px rgba(255, 255, 255, 0.08);
-    --neu-pressed: inset 2px 2px 6px rgba(0, 0, 0, 0.8), inset -2px -2px 6px rgba(255, 255, 255, 0.04);
+    /* ---- Neumorphism shadow recipes — Chrome-style luminous bleeding white light ---- */
+    --neu-raised:
+      12px 12px 32px 0px rgba(255, 255, 255, 0.50),
+      -8px -8px 24px -2px rgba(0, 0, 0, 0.90),
+      0 0 20px 2px rgba(255, 255, 255, 0.18),
+      0 0 1px 1px rgba(255, 255, 255, 0.25);
+    --neu-raised-sm:
+      7px 7px 20px 0px rgba(255, 255, 255, 0.44),
+      -5px -5px 16px -1px rgba(0, 0, 0, 0.85),
+      0 0 12px 1px rgba(255, 255, 255, 0.16),
+      0 0 1px 1px rgba(255, 255, 255, 0.20);
+    --neu-pressed:
+      inset 4px 4px 10px rgba(0, 0, 0, 0.90),
+      inset -4px -4px 10px rgba(255, 255, 255, 0.45);
 
-    /* ---- Glass recipe in dark mode ---- */
-    --glass-bg: rgba(28, 27, 38, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+    /* ---- Glass recipe in dark mode — matching glowing border and shadow bleed ---- */
+    --glass-bg: rgba(28, 27, 38, 0.80);
+    --glass-border: rgba(255, 255, 255, 0.25);
+    --glass-shadow:
+      12px 12px 32px 0px rgba(255, 255, 255, 0.45),
+      -6px -6px 20px rgba(0, 0, 0, 0.75);
   }
 
   /* ------------------------------------------------------------------------
@@ -536,13 +548,65 @@
   color-scheme: dark;
 }
 
-/* Global container surfaces */
+/* ---- Chrome-style card bleed: ensure dark mode cards get the full luminous bleeding shadow ---- */
+.dark .neu {
+  box-shadow:
+    12px 12px 32px 0px rgba(255, 255, 255, 0.50),
+    -8px -8px 24px -2px rgba(0, 0, 0, 0.90),
+    0 0 20px 2px rgba(255, 255, 255, 0.18),
+    0 0 1px 1px rgba(255, 255, 255, 0.25) !important;
+}
+
+.dark .neu-sm,
+.dark .neu-btn {
+  box-shadow:
+    7px 7px 20px 0px rgba(255, 255, 255, 0.44),
+    -5px -5px 16px -1px rgba(0, 0, 0, 0.85),
+    0 0 12px 1px rgba(255, 255, 255, 0.16),
+    0 0 1px 1px rgba(255, 255, 255, 0.20) !important;
+}
+
+.dark .neu-inset {
+  box-shadow:
+    inset 4px 4px 10px rgba(0, 0, 0, 0.90),
+    inset -4px -4px 10px rgba(255, 255, 255, 0.45) !important;
+}
+
+.dark .glass-card,
+.dark .glass-neu {
+  box-shadow:
+    12px 12px 32px 0px rgba(255, 255, 255, 0.45),
+    -6px -6px 20px rgba(0, 0, 0, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Global container surfaces - handle all hex case variations */
 .dark .bg-\[\#f9f9ff\],
+.dark .bg-\[\#F9F9FF\],
 .dark .bg-\[\#f8f9fc\],
+.dark .bg-\[\#F8F9FC\],
+.dark .bg-\[\#f8fafc\],
+.dark .bg-\[\#F8FAFC\],
+.dark .bg-\[\#f8f9fb\],
+.dark .bg-\[\#F8F9FB\],
 .dark .bg-\[\#F9FAFB\],
 .dark .bg-\[\#f9fafb\],
-.dark .bg-\[\#f9f9fb\] {
+.dark .bg-\[\#f9f9fb\],
+.dark .bg-\[\#F4F6F8\],
+.dark .bg-\[\#f4f6f8\],
+.dark .bg-\[\#f4f7f9\],
+.dark .bg-\[\#F4F7F9\],
+.dark .bg-\[\#f1f3f9\],
+.dark .bg-\[\#F1F3F9\] {
   background-color: var(--bg-page) !important;
+}
+
+.dark .bg-\[\#E8EEFF\],
+.dark .bg-\[\#e8eeff\],
+.dark .bg-\[\#e3e8f9\],
+.dark .bg-\[\#E3E8F9\] {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
 }
 
 .dark .bg-white {

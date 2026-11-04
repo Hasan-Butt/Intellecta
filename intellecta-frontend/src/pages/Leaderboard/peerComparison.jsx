@@ -74,18 +74,18 @@ const WeeklyFocusHeatmap = ({ data }) => {
 
   return (
 
-    <section className="bg-white p-6 md:p-14 rounded-3xl md:rounded-[40px] border border-gray-100 shadow-sm mt-10 print:mt-6 print:p-8 print:shadow-none print:border-gray-200 break-inside-avoid print:break-inside-avoid">
+    <section className="bg-[var(--bg-surface)] neu p-6 md:p-14 rounded-3xl md:rounded-[40px] border border-[var(--border-subtle)] shadow-sm mt-10 print:mt-6 print:p-8 print:shadow-none print:border-gray-200 break-inside-avoid print:break-inside-avoid">
       <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-12 gap-6 print:mb-6">
         <div>
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Weekly Focus Heatmaps</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] tracking-tight">Weekly Focus Heatmaps</h2>
           <p className="text-gray-500 text-sm md:text-base mt-2 print:text-sm">Comparing temporal density of high-focus study hours</p>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-3 bg-[#F8FAFC] p-1.5 rounded-full border border-gray-100 overflow-x-auto w-full md:w-auto self-start print:hidden">
+        <div className="flex items-center gap-2 md:gap-3 bg-[var(--bg-elevated)] p-1.5 rounded-full border border-[var(--border-subtle)] overflow-x-auto w-full md:w-auto self-start print:hidden">
           <button 
             onClick={() => setFilter('high-focus')}
             className={`flex shrink-0 items-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all ${
-              filter === 'high-focus' ? 'bg-white shadow-md text-[#5D2ECC]' : 'text-gray-400 hover:text-gray-600'
+              filter === 'high-focus' ? 'bg-[var(--bg-surface)] shadow-md text-[var(--primary-accent-text)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
             }`}
           >
             <span className="w-2.5 h-2.5 rounded-full bg-[#5D2ECC]" />
@@ -94,7 +94,7 @@ const WeeklyFocusHeatmap = ({ data }) => {
           <button 
             onClick={() => setFilter('idle')}
             className={`flex shrink-0 items-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all ${
-              filter === 'idle' ? 'bg-white shadow-md text-gray-500' : 'text-gray-400 hover:text-gray-600'
+              filter === 'idle' ? 'bg-[var(--bg-surface)] shadow-md text-[var(--text-muted)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
             }`}
           >
             <span className="w-2.5 h-2.5 rounded-full bg-[#E2E4F0]" />
@@ -163,12 +163,12 @@ const PeerComparisonTitle = ({ data }) => {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 md:gap-5 print:gap-3 bg-[#f4f7f9] rounded-2xl p-4 md:p-5 print:p-3 border border-gray-100 shadow-sm self-start md:self-center print:self-auto print:shadow-none">
+        <div className="flex flex-wrap items-center gap-3 md:gap-5 print:gap-3 bg-[var(--bg-surface)] rounded-2xl p-4 md:p-5 print:p-3 border border-[var(--border-subtle)] neu shadow-sm self-start md:self-center print:self-auto print:shadow-none">
           {/* Avatars */}
           <div className="flex -space-x-4 shrink-0">
             {participants.map((user) => (
               <div key={user.id} className="relative inline-block">
-                <Avatar src={user.avatarUrl} name={user.name} size="w-10 h-10 md:w-12 md:h-12" className="ring-4 ring-[#f4f7f9]" />
+                <Avatar src={user.avatarUrl} name={user.name} size="w-10 h-10 md:w-12 md:h-12" className="ring-4 ring-[var(--bg-surface)]" />
               </div>
             ))}
           </div>
@@ -177,7 +177,7 @@ const PeerComparisonTitle = ({ data }) => {
 
           {/* Stats */}
           <div className="flex gap-2 md:gap-3">
-            <div className="bg-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-center border border-gray-100 shadow-sm min-w-[70px] md:min-w-[80px] print:shadow-none print:[print-color-adjust:exact]">
+            <div className="bg-[var(--bg-elevated)] rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-center border border-[var(--border-subtle)] shadow-sm min-w-[70px] md:min-w-[80px] print:shadow-none print:[print-color-adjust:exact]">
               <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] md:tracking-[0.15em] block mb-1">Rank Delta</span>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-lg md:text-xl font-black text-[#4c35b5] leading-none">
@@ -186,7 +186,7 @@ const PeerComparisonTitle = ({ data }) => {
                 <span className="text-[9px] md:text-[10px] font-bold text-gray-400">pos</span>
               </div>
             </div>
-            <div className="bg-white rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-center border border-gray-100 shadow-sm min-w-[70px] md:min-w-[80px] print:shadow-none print:[print-color-adjust:exact]">
+            <div className="bg-[var(--bg-elevated)] rounded-xl px-3 py-2 md:px-4 md:py-2.5 text-center border border-[var(--border-subtle)] shadow-sm min-w-[70px] md:min-w-[80px] print:shadow-none print:[print-color-adjust:exact]">
               <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] md:tracking-[0.15em] block mb-1">Level Gap</span>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-lg md:text-xl font-black text-[#b8b0e8] leading-none">
@@ -204,14 +204,14 @@ const PeerComparisonTitle = ({ data }) => {
 
 // --- Dashboard Card Wrapper ---
 const Card = ({ title, subtitle, badge, children }) => (
-  <section className="bg-white p-6 md:p-12 rounded-3xl md:rounded-[40px] border border-gray-100 shadow-sm flex flex-col h-full min-h-[400px] md:min-h-[500px] print:min-h-0 print:h-auto print:p-6 print:rounded-2xl print:border-gray-200 print:shadow-none break-inside-avoid print:break-inside-avoid">
+  <section className="bg-[var(--bg-surface)] neu p-6 md:p-12 rounded-3xl md:rounded-[40px] border border-[var(--border-subtle)] shadow-sm flex flex-col h-full min-h-[400px] md:min-h-[500px] print:min-h-0 print:h-auto print:p-6 print:rounded-2xl print:border-gray-200 print:shadow-none break-inside-avoid print:break-inside-avoid">
     <div className="flex justify-between items-start mb-10 print:mb-6">
       <div>
-        <h3 className="text-xl md:text-2xl print:text-lg font-bold text-gray-900 tracking-tight">{title}</h3>
-        <p className="text-sm md:text-base print:text-xs text-gray-500 mt-2 print:mt-1">{subtitle}</p>
+        <h3 className="text-xl md:text-2xl print:text-lg font-bold text-[var(--text-primary)] tracking-tight">{title}</h3>
+        <p className="text-sm md:text-base print:text-xs text-[var(--text-secondary)] mt-2 print:mt-1">{subtitle}</p>
       </div>
       {badge && (
-        <span className="px-4 py-1.5 text-[10px] md:text-xs font-bold text-[#4c35b5] uppercase tracking-widest bg-[#f4f3ff] rounded-full hidden sm:block print:block print:[print-color-adjust:exact]">
+        <span className="px-4 py-1.5 text-[10px] md:text-xs font-bold text-[var(--primary-accent-text)] uppercase tracking-widest bg-[var(--primary-badge-bg)] rounded-full hidden sm:block print:block print:[print-color-adjust:exact]">
           {badge}
         </span>
       )}
@@ -355,8 +355,8 @@ const DailyFocusIntensity = ({ data }) => {
         {/* Chart Area */}
         <div className="relative w-full h-[220px]">
           {/* Axis decorations mimicking design L-shape */}
-          <div className="absolute left-0 top-0 bottom-6 w-3 bg-[#f1f3f9] rounded-sm" />
-          <div className="absolute left-3 right-0 top-0 h-3 bg-[#f1f3f9] rounded-sm" />
+          <div className="absolute left-0 top-0 bottom-6 w-3 bg-[var(--border-subtle)] opacity-40 rounded-sm" />
+          <div className="absolute left-3 right-0 top-0 h-3 bg-[var(--border-subtle)] opacity-40 rounded-sm" />
           
           <div className="absolute inset-0 pb-8 pl-4 pt-4 pr-2">
             <svg viewBox={`0 -10 ${w} ${h + 20}`} className="w-full h-full overflow-visible" preserveAspectRatio="none">
@@ -564,7 +564,7 @@ const PeerComparisonPage = () => {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-[var(--color-base)] text-slate-900 flex flex-col font-inter print:min-h-0 print:bg-white print:block">
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex flex-col font-inter print:min-h-0 print:bg-white print:block">
       <Navbar />
       
       <div className="flex flex-1 relative items-start print:block">

@@ -1029,7 +1029,7 @@ export default function DashboardPage() {
                       )}
                       <button 
                         onClick={() => navigate('/leaderboard')}
-                        className="w-full bg-[#e3e8f9] text-[var(--primary-accent-text)] font-bold text-[var(--text-primary)] text-sm py-3 rounded-3xl hover:bg-[#d8dfff] transition-all"
+                        className="w-full bg-[var(--primary-badge-bg)] text-[var(--primary-accent-text)] font-bold text-sm py-3 rounded-3xl hover:opacity-90 transition-all border border-[var(--border-subtle)]"
                       >
                         View Full Standings
                       </button>
