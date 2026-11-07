@@ -14,7 +14,6 @@
 
 /* --------------------------------------------------------------------------
    FONTS
-   Add these to public/index.html <head>, or @import them here.
    Space Grotesk  → display / headings / XP + timer numbers
    Plus Jakarta Sans → body copy, UI labels
    JetBrains Mono → stats, timestamps, countdowns
@@ -41,7 +40,40 @@
     --ring: 248 74% 58%;
     --radius: 1.25rem;
 
-    /* ---- raw token palette (named, for direct use) ---- */
+    /* ---- App Semantic Color Tokens (Light Mode) ---- */
+    --bg-page:           #F9F9FF;   /* main page canvas */
+    --bg-surface:        #EEF0F9;   /* neu surface / dashboard card */
+    --bg-card:           #FFFFFF;   /* pure card background */
+    --bg-sidebar:        #FFFFFF;   /* left navigation sidebar */
+    --bg-navbar:         #F9FAFB;   /* top navigation header */
+    --bg-subtle:         #F3F4F6;   /* subtle container */
+    --bg-elevated:       #F5F6FF;   /* elevated card or hover item */
+    --bg-input:          #EEF0F9;   /* inset input field */
+    --bg-search:         #EEF2FF;   /* search bar */
+    --bg-pill:           #F1F3FF;   /* list items, review badges */
+    --bg-pill-active:    #F5F6FF;   /* active sidebar pill */
+    --bg-hover:          #F3F4F6;
+
+    --text-primary:      #161C27;   /* deep rich charcoal/black */
+    --text-secondary:    #484554;   /* readable slate subtitle */
+    --text-muted:        #6B7280;   /* secondary gray */
+    --text-subtle:       #9CA3AF;   /* subtle captions */
+    --text-inverted:     #FFFFFF;
+
+    --border-subtle:     #F3F4F6;
+    --border-default:    #E5E7EB;
+    --border-divider:    #E0E1EB;
+
+    --primary-accent:        #451EBB;
+    --primary-accent-hover:  #37189E;
+    --primary-accent-soft:   #EDEBFD;
+    --primary-accent-subtle: #F5F6FF;
+    --primary-accent-glow:   rgba(69, 30, 187, 0.25);
+    --primary-accent-text:   #451EBB;
+    --primary-badge-bg:      #E6DEFF;
+    --primary-badge-text:    #451EBB;
+
+    /* ---- Raw token palette (named, for direct use) ---- */
     --color-base:        #EEF0F9;   /* neumorphic light bg */
     --color-base-shadow-d: #C7CCDE; /* neumorphic dark shadow */
     --color-base-shadow-l: #FFFFFF; /* neumorphic light shadow */
@@ -54,7 +86,7 @@
     --color-glass-tint:   255, 255, 255;
     --color-glass-border: 255, 255, 255;
 
-    /* ---- neumorphism shadow recipes ---- */
+    /* ---- Neumorphism shadow recipes ---- */
     --neu-raised: 8px 8px 16px var(--color-base-shadow-d),
                   -8px -8px 16px var(--color-base-shadow-l);
     --neu-raised-sm: 4px 4px 8px var(--color-base-shadow-d),
@@ -62,18 +94,107 @@
     --neu-pressed: inset 4px 4px 8px var(--color-base-shadow-d),
                    inset -4px -4px 8px var(--color-base-shadow-l);
 
-    /* ---- glass recipe ---- */
+    /* ---- Glass recipe ---- */
     --glass-bg: rgba(var(--color-glass-tint), 0.55);
     --glass-border: rgba(var(--color-glass-border), 0.6);
     --glass-blur: 16px;
     --glass-shadow: 0 8px 32px rgba(76, 58, 227, 0.14);
   }
 
+  /* --------------------------------------------------------------------------
+     DARK MODE — "Night Lab" palette
+     Recreates the auto dark mode appearance with deep violet-slate base,
+     elevated cards with soft ambient rim lighting, and luminous violet accents.
+  -------------------------------------------------------------------------- */
+  .dark, [data-theme="dark"] {
+    /* ---- shadcn/ui compatibility layer (HSL) ---- */
+    --background: 252 20% 8%;
+    --foreground: 230 40% 96%;
+    --card: 250 18% 13%;
+    --card-foreground: 230 40% 96%;
+    --primary: 265 89% 66%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 172 82% 39%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 248 15% 18%;
+    --muted-foreground: 230 15% 70%;
+    --accent: 25 100% 63%;
+    --accent-foreground: 256 30% 12%;
+    --border: 248 15% 20%;
+    --input: 248 15% 20%;
+    --ring: 265 89% 66%;
+
+    /* ---- App Semantic Color Tokens (Dark Mode) ---- */
+    --bg-page:           #121118;   /* deep canvas behind cards */
+    --bg-surface:        #1C1B26;   /* elevated card surface */
+    --bg-card:           #1C1B26;
+    --bg-sidebar:        #161520;   /* left navigation sidebar */
+    --bg-navbar:         #161520;   /* top navigation header */
+    --bg-subtle:         #232232;   /* secondary container */
+    --bg-elevated:       #262438;   /* hover state / popover */
+    --bg-input:          #171622;   /* inset input fields */
+    --bg-search:         #1E1D2D;   /* navbar search pill */
+    --bg-pill:           #181723;   /* queue / checklist item rows */
+    --bg-pill-active:    #2B2144;   /* active sidebar pill & leaderboard you */
+    --bg-hover:          #222131;
+
+    --text-primary:      #F3F4F6;   /* clean crisp white */
+    --text-secondary:    #9CA3AF;   /* soft muted text */
+    --text-muted:        #9CA3AF;
+    --text-subtle:       #6B7280;
+    --text-inverted:     #121118;
+
+    --border-subtle:     #272638;
+    --border-default:    #312F45;
+    --border-divider:    #28273B;
+
+    --primary-accent:        #A855F7;   /* vibrant violet/purple */
+    --primary-accent-hover:  #C084FC;
+    --primary-accent-soft:   #2B2144;
+    --primary-accent-subtle: rgba(168, 85, 247, 0.16);
+    --primary-accent-glow:   rgba(168, 85, 247, 0.35);
+    --primary-accent-text:   #C084FC;
+    --primary-badge-bg:      #2C2145;
+    --primary-badge-text:    #C084FC;
+
+    /* ---- Raw token palette updated for dark mode ---- */
+    --color-base:          #1C1B26;
+    --color-base-shadow-d: rgba(255, 255, 255, 0.50); /* Luminous white bleed on bottom-right */
+    --color-base-shadow-l: rgba(0, 0, 0, 0.90);        /* Deep contrast shadow on top-left */
+    --color-ink:          #F3F4F6;
+    --color-primary:      #A855F7;
+    --color-primary-soft: #2B2144;
+    --color-teal:         #2DD4BF;
+    --color-flame:        #FF8A3D;
+    --color-flame-hot:    #FB923C;
+    --color-glass-tint:   28, 27, 38;
+    --color-glass-border: 255, 255, 255;
+
+    /* ---- Neumorphism shadow recipes — Chrome-style luminous bleeding white light ---- */
+    --neu-raised:
+      12px 12px 32px 0px rgba(255, 255, 255, 0.50),
+      -8px -8px 24px -2px rgba(0, 0, 0, 0.90),
+      0 0 20px 2px rgba(255, 255, 255, 0.18),
+      0 0 1px 1px rgba(255, 255, 255, 0.25);
+    --neu-raised-sm:
+      7px 7px 20px 0px rgba(255, 255, 255, 0.44),
+      -5px -5px 16px -1px rgba(0, 0, 0, 0.85),
+      0 0 12px 1px rgba(255, 255, 255, 0.16),
+      0 0 1px 1px rgba(255, 255, 255, 0.20);
+    --neu-pressed:
+      inset 4px 4px 10px rgba(0, 0, 0, 0.90),
+      inset -4px -4px 10px rgba(255, 255, 255, 0.45);
+
+    /* ---- Glass recipe in dark mode — matching glowing border and shadow bleed ---- */
+    --glass-bg: rgba(28, 27, 38, 0.80);
+    --glass-border: rgba(255, 255, 255, 0.25);
+    --glass-shadow:
+      12px 12px 32px 0px rgba(255, 255, 255, 0.45),
+      -6px -6px 20px rgba(0, 0, 0, 0.75);
+  }
+
   /* ------------------------------------------------------------------------
-     FOCUS MODE — dark "night lab" variant.
-     Apply `.focus-mode` to <body> (or a session container) while a
-     Pomodoro / study session is active. The surface itself communicates
-     "you are in deep work" — this is the one deliberate risk in the system.
+     FOCUS MODE — deep night lab variant for active study session.
   ------------------------------------------------------------------------ */
   .focus-mode {
     --background: 256 38% 8%;
@@ -100,10 +221,10 @@
   }
 
   body {
-    background: var(--color-base);
-    color: var(--color-ink);
+    background: var(--bg-page);
+    color: var(--text-primary);
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-    transition: background 0.5s ease, color 0.5s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4, .font-display {
@@ -116,47 +237,51 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Accessible focus ring everywhere — never remove outline without replacing */
+  /* Accessible focus ring everywhere */
   :focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--primary-accent);
     outline-offset: 2px;
     border-radius: 4px;
   }
 }
 
 /* ==========================================================================
-   NEUMORPHISM — soft, quiet dashboard surfaces
+   NEUMORPHISM — soft dashboard surfaces
    ========================================================================== */
 
 @layer components {
   .neu {
-    background: var(--color-base);
+    background: var(--bg-surface);
     border-radius: var(--radius);
     box-shadow: var(--neu-raised);
     border: none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
   }
 
   .neu-sm {
-    background: var(--color-base);
+    background: var(--bg-surface);
     border-radius: calc(var(--radius) * 0.7);
     box-shadow: var(--neu-raised-sm);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
   }
 
   /* Pressed / inset state — used for inputs, active toggles, the timer well */
   .neu-inset {
-    background: var(--color-base);
+    background: var(--bg-input);
     border-radius: var(--radius);
     box-shadow: var(--neu-pressed);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
   }
 
   /* Neumorphic button with tactile press feedback */
   .neu-btn {
-    background: var(--color-base);
+    background: var(--bg-surface);
     border-radius: 999px;
     box-shadow: var(--neu-raised-sm);
     border: none;
-    color: var(--color-ink);
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
+    color: var(--text-primary);
+    transition: box-shadow 0.15s ease, transform 0.15s ease, background-color 0.3s ease;
   }
   .neu-btn:hover {
     box-shadow: 6px 6px 12px var(--color-base-shadow-d),
@@ -170,10 +295,10 @@
 
   input.neu-inset, textarea.neu-inset {
     padding: 0.75rem 1rem;
-    color: var(--color-ink);
+    color: var(--text-primary);
   }
   input.neu-inset:focus, textarea.neu-inset:focus {
-    box-shadow: var(--neu-pressed), 0 0 0 2px var(--color-primary);
+    box-shadow: var(--neu-pressed), 0 0 0 2px var(--primary-accent);
   }
 }
 
@@ -205,9 +330,7 @@
     border-bottom: 1px solid var(--glass-border);
   }
 
-  /* Hybrid: neumorphic base peeking through a glass sheet — use for
-     the Pomodoro timer card, where it sits "in" the dashboard but
-     floats "above" a session. */
+  /* Hybrid: neumorphic base peeking through a glass sheet */
   .glass-neu {
     background: linear-gradient(145deg, rgba(var(--color-glass-tint), 0.65), rgba(var(--color-glass-tint), 0.35));
     backdrop-filter: blur(var(--glass-blur));
@@ -219,7 +342,7 @@
 }
 
 /* ==========================================================================
-   GAMIFICATION — this is where the personality lives
+   GAMIFICATION
    ========================================================================== */
 
 @layer components {
@@ -227,7 +350,7 @@
   .xp-track {
     height: 10px;
     border-radius: 999px;
-    background: var(--color-base);
+    background: var(--bg-input);
     box-shadow: var(--neu-pressed);
     overflow: hidden;
     position: relative;
@@ -235,7 +358,7 @@
   .xp-fill {
     height: 100%;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--color-primary), var(--color-teal));
+    background: linear-gradient(90deg, var(--primary-accent), var(--color-teal));
     position: relative;
     transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -252,7 +375,7 @@
     70%, 100% { transform: translateX(100%); }
   }
 
-  /* --- Streak flame (upgraded from your original) --- */
+  /* --- Streak flame --- */
   @keyframes fire {
     0%   { transform: scale(1) translateY(0); filter: drop-shadow(0 0 3px var(--color-flame)); }
     25%  { transform: scale(1.05) translateY(-1px) rotate(-1deg); filter: drop-shadow(0 0 6px var(--color-flame-hot)); }
@@ -262,12 +385,12 @@
   }
   .animate-fire { animation: fire 1.5s ease-in-out infinite; }
 
-  /* Neumorphic badge base with a glass halo — used for streak / achievement chips */
+  /* Neumorphic badge base with a glass halo */
   .badge-glow {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-base);
+    background: var(--bg-surface);
     box-shadow: var(--neu-raised-sm);
     border-radius: 999px;
     position: relative;
@@ -286,7 +409,7 @@
     50% { opacity: 1; transform: scale(1.06); }
   }
 
-  /* Level-up celebration — trigger by toggling this class on for ~900ms */
+  /* Level-up celebration */
   @keyframes level-up-pop {
     0%   { transform: scale(1); }
     30%  { transform: scale(1.15) rotate(-2deg); }
@@ -297,8 +420,8 @@
 
   /* Focus-mode ambient pulse ring around an active Pomodoro dial */
   @keyframes focus-ring {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(76, 58, 227, 0.35); }
-    50% { box-shadow: 0 0 0 14px rgba(76, 58, 227, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.35); }
+    50% { box-shadow: 0 0 0 14px rgba(168, 85, 247, 0); }
   }
   .focus-ring { animation: focus-ring 2.6s ease-in-out infinite; border-radius: 999px; }
 }
@@ -309,22 +432,31 @@
 
 @layer components {
   .btn-primary {
-    background: linear-gradient(145deg, var(--color-primary), #3E2FC7);
+    background: linear-gradient(145deg, var(--primary-accent), #3E2FC7);
     color: white;
     font-weight: 600;
     border-radius: 999px;
     padding: 0.7rem 1.5rem;
-    box-shadow: 0 6px 18px rgba(76, 58, 227, 0.35);
+    box-shadow: 0 6px 18px var(--primary-accent-glow);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     border: none;
   }
   .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(76, 58, 227, 0.42);
+    box-shadow: 0 10px 24px var(--primary-accent-glow);
   }
   .btn-primary:active {
     transform: translateY(0);
-    box-shadow: 0 4px 10px rgba(76, 58, 227, 0.35);
+    box-shadow: 0 4px 10px var(--primary-accent-glow);
+  }
+
+  .dark .btn-primary {
+    background: linear-gradient(145deg, #9333EA, #7C3AED);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
+  }
+  .dark .btn-primary:hover {
+    background: linear-gradient(145deg, #A855F7, #9333EA);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.45);
   }
 
   .btn-ghost-glass {
@@ -333,7 +465,7 @@
     -webkit-backdrop-filter: blur(var(--glass-blur));
     border: 1px solid var(--glass-border);
     border-radius: 999px;
-    color: var(--color-ink);
+    color: var(--text-primary);
     font-weight: 500;
     padding: 0.65rem 1.4rem;
     transition: background 0.2s ease;
@@ -354,17 +486,22 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(76, 58, 227, 0.25);
+  background: rgba(69, 30, 187, 0.25);
   border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(76, 58, 227, 0.45);
+  background: rgba(69, 30, 187, 0.45);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.5);
 }
 
 /* ==========================================================================
    AMBIENT BACKGROUND BLOBS
-   Optional: drop a <div class="bg-blobs"> as the first child of a page
-   to give glass cards something to blur against.
    ========================================================================== */
 
 .bg-blobs {
@@ -387,12 +524,154 @@
 .bg-blobs::before {
   top: -10%;
   left: -10%;
-  background: var(--color-primary);
+  background: var(--primary-accent);
 }
 .bg-blobs::after {
   bottom: -15%;
   right: -10%;
   background: var(--color-teal);
+}
+
+.dark .bg-blobs::before {
+  opacity: 0.15;
+}
+.dark .bg-blobs::after {
+  opacity: 0.1;
+}
+
+/* ==========================================================================
+   GLOBAL DARK MODE RESILIENCE RULES
+   Ensures non-refactored pages seamlessly respect dark mode without breaking.
+   ========================================================================== */
+
+.dark {
+  color-scheme: dark;
+}
+
+/* ---- Chrome-style card bleed: ensure dark mode cards get the full luminous bleeding shadow ---- */
+.dark .neu {
+  box-shadow:
+    12px 12px 32px 0px rgba(255, 255, 255, 0.50),
+    -8px -8px 24px -2px rgba(0, 0, 0, 0.90),
+    0 0 20px 2px rgba(255, 255, 255, 0.18),
+    0 0 1px 1px rgba(255, 255, 255, 0.25) !important;
+}
+
+.dark .neu-sm,
+.dark .neu-btn {
+  box-shadow:
+    7px 7px 20px 0px rgba(255, 255, 255, 0.44),
+    -5px -5px 16px -1px rgba(0, 0, 0, 0.85),
+    0 0 12px 1px rgba(255, 255, 255, 0.16),
+    0 0 1px 1px rgba(255, 255, 255, 0.20) !important;
+}
+
+.dark .neu-inset {
+  box-shadow:
+    inset 4px 4px 10px rgba(0, 0, 0, 0.90),
+    inset -4px -4px 10px rgba(255, 255, 255, 0.45) !important;
+}
+
+.dark .glass-card,
+.dark .glass-neu {
+  box-shadow:
+    12px 12px 32px 0px rgba(255, 255, 255, 0.45),
+    -6px -6px 20px rgba(0, 0, 0, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Global container surfaces - handle all hex case variations */
+.dark .bg-\[\#f9f9ff\],
+.dark .bg-\[\#F9F9FF\],
+.dark .bg-\[\#faf9ff\],
+.dark .bg-\[\#FAF9FF\],
+.dark .bg-\[\#f8f9fc\],
+.dark .bg-\[\#F8F9FC\],
+.dark .bg-\[\#f8fafc\],
+.dark .bg-\[\#F8FAFC\],
+.dark .bg-\[\#f8f9fb\],
+.dark .bg-\[\#F8F9FB\],
+.dark .bg-\[\#F9FAFB\],
+.dark .bg-\[\#f9fafb\],
+.dark .bg-\[\#f9f9fb\],
+.dark .bg-\[\#F4F6F8\],
+.dark .bg-\[\#f4f6f8\],
+.dark .bg-\[\#f4f7f9\],
+.dark .bg-\[\#F4F7F9\],
+.dark .bg-\[\#f1f3f9\],
+.dark .bg-\[\#F1F3F9\] {
+  background-color: var(--bg-page) !important;
+}
+
+.dark .bg-\[\#E8EEFF\],
+.dark .bg-\[\#e8eeff\],
+.dark .bg-\[\#e3e8f9\],
+.dark .bg-\[\#E3E8F9\] {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark .bg-white {
+  background-color: var(--bg-surface) !important;
+}
+
+.dark .bg-gray-50,
+.dark .bg-gray-50\/80,
+.dark .bg-zinc-50 {
+  background-color: var(--bg-subtle) !important;
+}
+
+.dark .bg-\[\#F5F6FF\],
+.dark .bg-\[\#f5f6ff\],
+.dark .bg-\[\#EEF2FF\],
+.dark .bg-\[\#eef2ff\],
+.dark .bg-\[\#f1f3ff\] {
+  background-color: var(--bg-pill) !important;
+}
+
+/* Global text contrast */
+.dark .text-\[\#161c27\],
+.dark .text-\[\#111827\],
+.dark .text-zinc-900,
+.dark .text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+.dark .text-\[\#484554\],
+.dark .text-\[\#6B7280\],
+.dark .text-gray-500,
+.dark .text-zinc-500 {
+  color: var(--text-secondary) !important;
+}
+
+.dark .text-gray-400,
+.dark .text-zinc-400 {
+  color: var(--text-muted) !important;
+}
+
+/* Global borders */
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-zinc-100,
+.dark .border-zinc-200 {
+  border-color: var(--border-subtle) !important;
+}
+
+.dark .border-gray-50,
+.dark .border-zinc-50 {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* SweetAlert2 dark styling */
+.dark .swal2-popup {
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-default) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8) !important;
+}
+.dark .swal2-title,
+.dark .swal2-html-container {
+  color: var(--text-primary) !important;
 }
 
 /* ==========================================================================
@@ -431,21 +710,18 @@
     color: #111827 !important;
   }
 
-  /* Automatically hide site headers, sidebars, interactive menus and toolbars in print */
   header,
   aside,
   .no-print {
     display: none !important;
   }
 
-  /* Reset layout constraints for printing */
   .min-h-screen {
     min-height: auto !important;
   }
 
-  /* Prevent awkward page break splits on cards, charts, and sections */
   .break-inside-avoid {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
-}
+}

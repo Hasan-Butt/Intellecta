@@ -416,7 +416,7 @@ const PerformanceDashboard = () => {
   const circumference = 2 * Math.PI * radius;
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen font-inter selection:bg-indigo-100 antialiased">
+    <div className="bg-[var(--bg-page)] text-[var(--text-primary)] min-h-screen font-inter selection:bg-indigo-100 antialiased">
         {/* Navbar */}
       <Navbar />
 

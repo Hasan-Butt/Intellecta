@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
@@ -12,6 +13,18 @@ module.exports = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+        },
+        theme: {
+          page: "var(--bg-page)",
+          surface: "var(--bg-surface)",
+          sidebar: "var(--bg-sidebar)",
+          navbar: "var(--bg-navbar)",
+          subtle: "var(--bg-subtle)",
+          elevated: "var(--bg-elevated)",
+          border: "var(--border-subtle)",
+          text: "var(--text-primary)",
+          muted: "var(--text-secondary)",
+          accent: "var(--primary-accent)",
         },
       },
       borderRadius: {

@@ -167,7 +167,7 @@ export default function LightReview() {
       <style>{styles}</style>
       <Navbar />
       <div
-        className="bg-[#faf9ff]"
+        className="bg-[var(--bg-page)] text-[var(--text-primary)]"
         style={{
           minHeight: "100vh",
           display: "flex",
@@ -194,13 +194,13 @@ export default function LightReview() {
                   fontWeight: 800,
                   fontSize: "2rem",
                   letterSpacing: "-0.04em",
-                  color: "#161c27",
+                  color: "var(--text-primary)",
                   lineHeight: 1.1,
                 }}
               >
                 Light Review
               </h1>
-              <p style={{ color: "#6b7280", fontSize: 13, marginTop: 4 }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 4 }}>
                 Flip each card · mark <strong>Got It</strong> to clear it from your queue
               </p>
             </div>
@@ -210,10 +210,10 @@ export default function LightReview() {
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
-                color: "#451ebb",
+                color: "var(--primary-accent-text)",
                 fontWeight: 700,
                 fontSize: 13,
-                background: "rgba(69,30,187,0.08)",
+                background: "var(--primary-accent-subtle)",
                 border: "none",
                 borderRadius: 12,
                 padding: "8px 14px",
@@ -293,7 +293,7 @@ export default function LightReview() {
                     fontFamily: "'Manrope',sans-serif",
                     fontWeight: 800,
                     fontSize: "1.8rem",
-                    color: "#161c27",
+                    color: "var(--text-primary)",
                     marginBottom: 8,
                   }}
                 >
@@ -500,7 +500,7 @@ export default function LightReview() {
                   <div
                     className="lr-face lr-back"
                     style={{
-                      background: "rgba(255,255,255,0.97)",
+                      background: "var(--bg-surface)",
                       backdropFilter: "blur(20px)",
                       boxShadow: `0 24px 60px ${accent.from}30`,
                       border: `2px solid ${accent.from}22`,
@@ -544,7 +544,7 @@ export default function LightReview() {
                         <div
                           className="lr-content"
                           style={{
-                            color: "#374151",
+                            color: "var(--text-primary)",
                             fontSize: 15,
                             lineHeight: 1.75,
                             fontFamily: "'Inter',sans-serif",
@@ -602,11 +602,11 @@ export default function LightReview() {
                   style={{
                     flex: 1,
                     padding: "16px 0",
-                    background: "rgba(255,255,255,0.85)",
+                    background: "var(--bg-surface)",
                     backdropFilter: "blur(12px)",
-                    border: "2px solid rgba(69,30,187,0.15)",
+                    border: "2px solid var(--border-subtle)",
                     borderRadius: 18,
-                    color: "#451ebb",
+                    color: "var(--primary-accent-text)",
                     fontWeight: 700,
                     fontSize: 14,
                     cursor: "pointer",
@@ -623,7 +623,7 @@ export default function LightReview() {
                     e.currentTarget.style.transform = "translateY(-2px)";
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.background = "rgba(255,255,255,0.85)";
+                    e.currentTarget.style.background = "var(--bg-surface)";
                     e.currentTarget.style.borderColor = "rgba(69,30,187,0.15)";
                     e.currentTarget.style.transform = "translateY(0)";
                   }}
